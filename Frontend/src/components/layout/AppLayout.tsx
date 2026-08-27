@@ -37,7 +37,7 @@ export function AppLayout() {
   const showPageHeader = !PAGES_WITH_OWN_HEADER.includes(location.pathname);
 
   return (
-    <div className="flex min-h-screen bg-ivory">
+    <div className="flex min-h-screen bg-[var(--app-bg)] text-[var(--app-fg)]">
 
       {/* ── Desktop sidebar ── */}
       <AppSidebar

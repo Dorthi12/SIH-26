@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { cn } from "../../utils/cn";
+import { ThemeToggleButton } from "./ThemeToggleButton";
 
 // ── Nav items ──────────────────────────────────────────────────────────────
 
@@ -102,6 +103,8 @@ export function AppNavbar() {
 
           {/* Right */}
           <div className="flex items-center gap-3">
+            <ThemeToggleButton className="hidden sm:inline-flex" />
+
             {/* Farm avatar chip */}
             <div className="hidden md:flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
               <UserCircle className="h-4 w-4 text-charcoal-muted" />
@@ -147,6 +150,8 @@ export function AppNavbar() {
           aria-label="Mobile navigation"
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 space-y-1">
+            <ThemeToggleButton className="w-full justify-start mb-2" showLabel />
+
             {[...NAV_LINKS, ...MOBILE_EXTRA].map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}

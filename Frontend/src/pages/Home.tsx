@@ -23,8 +23,8 @@ export function Home() {
           />
         </div>
         {/* Multi-layer overlay: preserve readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-ivory/95 via-ivory/85 to-ivory/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ivory/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-ivory/95 via-ivory/85 to-ivory/60 dark:from-[#0f1714]/95 dark:via-[#0f1714]/85 dark:to-[#0f1714]/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ivory/80 via-transparent to-transparent dark:from-[#0f1714]/80" />
       </div>
 
       {/* ── Subtle grid pattern on top of image ── */}
@@ -55,18 +55,18 @@ export function Home() {
 
           {/* Eye brow label */}
           <div className="animate-slide-up mb-3" style={{ animationDelay: "80ms", animationFillMode: "both" }}>
-            <p className="text-xs font-bold uppercase tracking-widest text-forest/70">
+            <p className="text-xs font-bold uppercase tracking-widest text-forest/70 dark:text-forest-300">
               AgriSense Application
             </p>
           </div>
 
           {/* Headline */}
           <div className="animate-slide-up" style={{ animationDelay: "150ms", animationFillMode: "both" }}>
-            <h1 className="text-4xl sm:text-5xl font-bold text-charcoal leading-tight tracking-tight mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-charcoal dark:text-white leading-tight tracking-tight mb-4">
               Agricultural<br />
-              <span className="text-forest relative">
+              <span className="text-forest dark:text-forest-300 relative">
                 Intelligence
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-forest/60 to-transparent rounded-full" />
+                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-forest/60 dark:from-forest-300/60 to-transparent rounded-full" />
               </span>{" "}
               Platform
             </h1>
@@ -74,7 +74,7 @@ export function Home() {
 
           {/* Description */}
           <div className="animate-fade-in" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
-            <p className="text-charcoal-muted leading-relaxed max-w-sm mb-8 text-base">
+            <p className="text-charcoal-muted dark:text-gray-300 leading-relaxed max-w-sm mb-8 text-base">
               AI-powered crop recommendations using real weather, historical data, and machine learning — designed for Indian farmers.
             </p>
           </div>
@@ -87,7 +87,7 @@ export function Home() {
             <button
               type="button"
               onClick={() => navigate("/recommendation")}
-              className="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-forest text-white text-sm font-bold hover:bg-forest-600 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2"
+              className="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-forest dark:bg-forest-500 text-white text-sm font-bold hover:bg-forest-600 dark:hover:bg-forest-400 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2"
             >
               Get Crop Recommendation
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -95,10 +95,10 @@ export function Home() {
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-ivory-300 text-sm font-semibold text-charcoal hover:border-forest/30 hover:bg-white transition-all duration-200 shadow-sm active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2"
+              className="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/80 backdrop-blur-sm border border-ivory-300 text-sm font-semibold text-charcoal hover:border-forest/30 hover:bg-white transition-all duration-200 shadow-sm active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2 dark:bg-surface/80 dark:border-white/10 dark:text-white dark:hover:bg-surface dark:hover:border-forest-400/50"
             >
               View Dashboard
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform text-forest/60" />
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform text-forest/60 dark:text-forest-300" />
             </button>
           </div>
         </div>
@@ -106,7 +106,7 @@ export function Home() {
 
       {/* ── Floating stats pill (bottom of hero) ── */}
       <div
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 animate-fade-in hidden sm:flex items-center gap-6 bg-white/80 backdrop-blur-sm rounded-full border border-ivory-300 shadow-card px-6 py-3"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 animate-fade-in hidden sm:flex items-center gap-6 bg-white/80 backdrop-blur-sm rounded-full border border-ivory-300 shadow-card px-6 py-3 dark:bg-surface/80 dark:border-white/10"
         style={{ animationDelay: "600ms", animationFillMode: "both" }}
         aria-hidden="true"
       >
@@ -116,8 +116,8 @@ export function Home() {
           { label: "Data Signals", value: "3" },
         ].map((s) => (
           <div key={s.label} className="text-center">
-            <p className="text-sm font-bold text-charcoal">{s.value}</p>
-            <p className="text-2xs text-charcoal-muted">{s.label}</p>
+            <p className="text-sm font-bold text-charcoal dark:text-white">{s.value}</p>
+            <p className="text-2xs text-charcoal-muted dark:text-gray-300">{s.label}</p>
           </div>
         ))}
       </div>

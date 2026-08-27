@@ -6,6 +6,30 @@
 
 /* ── Base reset & typography ───────────────────────────────────────────── */
 @layer base {
+  :root {
+    --app-bg: #f9f5ef;
+    --app-fg: #1c1c1e;
+    --surface: #fefcf8;
+    --surface-2: #f9f5ef;
+    --surface-3: #f1ebe0;
+    --border: #e6ddd0;
+    --text: #1c1c1e;
+    --text-muted: #6b6b6e;
+    --ring-offset: #f9f5ef;
+  }
+
+  html.dark {
+    --app-bg: #0f1714;
+    --app-fg: #d8eee3; /* forest-100 */
+    --surface: #17211d;
+    --surface-2: #101815;
+    --surface-3: #223029;
+    --border: #26362f;
+    --text: #b3dcc8; /* forest-200 */
+    --text-muted: #82c3a5; /* forest-300 */
+    --ring-offset: #0f1714;
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -14,10 +38,18 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+    color-scheme: light;
+    background: var(--app-bg);
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
-    @apply bg-ivory text-charcoal font-sans;
+    background: var(--app-bg);
+    color: var(--app-fg);
+    @apply font-sans;
     min-height: 100vh;
   }
 
@@ -36,6 +68,7 @@
   select:focus-visible,
   textarea:focus-visible {
     @apply outline-none ring-2 ring-forest/40 ring-offset-2 ring-offset-ivory;
+    --tw-ring-offset-color: var(--ring-offset);
   }
 
   /* Active press feedback for interactive elements */
@@ -64,6 +97,49 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-forest/35;
+  }
+
+  .dark [class*="bg-white"] {
+    background-color: var(--surface) !important;
+  }
+
+  .dark [class*="bg-card"] {
+    background-color: var(--surface) !important;
+  }
+
+  .dark [class*="bg-ivory"] {
+    background-color: var(--surface-2) !important;
+  }
+
+  .dark [class*="border-ivory"] {
+    border-color: var(--border) !important;
+  }
+
+  .dark [class*="border-white"] {
+    border-color: var(--border) !important;
+  }
+
+  .dark [class*="text-charcoal"] {
+    color: var(--text) !important;
+  }
+
+  .dark [class*="text-white"] {
+    color: #d8eee3; /* forest-100 */
+  }
+
+  .dark [class*="text-forest"] {
+    color: #82c3a5 !important; /* forest-300 */
+  }
+
+  .dark .shadow-card,
+  .dark .shadow-card-hover,
+  .dark .shadow-card-glow,
+  .dark .shadow-nav,
+  .dark .shadow-sm,
+  .dark .shadow-md,
+  .dark .shadow-lg,
+  .dark .shadow-xl {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24), 0 16px 36px rgba(0, 0, 0, 0.22);
   }
 }
 

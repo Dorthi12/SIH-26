@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { RecommendationProvider } from "./context/RecommendationContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { AppLayout } from "./components/layout/AppLayout";
 
 import { Home }           from "./pages/Home";
@@ -20,29 +21,31 @@ import { DistrictIntelligencePage } from "./pages/DistrictIntelligence";
 export default function App() {
   return (
     <BrowserRouter>
-      <RecommendationProvider>
-        <Routes>
-          {/* All app routes share the AppLayout shell */}
-          <Route element={<AppLayout />}>
-            <Route path="/"                element={<Home />} />
-            <Route path="/dashboard"       element={<Dashboard />} />
-            <Route path="/recommendation"  element={<Recommendation />} />
-            <Route path="/analyzing"       element={<Analyzing />} />
-            <Route path="/results"         element={<Results />} />
-            <Route path="/comparison"      element={<Comparison />} />
-            <Route path="/explain"         element={<Explain />} />
-            <Route path="/weather"         element={<Weather />} />
-            <Route path="/history"         element={<History />} />
-            <Route path="/about"           element={<About />} />
-            <Route path="/assistant"       element={<Assistant />} />
-            <Route path="/scenarios"       element={<ScenarioSimulator />} />
-            <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
+      <ThemeProvider>
+        <RecommendationProvider>
+          <Routes>
+            {/* All app routes share the AppLayout shell */}
+            <Route element={<AppLayout />}>
+              <Route path="/"                element={<Home />} />
+              <Route path="/dashboard"       element={<Dashboard />} />
+              <Route path="/recommendation"  element={<Recommendation />} />
+              <Route path="/analyzing"       element={<Analyzing />} />
+              <Route path="/results"         element={<Results />} />
+              <Route path="/comparison"      element={<Comparison />} />
+              <Route path="/explain"         element={<Explain />} />
+              <Route path="/weather"         element={<Weather />} />
+              <Route path="/history"         element={<History />} />
+              <Route path="/about"           element={<About />} />
+              <Route path="/assistant"       element={<Assistant />} />
+              <Route path="/scenarios"       element={<ScenarioSimulator />} />
+              <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
 
-            {/* Catch-all → dashboard */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-        </Routes>
-      </RecommendationProvider>
+              {/* Catch-all → dashboard */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
+          </Routes>
+        </RecommendationProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
