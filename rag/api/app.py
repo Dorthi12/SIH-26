@@ -13,18 +13,31 @@ Or directly: uvicorn rag.api.app:app --host 0.0.0.0 --port 8001
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from rag import config
 from rag.api.schemas import (
+    ChatRequest,
+    ChatResponse,
     ChunkResult,
+    ConversationHistoryResponse,
+    ConversationStateResponse,
+    EligibilityFarmerProfileRequest,
+    EligibilityRequest,
+    EligibilityResponse,
+    EligibilityResultResponse,
     HealthResponse,
+    MessageResponse,
     QueryRequest,
     QueryResponse,
+    RecommendationResponse,
+    RecommendRequest,
     RetrievalMetaResponse,
     SchemeInfoResponse,
+    SchemeRecommendationResponse,
     SourceCitationResponse,
     RetrieveRequest,
     RetrieveResponse,
@@ -33,6 +46,10 @@ from rag.retrieval.models import FarmerProfile
 from rag.retrieval.retriever import get_retriever
 from rag.generation.generator import get_generator
 from rag.generation.models import SAFE_FALLBACK_ANSWERS
+from rag.eligibility.models import EligibilityFarmerProfile
+from rag.eligibility.service import check_eligibility, recommend_schemes
+from rag.conversation.models import ChatRequest as ConvChatRequest
+from rag.conversation import service as conv_service
 
 log = logging.getLogger(__name__)
 
@@ -255,3 +272,241 @@ async def retrieve(req: RetrieveRequest) -> RetrieveResponse:
     except Exception as exc:
         log.exception("Retrieval failed for query: %r", req.query)
         raise HTTPException(status_code=500, detail=f"Retrieval error: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Eligibility endpoint
+# ---------------------------------------------------------------------------
+
+@app.post("/api/rag/eligibility", response_model=EligibilityResponse, tags=["eligibility"])
+async def eligibility(
+    req: EligibilityRequest,
+) -> EligibilityResponse:
+    """
+    Evaluate eligibility for one or more government schemes.
+
+    Runs: retrieval → LLM rule extraction → deterministic evaluation.
+    Returns per-scheme ELIGIBLE / INELIGIBLE / INSUFFICIENT_INFORMATION.
+    All rules are grounded in retrieved government documents.
+    """
+    import asyncio
+    try:
+        profile = EligibilityFarmerProfile.from_dict(
+            req.farmer_profile.model_dump(exclude_none=True)
+        )
+        scheme_ids = set(req.scheme_ids) if req.scheme_ids else None
+
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: check_eligibility(
+                query=req.query,
+                profile=profile,
+                scheme_ids=scheme_ids,
+                top_k=req.top_k,
+            ),
+        )
+
+        return EligibilityResponse(
+            query=response.query,
+            language=response.language,
+            farmer_profile=response.farmer_profile,
+            results=[
+                EligibilityResultResponse(**r.to_dict())
+                for r in response.results
+            ],
+            follow_up_questions=response.follow_up_questions,
+            latency_ms=response.latency_ms,
+        )
+
+    except EnvironmentError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        log.exception("Eligibility check failed for query: %r", req.query)
+        raise HTTPException(status_code=500, detail=f"Eligibility error: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Recommendation endpoint
+# ---------------------------------------------------------------------------
+
+@app.post("/api/rag/recommend", response_model=RecommendationResponse, tags=["eligibility"])
+async def recommend(
+    req: RecommendRequest,
+) -> RecommendationResponse:
+    """
+    Recommend government schemes for a farmer profile.
+
+    Returns ranked schemes (central + state) with eligibility status and
+    transparent scoring breakdown.
+    """
+    import asyncio
+    try:
+        profile = EligibilityFarmerProfile.from_dict(
+            req.farmer_profile.model_dump(exclude_none=True)
+        )
+
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: recommend_schemes(
+                profile=profile,
+                query=req.query,
+                top_k=req.top_k,
+            ),
+        )
+
+        def _map_recs(recs):
+            return [
+                SchemeRecommendationResponse(**r.to_dict())
+                for r in recs
+            ]
+
+        return RecommendationResponse(
+            farmer_profile=response.farmer_profile,
+            recommendations=_map_recs(response.recommendations),
+            central_schemes=_map_recs(response.central_schemes),
+            state_schemes=_map_recs(response.state_schemes),
+            follow_up_questions=response.follow_up_questions,
+            latency_ms=response.latency_ms,
+        )
+
+    except EnvironmentError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        log.exception("Recommendation failed")
+        raise HTTPException(status_code=500, detail=f"Recommendation error: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Conversational chat endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/api/rag/chat", response_model=ChatResponse, tags=["conversation"])
+async def chat(
+    req: ChatRequest,
+    x_user_id: Optional[str] = None,
+) -> ChatResponse:
+    """
+    Multi-turn conversational RAG endpoint.
+
+    Send a query with an optional conversation_id to continue an existing
+    conversation. Omit conversation_id to start a new one.
+
+    Accumulates farmer profile across turns, resolves references to previous
+    schemes, and routes to the appropriate RAG pipeline.
+    """
+    import asyncio
+    from fastapi import Header
+    try:
+        # Validate query length
+        if len(req.query) > config.CONV_MAX_QUERY_LENGTH:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Query too long. Maximum {config.CONV_MAX_QUERY_LENGTH} characters.",
+            )
+
+        conv_req = ConvChatRequest(
+            query=req.query,
+            conversation_id=req.conversation_id,
+            farmer_profile=req.farmer_profile,
+            user_id=req.user_id or x_user_id,
+        )
+
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, lambda: conv_service.chat(conv_req))
+
+        return ChatResponse(
+            conversation_id=result.conversation_id,
+            answer=result.answer,
+            language=result.language,
+            intent=result.intent,
+            farmer_profile=result.farmer_profile,
+            schemes=result.schemes,
+            sources=result.sources,
+            follow_up_questions=result.follow_up_questions,
+            is_disambiguation=result.is_disambiguation,
+            latency_ms=result.latency_ms,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log.exception("Chat failed for conv_id=%r", req.conversation_id)
+        raise HTTPException(status_code=500, detail=f"Chat error: {exc}")
+
+
+@app.get("/api/rag/chat/{conversation_id}", response_model=ConversationHistoryResponse, tags=["conversation"])
+async def get_conversation(
+    conversation_id: str,
+    limit: int = 20,
+    user_id: Optional[str] = None,
+) -> ConversationHistoryResponse:
+    """
+    Retrieve conversation history and current state.
+
+    Returns recent messages (up to `limit`) and the structured state
+    (farmer profile, current scheme, language, summary).
+    Does NOT return internal system prompts.
+    """
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        history = await loop.run_in_executor(
+            None, lambda: conv_service.get_history(conversation_id, user_id, limit)
+        )
+        if history is None:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        state_data = history["state"]
+        messages = [
+            MessageResponse(
+                conversation_id=conversation_id,
+                role=m["role"],
+                content=m["content"],
+                timestamp=m["timestamp"],
+                language=m.get("language", "en"),
+                intent=m.get("intent"),
+                scheme_ids=m.get("scheme_ids", []),
+                source_ids=m.get("source_ids", []),
+            )
+            for m in history["messages"]
+        ]
+
+        return ConversationHistoryResponse(
+            conversation_id=conversation_id,
+            state=ConversationStateResponse(**state_data),
+            messages=messages,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log.exception("get_conversation failed for %r", conversation_id)
+        raise HTTPException(status_code=500, detail=f"History error: {exc}")
+
+
+@app.delete("/api/rag/chat/{conversation_id}", tags=["conversation"])
+async def delete_conversation(
+    conversation_id: str,
+    user_id: Optional[str] = None,
+) -> dict:
+    """
+    Delete a conversation and all its messages.
+    Does NOT delete the underlying government document knowledge base.
+    """
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        deleted = await loop.run_in_executor(
+            None, lambda: conv_service.delete_conversation(conversation_id, user_id)
+        )
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Conversation not found or unauthorised")
+        return {"deleted": True, "conversation_id": conversation_id}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log.exception("delete_conversation failed for %r", conversation_id)
+        raise HTTPException(status_code=500, detail=f"Delete error: {exc}")

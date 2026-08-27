@@ -150,3 +150,53 @@ def require_llm_config() -> None:
             "LLM API key is not set.\n"
             "Set GROQ_API_KEY in rag/.env or export it in your shell."
         )
+
+
+# ---------------------------------------------------------------------------
+# Eligibility Engine
+# ---------------------------------------------------------------------------
+
+ELIGIBILITY_MIN_RULE_CONFIDENCE: float = float(
+    os.environ.get("ELIGIBILITY_MIN_RULE_CONFIDENCE", "0.70")
+)
+"""
+Minimum confidence for an extracted eligibility rule condition to be used.
+Conditions with confidence below this threshold are silently discarded.
+"""
+
+ELIGIBILITY_MAX_RULES_PER_SCHEME: int = int(
+    os.environ.get("ELIGIBILITY_MAX_RULES_PER_SCHEME", "10")
+)
+"""Maximum number of retrieved chunks sent to the LLM for rule extraction per scheme."""
+
+# Recommendation scoring weights (must sum to ≤ 1.0; remainder is unweighted)
+ELIGIBILITY_WEIGHT_SEMANTIC:    float = float(os.environ.get("ELIGIBILITY_WEIGHT_SEMANTIC",    "0.30"))
+ELIGIBILITY_WEIGHT_STATE:       float = float(os.environ.get("ELIGIBILITY_WEIGHT_STATE",       "0.20"))
+ELIGIBILITY_WEIGHT_CROP:        float = float(os.environ.get("ELIGIBILITY_WEIGHT_CROP",        "0.15"))
+ELIGIBILITY_WEIGHT_ELIGIBILITY: float = float(os.environ.get("ELIGIBILITY_WEIGHT_ELIGIBILITY", "0.20"))
+ELIGIBILITY_WEIGHT_OFFICIAL:    float = float(os.environ.get("ELIGIBILITY_WEIGHT_OFFICIAL",    "0.10"))
+ELIGIBILITY_WEIGHT_FRESHNESS:   float = float(os.environ.get("ELIGIBILITY_WEIGHT_FRESHNESS",   "0.05"))
+
+
+# ---------------------------------------------------------------------------
+# Conversational Layer
+# ---------------------------------------------------------------------------
+
+import os as _os
+CONV_DB_PATH: str = _os.environ.get(
+    "CONV_DB_PATH",
+    str(Path(__file__).parent / "data" / "conversations.db"),
+)
+"""SQLite database file for conversation persistence."""
+
+CONV_SUMMARY_THRESHOLD: int = int(_os.environ.get("CONV_SUMMARY_THRESHOLD", "10"))
+"""Number of messages (user + assistant) before a summary is generated."""
+
+CONV_RECENT_MESSAGE_WINDOW: int = int(_os.environ.get("CONV_RECENT_MESSAGE_WINDOW", "6"))
+"""Number of recent messages included in every LLM context window."""
+
+CONV_MAX_QUERY_LENGTH: int = int(_os.environ.get("CONV_MAX_QUERY_LENGTH", "1000"))
+"""Maximum allowed query length in characters."""
+
+CONV_ID_PREFIX: str = _os.environ.get("CONV_ID_PREFIX", "conv_")
+"""Prefix for generated conversation IDs."""
