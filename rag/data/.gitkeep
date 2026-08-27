@@ -1,0 +1,2 @@
+# This file ensures the rag/data/ directory is tracked by git
+# while its contents (SQLite state DB) are gitignored.

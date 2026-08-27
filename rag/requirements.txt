@@ -1,0 +1,8 @@
+# rag/requirements.txt — Python dependencies for the RAG ingestion pipeline
+
+# Ingestion pipeline dependencies
+pypdf>=4.0.0
+sentence-transformers>=2.6.0
+pinecone>=5.0.0
+# Environment variable loading from .env files
+python-dotenv>=1.0.0

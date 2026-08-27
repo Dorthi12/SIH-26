@@ -10,6 +10,7 @@ import {
   Wheat,
   CheckCircle2,
   Layers,
+  FileText,
 } from "lucide-react";
 
 import { useRecommendation } from "../context/RecommendationContext";
@@ -30,6 +31,7 @@ import { HistoricalYieldChart } from "../components/results/HistoricalYieldChart
 import { DecisionSummary }      from "../components/results/DecisionSummary";
 import { ScoreExplanation }     from "../components/results/ScoreExplanation";
 import { PredictionExplainability } from "../components/results/PredictionExplainability";
+import { FarmReportModal }      from "../components/results/FarmReportModal";
 
 // New enhancement components
 import {
@@ -81,6 +83,9 @@ export function Results() {
   // Simulate a loaded state — in production this would come from the recommendation status
   const [loadState] = useState<"ready" | "loading" | "error" | "empty">("ready");
 
+  // Farm Decision Report modal
+  const [reportOpen, setReportOpen] = useState(false);
+
   const district = farmerInput?.district       ?? DEMO_DISTRICT;
   const season   = farmerInput?.season         ?? DEMO_SEASON;
   const acres    = farmerInput?.land_area_acres ?? DEMO_ACRES;
@@ -91,6 +96,21 @@ export function Results() {
     top.predicted_yield_t_per_ha,
     MOCK_RANKINGS
   );
+
+  // ReportPreviewData — assembled from existing page data, no new data sources
+  const reportData = {
+    district:                    district,
+    season:                      season,
+    land_area_acres:             acres,
+    crop:                        top.crop,
+    suitability_score:           top.suitability_score,
+    predicted_yield_t_per_ha:    top.predicted_yield_t_per_ha,
+    estimated_production_tonnes: top.estimated_production_tonnes,
+    weather_compatibility:       top.weather_compatibility,
+    historical_stability:        top.historical_stability,
+    yield_trend:                 top.yield_trend,
+    generated_at:                new Date().toISOString(),
+  };
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -446,7 +466,7 @@ export function Results() {
               They do not guarantee agricultural outcomes.
             </p>
 
-            {/* ── PRIMARY CTA: Why This Crop ── */}
+            {/* ── PRIMARY CTA: Why This Crop + Generate Report ── */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-2">
               <button
                 type="button"
@@ -464,6 +484,17 @@ export function Results() {
               >
                 <Layers className="h-4 w-4" />
                 Compare Alternatives
+              </button>
+              {/* Generate Report — secondary CTA, does not compete with primary */}
+              <button
+                type="button"
+                id="generate-farm-report-cta"
+                onClick={() => setReportOpen(true)}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white border border-ivory-300 text-sm font-semibold text-charcoal hover:border-forest/30 hover:bg-forest/[0.02] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2"
+                aria-label="Generate a Farm Decision Report"
+              >
+                <FileText className="h-4 w-4 text-forest/60" />
+                Generate Farm Report
               </button>
             </div>
 
@@ -499,6 +530,14 @@ export function Results() {
         </div>
       </PageContainer>
       </div>
+
+      {/* ── Farm Decision Report Modal ── */}
+      <FarmReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        predictionId={`demo-${top.crop.toLowerCase()}-${season.toLowerCase()}`}
+        data={reportData}
+      />
     </div>
   );
 }

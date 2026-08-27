@@ -1,0 +1,27 @@
+# rag/.gitignore
+
+# Environment / credentials — NEVER commit
+.env
+
+# State database (SQLite) — contains indexed file hashes, not source data
+data/ingestion_state.db
+data/*.db
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Model cache (Sentence Transformers downloads models here)
+.cache/
+models/
+
+# macOS
+.DS_Store
