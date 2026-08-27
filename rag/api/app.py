@@ -21,11 +21,18 @@ from rag import config
 from rag.api.schemas import (
     ChunkResult,
     HealthResponse,
+    QueryRequest,
+    QueryResponse,
+    RetrievalMetaResponse,
+    SchemeInfoResponse,
+    SourceCitationResponse,
     RetrieveRequest,
     RetrieveResponse,
 )
 from rag.retrieval.models import FarmerProfile
 from rag.retrieval.retriever import get_retriever
+from rag.generation.generator import get_generator
+from rag.generation.models import SAFE_FALLBACK_ANSWERS
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +97,95 @@ async def health() -> HealthResponse:
             embedding_model=config.EMBEDDING_MODEL,
         )
 
+
+@app.post("/api/rag/query", response_model=QueryResponse, tags=["generation"])
+async def query(
+    req: QueryRequest,
+) -> QueryResponse:
+    """
+    Full RAG pipeline: query understanding → retrieval → LLM generation.
+
+    Returns a grounded answer with scheme information, source citations,
+    and optional follow-up questions.
+
+    The answer is generated ONLY from retrieved government documents.
+    No general LLM knowledge is used for government-policy facts.
+    """
+    try:
+        # Build farmer profile
+        profile = None
+        if req.farmer_profile:
+            profile = FarmerProfile.from_dict(req.farmer_profile.model_dump(exclude_none=True))
+
+        # Step 1: Retrieve
+        retriever = get_retriever()
+        retrieval_result = await retriever.aretrieve(
+            query=req.query,
+            farmer_profile=profile,
+            top_k=req.top_k,
+        )
+
+        # Override language if explicitly provided
+        if req.language:
+            retrieval_result.language = req.language
+
+        # Step 2: Generate
+        generator = get_generator()
+        gen_result = await generator.agenerate(
+            retrieval_result=retrieval_result,
+            farmer_profile=profile,
+            history=req.history,
+        )
+
+        # Step 3: Map to response schema
+        return QueryResponse(
+            answer=gen_result.answer,
+            language=gen_result.language,
+            schemes=[
+                SchemeInfoResponse(
+                    scheme_id=s.scheme_id,
+                    scheme_name=s.scheme_name,
+                    relevance=s.relevance,
+                    reason=s.reason,
+                )
+                for s in gen_result.schemes
+            ],
+            sources=[
+                SourceCitationResponse(
+                    source_id=src.source_id,
+                    document_title=src.document_title,
+                    scheme_name=src.scheme_name,
+                    scheme_id=src.scheme_id,
+                    page_number=src.page_number,
+                    section=src.section,
+                    source_url=src.source_url,
+                    official_source=src.official_source,
+                    government_level=src.government_level,
+                    published_date=src.published_date,
+                    document_version=src.document_version,
+                )
+                for src in gen_result.sources
+            ],
+            follow_up_questions=gen_result.follow_up_questions,
+            retrieval=RetrievalMetaResponse(
+                documents_considered=gen_result.retrieval.documents_considered,
+                top_score=gen_result.retrieval.top_score,
+                min_score_threshold=gen_result.retrieval.min_score_threshold,
+                used_fallback=gen_result.retrieval.used_fallback,
+                context_chunks_used=gen_result.retrieval.context_chunks_used,
+            ) if (req.include_retrieval_debug and gen_result.retrieval) else None,
+            model_used=gen_result.model_used,
+            latency_ms=gen_result.latency_ms,
+        )
+
+    except EnvironmentError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except RuntimeError as exc:
+        log.exception("Generation failed for query: %r", req.query)
+        raise HTTPException(status_code=500, detail=f"Generation error: {exc}")
+    except Exception as exc:
+        log.exception("Unexpected error for query: %r", req.query)
+        raise HTTPException(status_code=500, detail=f"Internal error: {exc}")
 
 @app.post("/api/rag/retrieve", response_model=RetrieveResponse, tags=["retrieval"])
 async def retrieve(req: RetrieveRequest) -> RetrieveResponse:

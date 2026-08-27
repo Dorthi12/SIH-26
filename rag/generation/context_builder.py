@@ -1,0 +1,93 @@
+"""
+rag/generation/context_builder.py — Converts retrieval results into LLM context.
+
+Public API
+----------
+build_context(retrieval_result)  →  (context_str, included_chunks)
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import List, Tuple
+
+from rag import config
+from rag.retrieval.models import RetrievalCandidate, RetrievalResult
+
+log = logging.getLogger(__name__)
+
+
+def _format_chunk(idx: int, chunk: RetrievalCandidate) -> str:
+    """Format a single chunk as a numbered SOURCE block for the LLM prompt."""
+    official = "Yes" if chunk.official_source else "No"
+    state_label = chunk.state or "All India / Central"
+    section_label = chunk.section or "General"
+
+    lines = [
+        f"SOURCE {idx}",
+        f"Scheme: {chunk.scheme_name}",
+        f"Scheme ID: {chunk.scheme_id}",
+        f"Section: {section_label}",
+        f"Page: {chunk.page_number}",
+        f"Government Level: {chunk.government_level.capitalize()}",
+        f"State: {state_label}",
+        f"Official Source: {official}",
+        f"Document: {chunk.document_title}",
+    ]
+    if chunk.document_version:
+        lines.append(f"Version: {chunk.document_version}")
+    if chunk.published_date:
+        lines.append(f"Published: {chunk.published_date}")
+    if chunk.source_url:
+        lines.append(f"URL: {chunk.source_url}")
+    lines += ["Text:", chunk.chunk_text, "---"]
+    return "\n".join(lines)
+
+
+def build_context(
+    retrieval_result: RetrievalResult,
+    context_top_k: int | None = None,
+    min_score: float | None = None,
+) -> Tuple[str, List[RetrievalCandidate]]:
+    """
+    Build a structured context string from retrieval results.
+
+    Parameters
+    ----------
+    retrieval_result : Full RetrievalResult from the retrieval layer.
+    context_top_k    : Max chunks to include (default: config.RAG_CONTEXT_TOP_K).
+    min_score        : Minimum semantic score threshold (default: config.RAG_MIN_RETRIEVAL_SCORE).
+
+    Returns
+    -------
+    (context_str, included_chunks)
+    context_str      : Formatted SOURCE 1...N string for the LLM prompt.
+    included_chunks  : List of chunks actually included (for citation building).
+    """
+    top_k = context_top_k or config.RAG_CONTEXT_TOP_K
+    threshold = min_score if min_score is not None else config.RAG_MIN_RETRIEVAL_SCORE
+
+    candidates = retrieval_result.results
+
+    # Filter by minimum score
+    qualified = [c for c in candidates if c.semantic_score >= threshold]
+
+    if not qualified:
+        log.info(
+            "No chunks above score threshold %.2f (best=%.4f). Will use safe fallback.",
+            threshold,
+            candidates[0].semantic_score if candidates else 0.0,
+        )
+        return "", []
+
+    # Take top_k (already sorted by final_score from ranker)
+    included = qualified[:top_k]
+
+    blocks = [_format_chunk(i + 1, chunk) for i, chunk in enumerate(included)]
+    context_str = "\n\n".join(blocks)
+
+    log.info(
+        "Context built: %d/%d chunks (threshold=%.2f, top_k=%d)",
+        len(included), len(candidates), threshold, top_k,
+    )
+    return context_str, included

@@ -108,3 +108,45 @@ RAG_FRESHNESS_BONUS: float = float(os.environ.get("RAG_FRESHNESS_BONUS", "0.05")
 
 RAG_API_HOST: str = os.environ.get("RAG_API_HOST", "0.0.0.0")
 RAG_API_PORT: int = int(os.environ.get("RAG_API_PORT", "8001"))
+
+
+# ---------------------------------------------------------------------------
+# LLM / Generation
+# ---------------------------------------------------------------------------
+
+LLM_PROVIDER: str = os.environ.get("LLM_PROVIDER", "groq")
+"""
+LLM backend. Supported: 'groq' (default — same as Node backend).
+Extensible: set LLM_PROVIDER=openai or LLM_PROVIDER=anthropic later.
+"""
+
+LLM_MODEL: str = os.environ.get("LLM_MODEL", "openai/gpt-oss-120b")
+"""Model name within the chosen provider. Default: llama-3.3-70b-versatile (Groq)."""
+
+LLM_API_KEY: str = os.environ.get("GROQ_API_KEY", os.environ.get("LLM_API_KEY", ""))
+"""API key — reads GROQ_API_KEY first, falls back to LLM_API_KEY."""
+
+LLM_TEMPERATURE: float = float(os.environ.get("LLM_TEMPERATURE", "0.2"))
+"""Generation temperature. Low (0.2) = more deterministic, factual responses."""
+
+LLM_MAX_TOKENS: int = int(os.environ.get("LLM_MAX_TOKENS", "1500"))
+"""Maximum output tokens from the LLM."""
+
+RAG_CONTEXT_TOP_K: int = int(os.environ.get("RAG_CONTEXT_TOP_K", "6"))
+"""Number of top-ranked retrieval chunks to send to the LLM as context."""
+
+RAG_MIN_RETRIEVAL_SCORE: float = float(os.environ.get("RAG_MIN_RETRIEVAL_SCORE", "0.25"))
+"""
+Minimum semantic similarity score for a chunk to be included in LLM context.
+Chunks below this threshold are not sent to the LLM.
+If no chunks meet this threshold, a safe no-context response is returned.
+"""
+
+
+def require_llm_config() -> None:
+    """Raise a clear error if LLM credentials are missing."""
+    if not LLM_API_KEY:
+        raise EnvironmentError(
+            "LLM API key is not set.\n"
+            "Set GROQ_API_KEY in rag/.env or export it in your shell."
+        )
