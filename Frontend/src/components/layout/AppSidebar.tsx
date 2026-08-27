@@ -6,8 +6,10 @@ import {
   GitCompare, HelpCircle, UserCircle,
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Settings, MessageSquareText, FlaskConical, Map,
+  MoonStar, SunMedium,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { useTheme } from "../../context/ThemeContext";
 
 // ── Route definitions ─────────────────────────────────────────────────────
 
@@ -25,6 +27,26 @@ export const NAV_ITEMS = [
 
 // Routes where /results and /analyzing count as "Recommendation" active
 const RECOMMENDATION_FAMILY = ["/recommendation", "/results", "/analyzing"];
+
+function ThemeToggleIconButton({ className }: { className?: string }) {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      className={cn(
+        "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-ivory-300 bg-white text-charcoal-light shadow-sm transition-colors hover:border-forest/30 hover:text-forest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30",
+        className
+      )}
+    >
+      {isDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+    </button>
+  );
+}
 
 // ── Brand logo ────────────────────────────────────────────────────────────
 
@@ -133,19 +155,22 @@ export function AppSidebar({ collapsed, onToggleCollapse }: SidebarProps) {
     >
       {/* Brand */}
       <div className={cn(
-        "flex items-center border-b border-ivory-200 h-16 px-3",
+        "flex items-center border-b border-ivory-200 h-16 px-3 gap-2",
         collapsed ? "justify-center" : "justify-between"
       )}>
         <AgriSenseLogo collapsed={collapsed} />
         {!collapsed && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            aria-label="Collapse sidebar"
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-charcoal-muted hover:text-forest hover:bg-forest/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+          <div className="ml-auto flex items-center gap-1.5">
+            <ThemeToggleIconButton />
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label="Collapse sidebar"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-charcoal-muted hover:text-forest hover:bg-forest/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          </div>
         )}
         {collapsed && (
           <button
@@ -340,6 +365,8 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
 
         {/* Footer */}
         <div className="border-t border-ivory-200 p-3 space-y-2">
+            <ThemeToggleIconButton className="w-full justify-start px-4" />
+
           <button
             type="button"
             onClick={() => { navigate("/recommendation"); onClose(); }}
@@ -374,6 +401,7 @@ export function DesktopPageHeader({ title }: { title: string }) {
     <div className="hidden lg:flex h-16 shrink-0 items-center justify-between px-6 border-b border-ivory-200 bg-white/60 backdrop-blur-sm sticky top-0 z-30">
       <p className="text-sm font-semibold text-charcoal">{title}</p>
       <div className="flex items-center gap-3">
+        <ThemeToggleIconButton />
         <div className="flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
           <UserCircle className="h-4 w-4 text-charcoal-muted" />
           <span className="text-xs font-semibold text-charcoal-light">Farmer</span>
