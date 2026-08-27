@@ -23,8 +23,14 @@ export function EmptyState({
         className
       )}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-forest/6 text-forest/50">
-        {icon ?? <Inbox className="h-7 w-7" />}
+      {/* Icon with floating animation and soft pulsing ring */}
+      <div className="relative flex items-center justify-center">
+        {/* Outer pulse ring */}
+        <div className="absolute h-20 w-20 rounded-full border border-forest/10 animate-pulse" />
+        {/* Inner container */}
+        <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-forest/6 text-forest/50 animate-float shadow-sm">
+          {icon ?? <Inbox className="h-7 w-7" />}
+        </div>
       </div>
       <div className="space-y-1.5 max-w-sm">
         <h3 className="text-base font-semibold text-charcoal">{title}</h3>

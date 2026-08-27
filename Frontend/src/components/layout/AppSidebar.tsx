@@ -5,19 +5,22 @@ import {
   LayoutDashboard, Sprout, CloudSun, History,
   GitCompare, HelpCircle, UserCircle,
   ChevronLeft, ChevronRight as ChevronRightIcon,
-  Settings,
+  Settings, MessageSquareText, FlaskConical, Map,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 // ── Route definitions ─────────────────────────────────────────────────────
 
 export const NAV_ITEMS = [
-  { to: "/dashboard",      label: "Dashboard",        icon: LayoutDashboard },
-  { to: "/recommendation", label: "Recommendation",   icon: Sprout },
-  { to: "/comparison",     label: "Compare Crops",    icon: GitCompare },
-  { to: "/weather",        label: "Weather",          icon: CloudSun },
-  { to: "/history",        label: "History",          icon: History },
-  { to: "/explain",        label: "Why This Crop?",   icon: HelpCircle },
+  { to: "/dashboard",             label: "Dashboard",             icon: LayoutDashboard },
+  { to: "/assistant",             label: "AI Assistant",           icon: MessageSquareText },
+  { to: "/recommendation",        label: "Recommendation",        icon: Sprout },
+  { to: "/scenarios",             label: "Scenario Simulator",    icon: FlaskConical },
+  { to: "/district-intelligence", label: "District Intelligence", icon: Map },
+  { to: "/comparison",            label: "Compare Crops",         icon: GitCompare },
+  { to: "/weather",               label: "Weather",               icon: CloudSun },
+  { to: "/history",               label: "History",               icon: History },
+  { to: "/explain",               label: "Why This Crop?",        icon: HelpCircle },
 ] as const;
 
 // Routes where /results and /analyzing count as "Recommendation" active
@@ -400,7 +403,9 @@ const ROUTE_TITLES: Record<string, string> = {
   "/explain":        "Why This Crop?",
   "/weather":        "Weather Intelligence",
   "/history":        "Historical Performance",
-  "/about":          "About",
+  "/scenarios":              "Scenario Simulator",
+  "/district-intelligence":  "District Intelligence",
+  "/about":                  "About",
 };
 
 export function usePageTitle(): string {

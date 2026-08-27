@@ -16,6 +16,7 @@ import { useRecommendation } from "../context/RecommendationContext";
 import { PageContainer }    from "../components/ui/PageContainer";
 import { SectionHeader }    from "../components/ui/SectionHeader";
 import { Badge }            from "../components/ui/Badge";
+import { useScrollReveal } from "../utils/useScrollReveal";
 
 // Existing results components — unchanged
 import { RecommendationHero }   from "../components/results/RecommendationHero";
@@ -28,6 +29,7 @@ import { WeatherSnapshot }      from "../components/results/WeatherSnapshot";
 import { HistoricalYieldChart } from "../components/results/HistoricalYieldChart";
 import { DecisionSummary }      from "../components/results/DecisionSummary";
 import { ScoreExplanation }     from "../components/results/ScoreExplanation";
+import { PredictionExplainability } from "../components/results/PredictionExplainability";
 
 // New enhancement components
 import {
@@ -74,6 +76,7 @@ function getTopAlternatives(rankings: typeof MOCK_RANKINGS, topRank: number) {
 export function Results() {
   const navigate = useNavigate();
   const { farmerInput } = useRecommendation();
+  const revealRef = useScrollReveal();
 
   // Simulate a loaded state — in production this would come from the recommendation status
   const [loadState] = useState<"ready" | "loading" | "error" | "empty">("ready");
@@ -115,6 +118,7 @@ export function Results() {
         </div>
       </div>
 
+      <div ref={revealRef as React.RefObject<HTMLDivElement>}>
       <PageContainer maxWidth="xl" className="py-8 md:py-12 animate-fade-in">
         <div className="space-y-14">
 
@@ -212,36 +216,39 @@ export function Results() {
             </section>
 
             {/* ── Section 3: EVIDENCE STRIP ── */}
-            <section id="evidence" aria-labelledby="evidence-heading" className="space-y-4 scroll-mt-28">
+            <section id="evidence" aria-labelledby="evidence-heading" className="space-y-4 scroll-mt-28" data-reveal>
               <SectionHeader
                 id="evidence-heading"
                 title="Supporting Evidence"
                 subtitle="These signals support the recommendation but do not individually determine it."
               />
               <div className="grid sm:grid-cols-3 gap-4">
+                <div data-reveal data-delay="100">
                 <EvidenceCard
                   icon={<BarChart3 className="h-5 w-5" />}
                   label="Historical Stability"
                   value={top.historical_stability}
                   description="Recent historical performance is relatively consistent for this crop in the district."
-                />
+                /></div>
+                <div data-reveal data-delay="200">
                 <EvidenceCard
                   icon={<CloudSun className="h-5 w-5" />}
                   label="Weather Compatibility"
                   value={top.weather_compatibility}
                   description="Current and forecast conditions are favorable for this crop."
-                />
+                /></div>
+                <div data-reveal data-delay="300">
                 <EvidenceCard
                   icon={<TrendingUp className="h-5 w-5" />}
                   label="Yield Trend"
                   value={top.yield_trend}
                   description="Recent historical yield trend is improving for this crop."
-                />
+                /></div>
               </div>
             </section>
 
             {/* ── Section 4: WHY THIS CROP ── */}
-            <section aria-labelledby="why-heading" className="space-y-5">
+            <section aria-labelledby="why-heading" className="space-y-5" data-reveal>
               <SectionHeader
                 id="why-heading"
                 title={`Why is ${top.crop} recommended?`}
@@ -287,8 +294,20 @@ export function Results() {
               </div>
             </section>
 
+            {/* ── Section 4b: MODEL EXPLAINABILITY ── */}
+            {/*
+             * Explainability section — populated by GET /predictions/{id}/explain.
+             * Uses a stable placeholder ID until the recommendation context
+             * provides a real prediction_id from the backend response.
+             * Replace DEMO_PREDICTION_ID with the real ID when wiring the backend.
+             */}
+            <PredictionExplainability
+              predictionId={`demo-${top.crop.toLowerCase()}-${season.toLowerCase()}`}
+              cropName={top.crop}
+            />
+
             {/* ── Section 5: ALTERNATIVE CROPS ── */}
-            <section aria-labelledby="alt-heading" className="space-y-4">
+            <section aria-labelledby="alt-heading" className="space-y-4" data-reveal>
               <SectionHeader
                 id="alt-heading"
                 title="Other Options Considered"
@@ -306,10 +325,12 @@ export function Results() {
                 }
               />
               <div className="grid sm:grid-cols-3 gap-4">
-                {alternatives.map((alt) => (
+                {alternatives.map((alt, idx) => (
                   <div
                     key={alt.crop}
-                    className="bg-white rounded-2xl border border-ivory-300 shadow-card p-4 space-y-2.5"
+                    data-reveal
+                    data-delay={String(idx * 100)}
+                    className="bg-white rounded-2xl border border-ivory-300 shadow-card p-4 space-y-2.5 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-charcoal-muted/60 uppercase tracking-wide">#{alt.rank} Ranked</span>
@@ -334,7 +355,7 @@ export function Results() {
             </section>
 
             {/* ── Section 6: DECISION PIPELINE ── */}
-            <section aria-labelledby="pipeline-heading" className="space-y-4">
+            <section aria-labelledby="pipeline-heading" className="space-y-4" data-reveal>
               <SectionHeader
                 id="pipeline-heading"
                 title="How the Decision Was Made"
@@ -346,7 +367,7 @@ export function Results() {
             </section>
 
             {/* ── Section 7: FULL COMPARISON (compact) ── */}
-            <section aria-labelledby="compare-heading" className="space-y-4">
+            <section aria-labelledby="compare-heading" className="space-y-4" data-reveal>
               <SectionHeader
                 id="compare-heading"
                 title="Compare Your Options"
@@ -477,6 +498,7 @@ export function Results() {
           </>}
         </div>
       </PageContainer>
+      </div>
     </div>
   );
 }

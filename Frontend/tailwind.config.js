@@ -79,9 +79,10 @@ export default {
         "3xl": "1.5rem",
       },
       boxShadow: {
-        card:   "0 1px 3px rgba(26,61,46,0.06), 0 4px 16px rgba(26,61,46,0.06)",
+        card:        "0 1px 3px rgba(26,61,46,0.06), 0 4px 16px rgba(26,61,46,0.06)",
         "card-hover": "0 4px 12px rgba(26,61,46,0.10), 0 8px 24px rgba(26,61,46,0.08)",
-        nav:    "0 1px 0 rgba(26,61,46,0.06)",
+        "card-glow":  "0 0 0 1px rgba(26,61,46,0.12), 0 4px 20px rgba(26,61,46,0.14)",
+        nav:         "0 1px 0 rgba(26,61,46,0.06)",
       },
       animation: {
         "fade-in":    "fadeIn 0.3s ease-out both",
@@ -89,6 +90,12 @@ export default {
         "slide-down": "slideDown 0.25s ease-out both",
         "slide-right": "slideRight 0.25s ease-out both",
         "spin-slow":  "spin 2s linear infinite",
+        "float":      "float 4s ease-in-out infinite",
+        "float-slow": "float 6s ease-in-out infinite",
+        "shimmer":    "shimmer 1.8s linear infinite",
+        "scale-in":   "scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both",
+        "pulse-glow": "pulseGlow 2.5s ease-in-out infinite",
+        "reveal":     "reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) both",
       },
       keyframes: {
         fadeIn: {
@@ -106,6 +113,26 @@ export default {
         slideRight: {
           "0%":   { opacity: "0", transform: "translateX(-100%)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%":      { transform: "translateY(-6px)" },
+        },
+        shimmer: {
+          "0%":   { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        scaleIn: {
+          "0%":   { opacity: "0", transform: "scale(0.88)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        pulseGlow: {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(26, 61, 46, 0)" },
+          "50%":      { boxShadow: "0 0 12px 3px rgba(26, 61, 46, 0.18)" },
+        },
+        reveal: {
+          "0%":   { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
       transitionTimingFunction: {

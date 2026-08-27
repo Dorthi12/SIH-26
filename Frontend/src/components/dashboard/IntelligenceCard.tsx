@@ -28,22 +28,26 @@ export function IntelligenceCard({
       onClick={() => navigate(route)}
       className={cn(
         "group relative flex flex-col gap-4 rounded-2xl border border-ivory-300 bg-white shadow-card p-5 md:p-6 text-left w-full overflow-hidden",
-        "hover:shadow-card-hover hover:-translate-y-1 transition-all duration-250",
+        "hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-250",
+        "active:scale-[0.98]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2"
       )}
       aria-label={`${title} — ${ctaLabel}`}
     >
-      {/* Subtle accent background */}
+      {/* Subtle accent background on hover */}
       <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none", accentClass)} />
 
+      {/* Top-right decorative corner glow */}
+      <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[4rem] bg-gradient-to-bl from-forest/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none" />
+
       {/* Icon */}
-      <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-forest/8 text-forest shadow-sm border border-forest/8 transition-all duration-200 group-hover:bg-forest group-hover:text-white group-hover:border-forest group-hover:shadow">
+      <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-forest/8 text-forest shadow-sm border border-forest/8 transition-all duration-200 group-hover:bg-forest group-hover:text-white group-hover:border-forest group-hover:shadow group-hover:scale-105 group-hover:rotate-3">
         {icon}
       </div>
 
       {/* Content */}
       <div className="relative flex-1 space-y-2">
-        <h3 className="text-sm font-bold text-charcoal tracking-tight">{title}</h3>
+        <h3 className="text-sm font-bold text-charcoal tracking-tight group-hover:text-forest transition-colors duration-200">{title}</h3>
         <p className="text-xs text-charcoal-muted leading-relaxed">{description}</p>
       </div>
 

@@ -37,6 +37,12 @@
   textarea:focus-visible {
     @apply outline-none ring-2 ring-forest/40 ring-offset-2 ring-offset-ivory;
   }
+
+  /* Active press feedback for interactive elements */
+  button:active:not(:disabled) {
+    transform: scale(0.98);
+    transition: transform 80ms ease-out;
+  }
 }
 
 /* ── Utility layer extras ──────────────────────────────────────────────── */
@@ -60,3 +66,137 @@
     @apply bg-forest/35;
   }
 }
+
+/* ── Scroll Reveal System ──────────────────────────────────────────────── */
+/*
+ * Elements with [data-reveal] start hidden/offset.
+ * The useScrollReveal hook adds .revealed when they enter the viewport.
+ * prefers-reduced-motion: all elements are immediately visible.
+ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for child groups */
+[data-reveal][data-delay="100"] { transition-delay: 100ms; }
+[data-reveal][data-delay="150"] { transition-delay: 150ms; }
+[data-reveal][data-delay="200"] { transition-delay: 200ms; }
+[data-reveal][data-delay="250"] { transition-delay: 250ms; }
+[data-reveal][data-delay="300"] { transition-delay: 300ms; }
+[data-reveal][data-delay="350"] { transition-delay: 350ms; }
+[data-reveal][data-delay="400"] { transition-delay: 400ms; }
+[data-reveal][data-delay="500"] { transition-delay: 500ms; }
+
+/* Scale-in variant for visual elements */
+[data-reveal="scale"] {
+  opacity: 0;
+  transform: scale(0.92) translateY(12px);
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+[data-reveal="scale"].revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Reduced motion: bypass all reveal animations */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal="scale"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Skeleton Shimmer ──────────────────────────────────────────────────── */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1ebe0 0%,
+    #e6ddd0 40%,
+    #f1ebe0 80%,
+    #f1ebe0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── AI Glow Accent ────────────────────────────────────────────────────── */
+/*
+ * Subtle green glow ring used on key AI/intelligence elements.
+ * Applied sparingly — only on the top recommendation indicator.
+ */
+.ai-glow {
+  box-shadow: 0 0 0 1px rgba(26, 61, 46, 0.14),
+              0 0 16px 2px rgba(26, 61, 46, 0.10);
+}
+
+/* ── Image hover zoom ──────────────────────────────────────────────────── */
+.img-zoom-wrap {
+  overflow: hidden;
+  border-radius: inherit;
+}
+.img-zoom-wrap img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.img-zoom-wrap:hover img {
+  transform: scale(1.04);
+}
+
+/* ── Scenario Slider — native range input, opacity-0 overlay ──────────── */
+/*
+ * The ScenarioSlider renders a native <input type="range"> with opacity-0
+ * so it captures pointer/touch events (fully accessible) while the visible
+ * thumb and fill are rendered as positioned <div> elements above.
+ * This gives us full design control without sacrificing accessibility.
+ */
+.scenario-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Remove default thumb in all browsers */
+.scenario-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+}
+.scenario-slider::-moz-range-thumb {
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+}
+
+/* Focus ring for keyboard users — shown on the visible container */
+.scenario-slider:focus-visible ~ [aria-hidden] {
+  outline: 2px solid rgba(26, 61, 46, 0.4);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario-slider ~ * {
+    transition: none !important;
+  }
+}
+

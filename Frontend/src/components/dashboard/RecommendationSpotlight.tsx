@@ -39,6 +39,8 @@ export function SuitabilityMiniGauge({ score, size = 96 }: SuitabilityGaugeProps
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
+        {/* Glow ring */}
+        <circle cx={size/2} cy={size/2} r={r + 4} fill="none" stroke="#1a3d2e" strokeWidth="1" strokeOpacity="0.08" />
         {/* Track */}
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e6ddd0" strokeWidth="7" />
         {/* Progress */}
@@ -50,6 +52,16 @@ export function SuitabilityMiniGauge({ score, size = 96 }: SuitabilityGaugeProps
           strokeDashoffset={circumference - filled}
           className="transition-none"
         />
+        {/* Amber tip */}
+        {displayed > 5 && (
+          <circle
+            cx={size/2} cy={size/2} r={r}
+            fill="none" stroke="#c8922a" strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={`3 ${circumference}`}
+            strokeDashoffset={-(filled - 2)}
+          />
+        )}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold text-charcoal tabular-nums leading-none">{displayed}</span>
@@ -69,9 +81,11 @@ export function RecommendationSpotlight({ top }: RecommendationSpotlightProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-2xl border border-forest/12 bg-white shadow-card overflow-hidden">
-      {/* Forest top stripe */}
-      <div className="h-1 w-full bg-forest" />
+    <div className="rounded-2xl border border-forest/12 bg-white shadow-card-glow overflow-hidden group hover:shadow-card-hover transition-shadow duration-300">
+      {/* Forest top stripe with shimmer */}
+      <div className="h-1 w-full bg-gradient-to-r from-forest via-olive/80 to-forest/60 relative overflow-hidden">
+        <div className="absolute inset-0 skeleton-shimmer opacity-20" />
+      </div>
 
       <div className="p-5 md:p-6">
         {/* Header */}
@@ -81,7 +95,7 @@ export function RecommendationSpotlight({ top }: RecommendationSpotlightProps) {
               Current Recommendation
             </p>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-white shadow-sm ai-glow transition-transform duration-200 group-hover:scale-105">
                 <Wheat className="h-5 w-5" strokeWidth={1.5} />
               </div>
               <h2 className="text-2xl font-bold text-charcoal">{top.crop}</h2>
@@ -105,19 +119,19 @@ export function RecommendationSpotlight({ top }: RecommendationSpotlightProps) {
 
           {/* Metrics grid */}
           <div className="flex-1 grid grid-cols-2 gap-3 w-full">
-            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5">
+            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5 hover:border-forest/20 transition-colors duration-150">
               <p className="text-2xs text-charcoal-muted/60 mb-0.5">Predicted Yield</p>
               <p className="text-lg font-bold text-charcoal tabular-nums">{top.predicted_yield_t_per_ha} t/ha</p>
             </div>
-            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5">
+            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5 hover:border-forest/20 transition-colors duration-150">
               <p className="text-2xs text-charcoal-muted/60 mb-0.5">Est. Production</p>
               <p className="text-lg font-bold text-charcoal tabular-nums">{top.estimated_production_tonnes} t</p>
             </div>
-            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5">
+            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5 hover:border-forest/20 transition-colors duration-150">
               <p className="text-2xs text-charcoal-muted/60 mb-0.5">Historical Stability</p>
               <Badge variant="success" size="sm" dot>{top.historical_stability}</Badge>
             </div>
-            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5">
+            <div className="rounded-xl bg-ivory-50 border border-ivory-200 px-3 py-2.5 hover:border-forest/20 transition-colors duration-150">
               <p className="text-2xs text-charcoal-muted/60 mb-0.5">Yield Trend</p>
               <div className="flex items-center gap-1 mt-0.5">
                 <TrendingUp className="h-3.5 w-3.5 text-forest" />
@@ -150,15 +164,15 @@ export function RecommendationSpotlight({ top }: RecommendationSpotlightProps) {
           <button
             type="button"
             onClick={() => navigate("/results")}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-forest text-white text-xs font-bold hover:bg-forest-600 transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2 group"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-forest text-white text-xs font-bold hover:bg-forest-600 transition-all duration-200 shadow-sm active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2 group/btn"
           >
             View Recommendation
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
           </button>
           <button
             type="button"
             onClick={() => navigate("/explain")}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-ivory-300 text-xs font-semibold text-charcoal hover:border-forest/30 hover:bg-forest/[0.02] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-ivory-300 text-xs font-semibold text-charcoal hover:border-forest/30 hover:bg-forest/[0.02] transition-all duration-200 shadow-sm active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2"
           >
             Why this crop?
           </button>

@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../../utils/cn";
+import { useAnimatedCounter } from "../../utils/useAnimatedCounter";
 
 interface FarmSignalCardProps {
   icon: React.ReactNode;
@@ -13,6 +14,8 @@ interface FarmSignalCardProps {
   route: string;
   children?: React.ReactNode; // for mini-visual
   className?: string;
+  /** If value is a pure number, animate it as a counter */
+  animateValue?: boolean;
 }
 
 export function FarmSignalCard({
@@ -26,8 +29,20 @@ export function FarmSignalCard({
   route,
   children,
   className,
+  animateValue = false,
 }: FarmSignalCardProps) {
   const navigate = useNavigate();
+
+  const numericTarget = animateValue ? parseFloat(value) : 0;
+  const animatedNum = useAnimatedCounter(
+    isNaN(numericTarget) ? 0 : numericTarget,
+    900,
+    200
+  );
+
+  const displayValue = animateValue && !isNaN(parseFloat(value))
+    ? String(animatedNum)
+    : value;
 
   const statusColors = {
     forest: "text-forest",
@@ -41,25 +56,26 @@ export function FarmSignalCard({
       onClick={() => navigate(route)}
       className={cn(
         "group flex flex-col justify-between gap-3 rounded-2xl border border-ivory-300 bg-white shadow-card p-5",
-        "hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 text-left w-full",
+        "hover:shadow-card-hover hover:-translate-y-1 transition-all duration-200 text-left w-full",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2",
+        "active:scale-[0.98]",
         className
       )}
       aria-label={`${label}: ${value}${unit ?? ""}. ${subLabel}: ${subValue}. Navigate to details.`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest/8 text-forest shrink-0">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest/8 text-forest shrink-0 transition-all duration-200 group-hover:bg-forest group-hover:text-white group-hover:shadow-sm">
           {icon}
         </div>
-        <ArrowRight className="h-3.5 w-3.5 text-charcoal-muted/40 group-hover:text-forest group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
+        <ArrowRight className="h-3.5 w-3.5 text-charcoal-muted/40 group-hover:text-forest group-hover:translate-x-1 transition-all shrink-0 mt-1" />
       </div>
 
       {/* Value */}
       <div>
         <p className="text-2xs font-bold uppercase tracking-wider text-charcoal-muted/60 mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-charcoal tabular-nums">{value}</span>
+          <span className="text-2xl font-bold text-charcoal tabular-nums">{displayValue}</span>
           {unit && <span className="text-sm text-charcoal-muted">{unit}</span>}
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   FlaskConical, Shovel, RefreshCw, AlertCircle,
   CheckCircle2,
 } from "lucide-react";
+import { useScrollReveal } from "../utils/useScrollReveal";
 
 import { useRecommendation }        from "../context/RecommendationContext";
 import { PageContainer }            from "../components/ui/PageContainer";
@@ -35,19 +36,19 @@ import {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-8 animate-pulse" role="status" aria-label="Loading dashboard…">
+    <div className="space-y-8" role="status" aria-label="Loading dashboard…">
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-3">
-          <div className="h-5 w-28 rounded-lg bg-ivory-200" />
-          <div className="h-10 w-64 rounded-xl bg-ivory-200" />
-          <div className="h-4 w-48 rounded-lg bg-ivory-200" />
+          <div className="h-5 w-28 rounded-lg skeleton-shimmer" />
+          <div className="h-10 w-64 rounded-xl skeleton-shimmer" />
+          <div className="h-4 w-48 rounded-lg skeleton-shimmer" />
         </div>
-        <div className="hidden md:block h-40 rounded-2xl bg-ivory-200" />
+        <div className="hidden md:block h-40 rounded-2xl skeleton-shimmer" />
       </div>
-      <div className="h-24 rounded-2xl bg-ivory-200" />
-      <div className="h-56 rounded-2xl bg-ivory-200" />
+      <div className="h-24 rounded-2xl skeleton-shimmer" />
+      <div className="h-56 rounded-2xl skeleton-shimmer" />
       <div className="grid sm:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-36 rounded-2xl bg-ivory-200" />)}
+        {[...Array(4)].map((_, i) => <div key={i} className="h-36 rounded-2xl skeleton-shimmer" />)}
       </div>
     </div>
   );
@@ -85,9 +86,22 @@ function DashboardError({ onRetry }: { onRetry: () => void }) {
 // Kept as a named component for future extraction if needed.
 function DashboardEmpty({ onStart }: { onStart: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-forest/8 text-forest">
-        <Wheat className="h-8 w-8" strokeWidth={1.5} />
+    <div className="flex flex-col items-center justify-center py-24 gap-6 text-center">
+      {/* Wheat field imagery for empty state */}
+      <div className="relative w-48 h-32 rounded-2xl overflow-hidden shadow-card mx-auto">
+        <img
+          src="/wheat-field.jpg"
+          alt="Wheat crop field"
+          className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-forest/40 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 backdrop-blur-sm shadow-sm animate-float">
+            <Wheat className="h-6 w-6 text-forest" strokeWidth={1.5} />
+          </div>
+        </div>
       </div>
       <div className="space-y-1">
         <h2 className="text-xl font-bold text-charcoal">Ready to Analyse Your Farm</h2>
@@ -98,7 +112,7 @@ function DashboardEmpty({ onStart }: { onStart: () => void }) {
       <button
         type="button"
         onClick={onStart}
-        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-forest text-white text-sm font-bold hover:bg-forest-600 transition-all shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2 group"
+        className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-forest text-white text-sm font-bold hover:bg-forest-600 transition-all shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2"
       >
         Get Crop Recommendation
         <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -112,6 +126,8 @@ function DashboardEmpty({ onStart }: { onStart: () => void }) {
 export function Dashboard() {
   const navigate = useNavigate();
   const { farmerInput } = useRecommendation();
+
+  const revealRef = useScrollReveal();
 
   const [loadState, setLoadState] = useState<DashboardLoadState>("idle");
   const [data, setData]           = useState<DashboardData | null>(null);
@@ -217,6 +233,7 @@ export function Dashboard() {
         </div>
       </div>
 
+      <div ref={revealRef as React.RefObject<HTMLDivElement>}>
       <PageContainer maxWidth="xl" className="py-8 md:py-12 space-y-12 animate-fade-in">
 
         {/* ── 1. HERO ── */}
@@ -263,13 +280,14 @@ export function Dashboard() {
         </section>
 
         {/* ── 2. FARM STATUS STRIP ── */}
-        <section aria-labelledby="farm-status-heading">
+        <section aria-labelledby="farm-status-heading" data-reveal data-delay="100">
           <h2 id="farm-status-heading" className="sr-only">Farm Status</h2>
           <div className="grid grid-cols-3 gap-3">
-            {farmStatus.map((s) => (
+            {farmStatus.map((s, i) => (
               <div
                 key={s.label}
-                className="flex items-center gap-2.5 rounded-xl border border-ivory-200 bg-white px-4 py-3 shadow-sm"
+                className="flex items-center gap-2.5 rounded-xl border border-ivory-200 bg-white px-4 py-3 shadow-sm hover:shadow-card hover:border-forest/20 transition-all duration-200"
+                style={{ transitionDelay: `${i * 60}ms` }}
               >
                 <CheckCircle2 className="h-4 w-4 text-forest shrink-0" />
                 <div>
@@ -282,19 +300,19 @@ export function Dashboard() {
         </section>
 
         {/* ── 3. FARM CONTEXT ── */}
-        <section aria-labelledby="farm-ctx">
+        <section aria-labelledby="farm-ctx" data-reveal data-delay="150">
           <h2 id="farm-ctx" className="sr-only">Farm Context</h2>
           <FarmContextCard district={farm.district} season={farm.season} acres={farm.acres} />
         </section>
 
         {/* ── 4. RECOMMENDATION SPOTLIGHT ── */}
-        <section aria-labelledby="rec-spot">
+        <section aria-labelledby="rec-spot" data-reveal data-delay="200">
           <h2 id="rec-spot" className="sr-only">Current Recommendation</h2>
           <RecommendationSpotlight top={topCrop} />
         </section>
 
         {/* ── 5. FARM SIGNALS ── */}
-        <section aria-labelledby="signals-heading" className="space-y-4">
+        <section aria-labelledby="signals-heading" className="space-y-4" data-reveal>
           <SectionHeader
             id="signals-heading"
             title="Farm Signals"
@@ -302,6 +320,7 @@ export function Dashboard() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Weather signal */}
+            <div data-reveal data-delay="100">
             <FarmSignalCard
               icon={<CloudSun className="h-5 w-5" strokeWidth={1.5} />}
               label="Weather"
@@ -329,10 +348,10 @@ export function Dashboard() {
                 </div>
                 <p className="text-2xs text-charcoal-muted/50">5-day temp trend</p>
               </div>
-            </FarmSignalCard>
+            </FarmSignalCard></div>
 
             {/* Historical signal */}
-            <FarmSignalCard
+            <div data-reveal data-delay="200"><FarmSignalCard
               icon={<History className="h-5 w-5" strokeWidth={1.5} />}
               label="Historical"
               value={String(latestYield)}
@@ -354,13 +373,14 @@ export function Dashboard() {
                   <p className="font-semibold text-forest">{latestYield}</p>
                 </div>
               </div>
-            </FarmSignalCard>
+            </FarmSignalCard></div>
 
             {/* Predicted yield */}
-            <FarmSignalCard
+            <div data-reveal data-delay="300"><FarmSignalCard
               icon={<TrendingUp className="h-5 w-5" strokeWidth={1.5} />}
               label="Predicted Yield"
               value={String(topCrop.predicted_yield_t_per_ha)}
+              animateValue
               unit="t/ha"
               subLabel="Rank"
               subValue="#1"
@@ -388,10 +408,10 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
-            </FarmSignalCard>
+            </FarmSignalCard></div>
 
             {/* Farm area */}
-            <FarmSignalCard
+            <div data-reveal data-delay="400"><FarmSignalCard
               icon={<MapPin className="h-5 w-5" strokeWidth={1.5} />}
               label="Farm Area"
               value={String(farm.acres)}
@@ -400,6 +420,7 @@ export function Dashboard() {
               subValue={farm.district.split(",")[0]}
               route="/recommendation"
               statusColor="charcoal"
+              animateValue
             >
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="default" size="sm">{farm.season}</Badge>
@@ -408,12 +429,12 @@ export function Dashboard() {
                   {topCrop.crop}
                 </Badge>
               </div>
-            </FarmSignalCard>
+            </FarmSignalCard></div>
           </div>
         </section>
 
         {/* ── 6. CROP OPTIONS ── */}
-        <section aria-labelledby="crops-heading" className="space-y-4">
+        <section aria-labelledby="crops-heading" className="space-y-4" data-reveal>
           <SectionHeader
             id="crops-heading"
             title="Crop Options"
@@ -430,17 +451,20 @@ export function Dashboard() {
             }
           />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[...rankings].sort((a, b) => a.rank - b.rank).map((c) => {
+            {[...rankings].sort((a, b) => a.rank - b.rank).map((c, idx) => {
               const isTop = c.rank === 1;
+              const staggerDelay = idx * 80;
               return (
                 <button
                   key={c.crop}
                   type="button"
                   onClick={() => navigate("/comparison")}
-                  className={`group flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2
+                  data-reveal
+                  data-delay={String(staggerDelay)}
+                  className={`group flex flex-col gap-2 rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-2 active:scale-[0.97]
                     ${isTop
-                      ? "border-forest/25 bg-white shadow-card hover:shadow-card-hover hover:-translate-y-0.5"
-                      : "border-ivory-300 bg-white shadow-sm hover:border-forest/20 hover:shadow-card"
+                      ? "border-forest/25 bg-white shadow-card hover:shadow-card-hover hover:-translate-y-1"
+                      : "border-ivory-300 bg-white shadow-sm hover:border-forest/20 hover:shadow-card hover:-translate-y-0.5"
                     }`}
                 >
                   <div className="flex items-center justify-between">
@@ -477,13 +501,21 @@ export function Dashboard() {
         </section>
 
         {/* ── 7. INTELLIGENCE CENTER ── */}
-        <section aria-labelledby="intel-heading" className="space-y-4">
+        <section aria-labelledby="intel-heading" className="space-y-4" data-reveal>
           <SectionHeader
             id="intel-heading"
             title="Your Farm Intelligence"
             subtitle="Explore the signals behind your recommendation."
           />
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <IntelligenceCard
+              icon={<MessageSquareText className="h-5 w-5" strokeWidth={1.5} />}
+              title="AI Agricultural Assistant"
+              description="Ask questions about crop suitability, yield optimization, weather risks, and farming decisions."
+              ctaLabel="Chat with Assistant"
+              route="/assistant"
+              accentClass="bg-forest/[0.06]"
+            />
             <IntelligenceCard
               icon={<Sprout className="h-5 w-5" strokeWidth={1.5} />}
               title="Crop Recommendation"
@@ -520,13 +552,13 @@ export function Dashboard() {
         </section>
 
         {/* ── 8. WHY THIS RECOMMENDATION ── */}
-        <section aria-labelledby="why-heading" className="space-y-4">
+        <section aria-labelledby="why-heading" className="space-y-4" data-reveal>
           <SectionHeader id="why-heading" title="Why This Recommendation?" />
           <RecommendationEvidence top={topCrop} />
         </section>
 
         {/* ── 9. QUICK ACTIONS ── */}
-        <section aria-labelledby="actions-heading" className="space-y-4">
+        <section aria-labelledby="actions-heading" className="space-y-4" data-reveal>
           <SectionHeader id="actions-heading" title="Quick Actions" />
           <div className="grid sm:grid-cols-3 gap-3">
             <QuickActionCard
@@ -552,7 +584,7 @@ export function Dashboard() {
         </section>
 
         {/* ── 10. AGRI INSIGHT ── */}
-        <section aria-labelledby="insight-heading" className="space-y-4">
+        <section aria-labelledby="insight-heading" className="space-y-4" data-reveal>
           <SectionHeader id="insight-heading" title="Agri Insight" />
           <div className="bg-white rounded-2xl border border-forest/10 shadow-card px-6 py-5 space-y-2">
             <p className="text-2xs font-bold uppercase tracking-widest text-forest/60">Current Signal</p>
@@ -624,6 +656,7 @@ export function Dashboard() {
         <section
           aria-labelledby="cta-heading"
           className="relative rounded-2xl bg-forest overflow-hidden px-6 py-10 text-center"
+          data-reveal
         >
           {/* Subtle field-line background */}
           <svg
@@ -659,6 +692,7 @@ export function Dashboard() {
         </section>
 
       </PageContainer>
+      </div>
     </div>
   );
 }
