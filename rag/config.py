@@ -200,3 +200,113 @@ CONV_MAX_QUERY_LENGTH: int = int(_os.environ.get("CONV_MAX_QUERY_LENGTH", "1000"
 
 CONV_ID_PREFIX: str = _os.environ.get("CONV_ID_PREFIX", "conv_")
 """Prefix for generated conversation IDs."""
+
+
+# ---------------------------------------------------------------------------
+# Evaluation Framework
+# ---------------------------------------------------------------------------
+
+RAG_ENABLE_LLM_EVALUATION: bool = _os.environ.get("RAG_ENABLE_LLM_EVALUATION", "false").lower() == "true"
+"""Whether to use LLM-as-judge for faithfulness and answer relevance scoring."""
+
+RAG_MIN_RECALL_AT_5: float = float(_os.environ.get("RAG_MIN_RECALL_AT_5", "0.75"))
+"""Minimum Recall@5 threshold for regression testing."""
+
+RAG_MIN_HIT_RATE: float = float(_os.environ.get("RAG_MIN_HIT_RATE", "0.80"))
+"""Minimum Hit Rate@5 threshold for regression testing."""
+
+RAG_MIN_CITATION_VALIDITY: float = float(_os.environ.get("RAG_MIN_CITATION_VALIDITY", "0.90"))
+"""Minimum citation validity threshold for regression testing."""
+
+RAG_MIN_FAITHFULNESS: float = float(_os.environ.get("RAG_MIN_FAITHFULNESS", "0.85"))
+"""Minimum faithfulness threshold (only checked when LLM evaluation is enabled)."""
+
+EVAL_RESULTS_DIR: str = _os.environ.get(
+    "EVAL_RESULTS_DIR",
+    str(Path(__file__).parent / "evaluation" / "results"),
+)
+"""Directory to store evaluation result JSON reports."""
+
+
+# ---------------------------------------------------------------------------
+# Hybrid Retrieval
+# ---------------------------------------------------------------------------
+
+HYBRID_RETRIEVAL_ENABLED: bool = _os.environ.get("HYBRID_RETRIEVAL_ENABLED", "false").lower() == "true"
+"""Route through keyword+dense+rerank pipeline when True; dense-only when False."""
+
+DENSE_TOP_K: int = int(_os.environ.get("DENSE_TOP_K", "20"))
+"""Number of candidates to fetch from Pinecone in the dense retrieval step."""
+
+KEYWORD_TOP_K: int = int(_os.environ.get("KEYWORD_TOP_K", "20"))
+"""Number of candidates returned by the BM25 keyword retriever."""
+
+RERANK_TOP_K: int = int(_os.environ.get("RERANK_TOP_K", "20"))
+"""Number of fused candidates passed to the cross-encoder reranker."""
+
+FINAL_CONTEXT_K: int = int(_os.environ.get("FINAL_CONTEXT_K", "6"))
+"""Number of final chunks returned to the generation layer."""
+
+RRF_K: int = int(_os.environ.get("RRF_K", "60"))
+"""RRF smoothing constant k. Higher = less rank sensitivity."""
+
+RERANKER_MODEL: str = _os.environ.get("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
+"""HuggingFace model name for the cross-encoder reranker."""
+
+RERANKER_ENABLED: bool = _os.environ.get("RERANKER_ENABLED", "true").lower() == "true"
+"""If False, skip reranking and return RRF-fused candidates directly."""
+
+
+# ---------------------------------------------------------------------------
+# Production Safety & Observability
+# ---------------------------------------------------------------------------
+
+import os as _os2
+
+RAG_REQUEST_TIMEOUT: int = int(_os2.environ.get("RAG_REQUEST_TIMEOUT", "30"))
+"""Total per-request timeout in seconds."""
+
+RAG_MAX_QUERY_LENGTH: int = int(_os2.environ.get("RAG_MAX_QUERY_LENGTH", "2000"))
+"""Maximum allowed query length in characters."""
+
+RAG_MAX_CONTEXT_CHUNKS: int = int(_os2.environ.get("RAG_MAX_CONTEXT_CHUNKS", "10"))
+"""Hard ceiling on chunks passed to LLM context."""
+
+RAG_LOG_LEVEL: str = _os2.environ.get("RAG_LOG_LEVEL", "INFO")
+"""Python logging level string."""
+
+RAG_RATE_LIMIT: str = _os2.environ.get("RAG_RATE_LIMIT", "60/minute")
+"""Rate limit spec for RAG endpoints. Format: '<count>/<period>'."""
+
+RAG_RETRIEVAL_TIMEOUT: int = int(_os2.environ.get("RAG_RETRIEVAL_TIMEOUT", "10"))
+"""Pinecone retrieval timeout in seconds."""
+
+RAG_GENERATION_TIMEOUT: int = int(_os2.environ.get("RAG_GENERATION_TIMEOUT", "25"))
+"""LLM generation timeout in seconds."""
+
+RAG_DEBUG: bool = _os2.environ.get("RAG_DEBUG", "false").lower() == "true"
+"""If True, include latency breakdown and retrieval scores in responses."""
+
+RAG_KNOWLEDGE_VERSION: str = _os2.environ.get("RAG_KNOWLEDGE_VERSION", "2026-08")
+"""Knowledge-base version identifier included in eval reports and debug responses."""
+
+RAG_MAX_LLM_CALLS_PER_REQUEST: int = int(_os2.environ.get("RAG_MAX_LLM_CALLS_PER_REQUEST", "2"))
+"""Maximum LLM calls allowed per single request."""
+
+RAG_CORS_ORIGINS: str = _os2.environ.get("RAG_CORS_ORIGINS", "*")
+"""Comma-separated CORS origins, or '*' for development."""
+
+GENERATION_PROMPT_VERSION: str = _os2.environ.get("GENERATION_PROMPT_VERSION", "v1")
+"""Prompt version tag for generation prompts — included in debug logs."""
+
+ELIGIBILITY_PROMPT_VERSION: str = _os2.environ.get("ELIGIBILITY_PROMPT_VERSION", "v1")
+"""Prompt version tag for eligibility prompts."""
+
+EVALUATION_PROMPT_VERSION: str = _os2.environ.get("EVALUATION_PROMPT_VERSION", "v1")
+"""Prompt version tag for evaluation/judge prompts."""
+
+CIRCUIT_BREAKER_FAILURE_THRESHOLD: int = int(_os2.environ.get("CIRCUIT_BREAKER_FAILURE_THRESHOLD", "3"))
+"""Consecutive failures before circuit opens."""
+
+CIRCUIT_BREAKER_RESET_TIMEOUT: int = int(_os2.environ.get("CIRCUIT_BREAKER_RESET_TIMEOUT", "30"))
+"""Seconds the circuit stays open before attempting half-open probe."""

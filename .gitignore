@@ -7,3 +7,7 @@ backend/src/generated/
 backend.tar.gz
 .vscode/
 */venv/
+# RAG Evaluation results (generated; do not commit)
+rag/evaluation/results/*.json
+rag/evaluation/results/*.jsonl
+!rag/evaluation/results/.gitkeep

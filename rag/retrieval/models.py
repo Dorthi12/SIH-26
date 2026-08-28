@@ -124,8 +124,16 @@ class RetrievalCandidate:
 
     # Scores
     semantic_score: float = 0.0      # raw Pinecone cosine score
-    final_score: float = 0.0         # after bonus adjustments
+    final_score: float = 0.0         # after bonus adjustments (dense-only pipeline)
     score_breakdown: Dict[str, float] = field(default_factory=dict)
+
+    # Hybrid retrieval scores (0.0 when not in hybrid mode)
+    keyword_score: float = 0.0       # normalized BM25 score
+    rrf_score: float = 0.0           # Reciprocal Rank Fusion score
+    rerank_score: float = 0.0        # cross-encoder relevance score
+    dense_rank: int = 0              # rank in dense results (0 = not in dense)
+    keyword_rank: int = 0            # rank in keyword results (0 = not in keyword)
+    final_rank: int = 0              # final rank after reranking
 
     # Convenience
     official_source: bool = False

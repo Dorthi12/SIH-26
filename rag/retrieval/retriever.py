@@ -1,22 +1,14 @@
 """
 rag/retrieval/retriever.py — Main orchestrator for the retrieval pipeline.
 
-Pipeline:
-  query (str)  +  FarmerProfile (optional)
-        ↓
-  query_understanding.understand()
-        ↓
-  query_embedder.embed_query()
-        ↓
-  filters.build_filter()
-        ↓
-  PineconeStore.query_sample()   (top_k × 2 candidates)
-        ↓
-  _parse_pinecone_results()      →  list[RetrievalCandidate]
-        ↓
-  ranker.rank_and_deduplicate()
-        ↓
-  RetrievalResult
+Routing
+-------
+When HYBRID_RETRIEVAL_ENABLED=false (default):
+  query → embed → Pinecone → rank_and_deduplicate → RetrievalResult
+
+When HYBRID_RETRIEVAL_ENABLED=true:
+  query → dense + keyword → RRF fusion → reranker → RetrievalResult
+  (via rag.retrieval.service.HybridRetrievalService)
 
 Public API
 ----------
@@ -33,6 +25,7 @@ from typing import Any, Dict, List, Optional
 
 from rag import config
 from rag.ingestion.pinecone_store import PineconeStore
+from rag.retrieval.dense import dense_retrieve, parse_pinecone_results
 from rag.retrieval.filters import build_filter, filter_to_display
 from rag.retrieval.models import FarmerProfile, QueryUnderstanding, RetrievalCandidate, RetrievalResult
 from rag.retrieval.query_embedder import embed_query, embed_query_async
@@ -42,45 +35,9 @@ from rag.retrieval.ranker import rank_and_deduplicate
 log = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Pinecone → RetrievalCandidate conversion
-# ---------------------------------------------------------------------------
-
-def _is_official(source_type: str) -> bool:
-    return "official" in (source_type or "").lower()
-
-
-def _parse_pinecone_results(raw: List[Dict[str, Any]]) -> List[RetrievalCandidate]:
-    """Convert raw Pinecone query matches into RetrievalCandidate objects."""
-    candidates: List[RetrievalCandidate] = []
-    for match in raw:
-        meta = match.get("metadata", {})
-        score = float(match.get("score", 0.0))
-        source_type = meta.get("source_type", "")
-
-        c = RetrievalCandidate(
-            chunk_id=meta.get("chunk_id", match.get("id", "")),
-            chunk_text=meta.get("chunk_text", ""),
-            scheme_id=meta.get("scheme_id", ""),
-            scheme_name=meta.get("scheme_name", ""),
-            government_level=meta.get("government_level", ""),
-            state=meta.get("state") or None,
-            document_title=meta.get("document_title", ""),
-            document_type=meta.get("document_type", ""),
-            section=meta.get("section", ""),
-            page_number=int(meta.get("page_number", 0)),
-            language=meta.get("language", "en"),
-            source_url=meta.get("source_url", ""),
-            source_type=source_type,
-            published_date=meta.get("published_date") or None,
-            last_updated=meta.get("last_updated") or None,
-            document_version=meta.get("document_version") or None,
-            file_path=meta.get("file_path", ""),
-            semantic_score=score,
-            official_source=_is_official(source_type),
-        )
-        candidates.append(c)
-    return candidates
+# _parse_pinecone_results is now canonical in dense.py
+# Re-export for any callers that import from retriever.py directly
+_parse_pinecone_results = parse_pinecone_results
 
 
 # ---------------------------------------------------------------------------
@@ -112,18 +69,32 @@ class KnowledgeRetriever:
         """
         Run the full retrieval pipeline synchronously.
 
+        Routes to hybrid pipeline when HYBRID_RETRIEVAL_ENABLED=True,
+        otherwise uses the original dense-only pipeline.
+
         Parameters
         ----------
         query          : Raw natural-language farmer query.
         farmer_profile : Optional explicit profile (fields override query inferences).
-        top_k          : Number of final results to return (default: config.RAG_FINAL_TOP_K).
+        top_k          : Number of final results to return.
 
         Returns
         -------
         RetrievalResult with ranked, deduplicated chunks.
         """
+        if config.HYBRID_RETRIEVAL_ENABLED:
+            return self._hybrid_retrieve(query, farmer_profile, top_k)
+        return self._dense_retrieve(query, farmer_profile, top_k)
+
+    def _dense_retrieve(
+        self,
+        query: str,
+        farmer_profile: Optional[FarmerProfile] = None,
+        top_k: Optional[int] = None,
+    ) -> RetrievalResult:
+        """Original dense-only retrieval pipeline (unchanged)."""
         final_top_k = top_k or config.RAG_FINAL_TOP_K
-        candidate_top_k = config.RAG_RETRIEVAL_TOP_K  # fetch more than needed
+        candidate_top_k = config.RAG_RETRIEVAL_TOP_K
 
         # Step 1: Query understanding
         qu = understand(query, farmer_profile)
@@ -163,6 +134,20 @@ class KnowledgeRetriever:
             results=ranked,
             candidate_count=len(candidates),
             final_count=len(ranked),
+        )
+
+    def _hybrid_retrieve(
+        self,
+        query: str,
+        farmer_profile: Optional[FarmerProfile] = None,
+        top_k: Optional[int] = None,
+    ) -> RetrievalResult:
+        """Hybrid dense + keyword + RRF + reranking pipeline."""
+        from rag.retrieval.service import get_hybrid_service
+        return get_hybrid_service().search(
+            query=query,
+            farmer_profile=farmer_profile,
+            top_k=top_k,
         )
 
     async def aretrieve(

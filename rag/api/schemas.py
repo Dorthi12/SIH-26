@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
+from rag import config
 
 
 class FarmerProfileRequest(BaseModel):
@@ -20,7 +21,7 @@ class FarmerProfileRequest(BaseModel):
 
 
 class RetrieveRequest(BaseModel):
-    query: str = Field(..., min_length=1, max_length=500, description="Farmer's natural-language query")
+    query: str = Field(..., min_length=1, max_length=config.RAG_MAX_QUERY_LENGTH, description="Farmer's natural-language query")
     farmer_profile: Optional[FarmerProfileRequest] = None
     top_k: Optional[int] = Field(default=None, ge=1, le=20)
 
@@ -66,6 +67,41 @@ class HealthResponse(BaseModel):
     namespace: str
     embedding_model: str
     total_vector_count: Optional[int] = None
+    # Component statuses
+    pinecone: str = "unknown"
+    reranker: str = "unknown"
+    llm: str = "unknown"
+    knowledge_version: str = config.RAG_KNOWLEDGE_VERSION
+    request_id: Optional[str] = None
+
+
+class ReadyResponse(BaseModel):
+    ready: bool
+    pinecone: str
+    embedding_model: str
+    reason: Optional[str] = None
+
+
+class MetricsResponse(BaseModel):
+    """Debug-only: aggregate metrics. Never exposed to farmers."""
+    total_requests: int
+    successful_requests: int
+    failed_requests: int
+    retrieval_failures: int
+    generation_failures: int
+    citation_failures: int
+    validation_failures: int
+    timeout_failures: int
+    fallback_count: int
+    low_confidence_count: int
+    injection_risk_count: int
+    rate_limit_count: int
+    avg_latency_ms: int
+    p95_latency_ms: int
+    latency_samples: int
+    input_tokens: int
+    output_tokens: int
+    llm_calls: int
 
 
 # ---------------------------------------------------------------------------
@@ -74,7 +110,7 @@ class HealthResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     """Request body for POST /api/rag/query."""
-    query: str = Field(..., min_length=1, max_length=500, description="Farmer's natural-language query")
+    query: str = Field(..., min_length=1, max_length=config.RAG_MAX_QUERY_LENGTH, description="Farmer's natural-language query")
     language: Optional[str] = Field(
         default=None,
         description="Override detected language: 'en' | 'hi' | 'hinglish'",
@@ -136,6 +172,8 @@ class QueryResponse(BaseModel):
     retrieval: Optional[RetrievalMetaResponse] = None
     model_used: str
     latency_ms: int
+    request_id: Optional[str] = None
+    debug: Optional[Dict[str, Any]] = None  # latency breakdown, only when RAG_DEBUG=true
 
 # ---------------------------------------------------------------------------
 # Eligibility + Recommendation schemas
@@ -292,6 +330,7 @@ class ChatResponse(BaseModel):
     follow_up_questions: List[str] = []
     is_disambiguation: bool = False
     latency_ms: int = 0
+    request_id: Optional[str] = None
 
 
 class MessageResponse(BaseModel):
