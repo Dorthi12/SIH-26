@@ -52,11 +52,6 @@ export function ScenarioSlider({
     ? formatValue(value)
     : defaultFormat(value, unit);
 
-  const valueColorClass = isNegative
-    ? negativeColor
-    : isPositive
-    ? positiveColor
-    : "text-charcoal-muted";
 
   // Tick marks
   const ticks = Array.from(

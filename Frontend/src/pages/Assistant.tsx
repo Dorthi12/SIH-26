@@ -18,7 +18,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Leaf, Sparkles, RotateCcw, Info } from "lucide-react";
-import { cn } from "../utils/cn";
 import { useScrollReveal } from "../utils/useScrollReveal";
 
 import { AssistantMessage } from "../components/assistant/AssistantMessage";
@@ -208,7 +207,7 @@ export function Assistant() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-0px)] min-h-0 bg-ivory">
+    <div className="flex flex-col h-full min-h-0 bg-ivory">
       {/* ── Header ── */}
       <AssistantHeader onClear={handleClear} hasMessages={hasMessages} />
 

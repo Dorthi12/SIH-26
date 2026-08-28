@@ -41,10 +41,57 @@ export interface AssistantRecommendationResult {
   full?: CropRecommendation;
 }
 
+/**
+ * A single traceable source citation from the RAG backend.
+ * Maps to [S1], [S2]... inline references in the answer text.
+ * All fields are optional except id and source_title so the component
+ * degrades gracefully as the backend evolves.
+ */
+export interface RAGCitation {
+  /** Short label matching inline refs in answer text: "S1", "S2" */
+  id: string;
+  /** Original chunk ID from Pinecone — for full traceability */
+  chunk_id?: string;
+  /** Document / scheme title shown to the farmer */
+  source_title: string;
+  /** Ministry / department / organisation */
+  organization?: string;
+  /** Section within the document */
+  section?: string;
+  /** Short relevant passage from the document */
+  excerpt?: string;
+  page_number?: number;
+  government_level?: "central" | "state";
+  /** Only true when the backend marks the source as officially verified */
+  official_source?: boolean;
+  /** Only set when a real, validated URL is available from the backend */
+  source_url?: string;
+}
+
+/** Status values returned by the RAG backend — mirrors backend enum */
+export type RAGStatus =
+  | "success"
+  | "insufficient_information"
+  | "clarification_required"
+  | "unsupported_scheme"
+  | "error";
+
+export type RAGConfidence = "high" | "medium" | "low";
+
+export type RAGLanguage = "en" | "hi" | "hinglish";
+
 export interface AssistantResponse {
   answer: string;
   tools_used: AssistantToolUsed[];
   recommendation?: AssistantRecommendationResult;
+  /** Grounded citations from retrieved government documents */
+  citations?: RAGCitation[];
+  /** Deterministic confidence based on retrieval quality */
+  confidence?: RAGConfidence;
+  /** Response status from the RAG pipeline */
+  status?: RAGStatus;
+  /** Detected language of the query */
+  language?: RAGLanguage;
 }
 
 // ── Known tool definitions (UI labels) ────────────────────────────────────
@@ -72,6 +119,10 @@ export const KNOWN_TOOLS: Record<string, Omit<AssistantToolUsed, "id">> = {
   soil_analysis: {
     label: "Soil Analysis",
     description: "Reviewed soil compatibility for candidate crops.",
+  },
+  government_scheme_knowledge: {
+    label: "Government Scheme Knowledge",
+    description: "Searched verified government scheme documents and official guidelines.",
   },
 };
 

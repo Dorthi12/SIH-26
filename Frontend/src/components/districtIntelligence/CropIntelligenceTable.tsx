@@ -8,7 +8,6 @@
  */
 
 import { ChevronRight } from "lucide-react";
-import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { RiskBadge } from "./DistrictOverviewCards";
 import { cn } from "../../utils/cn";

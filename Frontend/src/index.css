@@ -163,9 +163,13 @@
 }
 
 /* Stagger delays for child groups */
+[data-reveal][data-delay="60"]  { transition-delay: 60ms; }
+[data-reveal][data-delay="80"]  { transition-delay: 80ms; }
 [data-reveal][data-delay="100"] { transition-delay: 100ms; }
 [data-reveal][data-delay="150"] { transition-delay: 150ms; }
+[data-reveal][data-delay="160"] { transition-delay: 160ms; }
 [data-reveal][data-delay="200"] { transition-delay: 200ms; }
+[data-reveal][data-delay="240"] { transition-delay: 240ms; }
 [data-reveal][data-delay="250"] { transition-delay: 250ms; }
 [data-reveal][data-delay="300"] { transition-delay: 300ms; }
 [data-reveal][data-delay="350"] { transition-delay: 350ms; }
@@ -276,3 +280,24 @@
   }
 }
 
+/* ── Evidence Card Highlight Animation ─────────────────────────────────── */
+/*
+ * Triggered when a farmer clicks an inline [S1] citation.
+ * A brief border-glow pulse draws the eye to the source card.
+ * Reduced motion: animation is disabled.
+ */
+@keyframes evidence-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(26, 61, 46, 0.28); }
+  50%  { box-shadow: 0 0 0 5px rgba(26, 61, 46, 0.10); }
+  100% { box-shadow: 0 0 0 2px rgba(26, 61, 46, 0.15); }
+}
+
+.evidence-highlight {
+  animation: evidence-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidence-highlight {
+    animation: none !important;
+  }
+}

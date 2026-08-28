@@ -15,7 +15,6 @@ import {
   Sprout, ArrowRight, Info,
 } from "lucide-react";
 import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { RiskBadge } from "./DistrictOverviewCards";
 import { cn } from "../../utils/cn";

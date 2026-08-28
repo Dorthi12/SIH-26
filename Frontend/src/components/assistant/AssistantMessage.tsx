@@ -2,13 +2,34 @@
  * AssistantMessage.tsx
  *
  * Renders a single chat message (user or assistant).
- * Handles the thinking/loading state and the full response layout.
+ *
+ * Handles:
+ *  - Thinking / loading state (with source skeleton cards)
+ *  - Rich answer body with inline [S1] citation spans
+ *  - Sources & Evidence panel (SourcesPanel)
+ *  - Citation click → EvidenceCard highlight + scroll
+ *  - Status badges: insufficient_information / clarification_required / unsupported_scheme
+ *  - Confidence micro-indicator on grounded answers
+ *  - Tools-used collapsible
+ *  - Recommendation card
+ *  - Reduced-motion aware
  */
 
-import { useState } from "react";
-import { User, Leaf, ChevronDown, ChevronUp, ExternalLink, Wheat } from "lucide-react";
+import { useState, useCallback } from "react";
+import {
+  User,
+  Leaf,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Wheat,
+  AlertCircle,
+  HelpCircle,
+  Info,
+} from "lucide-react";
 import { cn } from "../../utils/cn";
 import { Badge } from "../ui/Badge";
+import { SourcesPanel } from "./SourcesPanel";
 import type { ChatMessage } from "../../services/assistantService";
 import { KNOWN_TOOLS } from "../../services/assistantService";
 
@@ -26,6 +47,181 @@ function ThinkingDots() {
       ))}
     </div>
   );
+}
+
+// ── Status badge ──────────────────────────────────────────────────────────
+
+type RAGStatus =
+  | "success"
+  | "insufficient_information"
+  | "clarification_required"
+  | "unsupported_scheme"
+  | "error";
+
+function StatusBadge({ status }: { status: RAGStatus }) {
+  if (status === "success") return null;
+
+  const configs: Record<Exclude<RAGStatus, "success">, { icon: React.ReactNode; label: string; cls: string }> = {
+    insufficient_information: {
+      icon: <Info className="h-3 w-3 shrink-0" strokeWidth={2} />,
+      label: "Limited evidence found",
+      cls: "border-amber/25 bg-amber/8 text-amber-700",
+    },
+    clarification_required: {
+      icon: <HelpCircle className="h-3 w-3 shrink-0" strokeWidth={2} />,
+      label: "More information needed",
+      cls: "border-sky-200 bg-sky-50 text-sky-700",
+    },
+    unsupported_scheme: {
+      icon: <AlertCircle className="h-3 w-3 shrink-0" strokeWidth={2} />,
+      label: "Scheme not found in documents",
+      cls: "border-orange-200 bg-orange-50 text-orange-700",
+    },
+    error: {
+      icon: <AlertCircle className="h-3 w-3 shrink-0" strokeWidth={2} />,
+      label: "Could not retrieve answer",
+      cls: "border-red-200 bg-red-50 text-red-700",
+    },
+  };
+
+  const cfg = configs[status as Exclude<RAGStatus, "success">];
+  if (!cfg) return null;
+
+  return (
+    <div className={cn("flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 mt-2 w-fit text-2xs font-medium", cfg.cls)}>
+      {cfg.icon}
+      {cfg.label}
+    </div>
+  );
+}
+
+// ── Inline citation parsing ────────────────────────────────────────────────
+// Converts "[S1]" substrings into clickable spans.
+// No NLP — pure regex split. The backend provides the structure.
+
+interface CitationSpanProps {
+  citationId: string;
+  onCitationClick: (id: string) => void;
+  isHighlighted: boolean;
+}
+
+function CitationSpan({ citationId, onCitationClick, isHighlighted }: CitationSpanProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onCitationClick(citationId)}
+      aria-label={`View source ${citationId}`}
+      className={cn(
+        "inline-flex items-center justify-center rounded px-1 py-0.5 text-2xs font-bold leading-none transition-all duration-150 mx-0.5",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-1",
+        isHighlighted
+          ? "bg-forest text-white shadow-sm"
+          : "bg-forest/10 text-forest hover:bg-forest hover:text-white border border-forest/20 hover:border-forest"
+      )}
+    >
+      [{citationId}]
+    </button>
+  );
+}
+
+// Segment type for parsed answer text
+type TextSegment = { type: "text"; content: string } | { type: "citation"; id: string };
+
+function parseAnswerText(text: string): TextSegment[] {
+  const segments: TextSegment[] = [];
+  // Match [S1], [S2], etc.
+  const regex = /\[([A-Z]\d+)\]/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: "text", content: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: "citation", id: match[1] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: "text", content: text.slice(lastIndex) });
+  }
+  return segments;
+}
+
+// ── Rich message body ─────────────────────────────────────────────────────
+
+interface RichMessageBodyProps {
+  text: string;
+  highlightedCitationId: string | null;
+  onCitationClick: (id: string) => void;
+}
+
+function RichMessageBody({ text, highlightedCitationId, onCitationClick }: RichMessageBodyProps) {
+  const lines = text.split("\n").filter(Boolean);
+
+  const renderLine = (line: string, lineKey: number) => {
+    const isBullet = line.trimStart().startsWith("-") || line.trimStart().startsWith("•");
+    const isNumbered = /^\s*\d+[\.\)]\s/.test(line);
+    const cleanLine = isBullet
+      ? line.replace(/^[\s\-•]+/, "")
+      : isNumbered
+      ? line.replace(/^\s*\d+[\.\)]\s*/, "")
+      : line;
+
+    const parsed = parseAnswerText(cleanLine);
+
+    const renderSegments = () =>
+      parsed.map((seg, si) => {
+        if (seg.type === "text") {
+          return <span key={si}>{seg.content}</span>;
+        }
+        return (
+          <CitationSpan
+            key={si}
+            citationId={seg.id}
+            onCitationClick={onCitationClick}
+            isHighlighted={highlightedCitationId === seg.id}
+          />
+        );
+      });
+
+    if (isBullet) {
+      return (
+        <div key={lineKey} className="flex items-start gap-2">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-forest/50 shrink-0" />
+          <p className="text-sm text-charcoal leading-relaxed">{renderSegments()}</p>
+        </div>
+      );
+    }
+
+    if (isNumbered) {
+      const num = line.match(/^\s*(\d+)/)?.[1] ?? "";
+      return (
+        <div key={lineKey} className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-2xs font-bold text-forest">
+            {num}
+          </span>
+          <p className="text-sm text-charcoal leading-relaxed">{renderSegments()}</p>
+        </div>
+      );
+    }
+
+    // Heading-style lines (### H3)
+    if (line.startsWith("###")) {
+      return (
+        <p key={lineKey} className="text-sm font-bold text-charcoal mt-1">
+          {renderSegments()}
+        </p>
+      );
+    }
+
+    return (
+      <p key={lineKey} className="text-sm text-charcoal leading-relaxed">
+        {renderSegments()}
+      </p>
+    );
+  };
+
+  return <div className="space-y-2">{lines.map((line, i) => renderLine(line, i))}</div>;
 }
 
 // ── Tools-used collapsible ────────────────────────────────────────────────
@@ -64,7 +260,9 @@ function ToolsUsedPanel({ toolIds }: { toolIds: string[] }) {
               <div className="h-1.5 w-1.5 rounded-full bg-forest/50 shrink-0 mt-1.5" />
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-charcoal">{tool.label}</p>
-                <p className="text-2xs text-charcoal-muted/70 leading-snug">{tool.description}</p>
+                <p className="text-2xs text-charcoal-muted/70 leading-snug">
+                  {tool.description}
+                </p>
               </div>
             </div>
           ))}
@@ -133,42 +331,12 @@ export function AssistantRecommendationCard({
         <button
           type="button"
           onClick={onViewDetails}
-          className="flex items-center gap-1.5 text-xs font-semibold text-forest hover:text-forest-600 transition-colors group"
+          className="flex items-center gap-1.5 text-xs font-semibold text-forest hover:text-forest/80 transition-colors group"
         >
           View detailed recommendation
           <ExternalLink className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
-    </div>
-  );
-}
-
-// ── Message body — renders answer text with basic formatting ──────────────
-
-function MessageBody({ text }: { text: string }) {
-  // Split by newline-separated paragraphs/bullets
-  const lines = text.split("\n").filter(Boolean);
-
-  return (
-    <div className="space-y-2">
-      {lines.map((line, i) => {
-        const isBullet = line.trimStart().startsWith("-") || line.trimStart().startsWith("•");
-        const cleanLine = isBullet ? line.replace(/^[\s\-•]+/, "") : line;
-
-        if (isBullet) {
-          return (
-            <div key={i} className="flex items-start gap-2">
-              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-forest/50 shrink-0" />
-              <p className="text-sm text-charcoal leading-relaxed">{cleanLine}</p>
-            </div>
-          );
-        }
-        return (
-          <p key={i} className="text-sm text-charcoal leading-relaxed">
-            {cleanLine}
-          </p>
-        );
-      })}
     </div>
   );
 }
@@ -183,6 +351,17 @@ interface AssistantMessageProps {
 export function AssistantMessage({ message, onViewRecommendation }: AssistantMessageProps) {
   const isUser = message.role === "user";
 
+  // Tracks which citation ID is currently highlighted (from inline click)
+  const [highlightedCitationId, setHighlightedCitationId] = useState<string | null>(null);
+
+  const handleCitationClick = useCallback((id: string) => {
+    setHighlightedCitationId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const citations = message.response?.citations;
+  const status = message.response?.status;
+  const hasCitations = citations && citations.length > 0;
+
   return (
     <div
       className={cn(
@@ -195,9 +374,7 @@ export function AssistantMessage({ message, onViewRecommendation }: AssistantMes
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white text-xs font-bold mt-0.5",
-          isUser
-            ? "bg-charcoal/80"
-            : "bg-forest shadow-sm ai-glow"
+          isUser ? "bg-charcoal/80" : "bg-forest shadow-sm ai-glow"
         )}
         aria-hidden
       >
@@ -208,7 +385,7 @@ export function AssistantMessage({ message, onViewRecommendation }: AssistantMes
         )}
       </div>
 
-      {/* Bubble */}
+      {/* Bubble + supplemental content */}
       <div className={cn("flex flex-col gap-1.5 max-w-[80%] min-w-0", isUser && "items-end")}>
         {/* Sender label */}
         <p className="text-2xs font-bold uppercase tracking-widest text-charcoal-muted/50 px-1">
@@ -225,18 +402,44 @@ export function AssistantMessage({ message, onViewRecommendation }: AssistantMes
         >
           {/* Thinking state */}
           {message.isThinking ? (
-            <div className="flex items-center gap-2 py-1">
-              <ThinkingDots />
-              <span className="text-xs text-charcoal-muted italic">
-                AgriSense is thinking…
-              </span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 py-1">
+                <ThinkingDots />
+                <span className="text-xs text-charcoal-muted italic">
+                  Searching government documents…
+                </span>
+              </div>
             </div>
           ) : (
-            <MessageBody text={message.text} />
+            <RichMessageBody
+              text={message.text}
+              highlightedCitationId={highlightedCitationId}
+              onCitationClick={handleCitationClick}
+            />
           )}
         </div>
 
-        {/* Tools used — only for completed assistant messages */}
+        {/* Status badge — only for specific non-success statuses */}
+        {!isUser && !message.isThinking && status && status !== "success" && (
+          <div className="px-1">
+            <StatusBadge status={status as RAGStatus} />
+          </div>
+        )}
+
+        {/* Sources skeleton during thinking */}
+        {!isUser && message.isThinking && (
+          <SourcesPanel citations={[]} highlightedId={null} loading />
+        )}
+
+        {/* Sources & Evidence — after answer is complete */}
+        {!isUser && !message.isThinking && hasCitations && (
+          <SourcesPanel
+            citations={citations}
+            highlightedId={highlightedCitationId}
+          />
+        )}
+
+        {/* Tools used + Recommendation */}
         {!isUser && !message.isThinking && message.response && (
           <>
             {message.response.tools_used.length > 0 && (
@@ -260,7 +463,10 @@ export function AssistantMessage({ message, onViewRecommendation }: AssistantMes
             dateTime={message.timestamp.toISOString()}
             className="text-2xs text-charcoal-muted/40 px-1"
           >
-            {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {message.timestamp.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </time>
         )}
       </div>

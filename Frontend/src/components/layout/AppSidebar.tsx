@@ -265,9 +265,9 @@ export function MobileHeader({ onMenuOpen }: MobileHeaderProps) {
   return (
     <header
       className={cn(
-        "lg:hidden sticky top-0 z-50 w-full bg-ivory/95 backdrop-blur-sm h-16",
-        "border-b border-ivory-300 transition-shadow duration-200 flex items-center",
-        scrolled ? "shadow-nav" : ""
+        "lg:hidden sticky top-0 z-50 w-full bg-white dark:bg-[#17211d] h-16",
+        "border-b border-ivory-200 dark:border-[#26362f] transition-shadow duration-200 flex items-center",
+        scrolled ? "shadow-nav" : "shadow-sm"
       )}
     >
       <div className="flex items-center justify-between w-full px-4 gap-3">
@@ -398,7 +398,7 @@ export function DesktopPageHeader({ title }: { title: string }) {
   const navigate = useNavigate();
 
   return (
-    <div className="hidden lg:flex h-16 shrink-0 items-center justify-between px-6 border-b border-ivory-200 bg-white/60 backdrop-blur-sm sticky top-0 z-30">
+    <div className="hidden lg:flex h-16 shrink-0 items-center justify-between px-6 border-b border-ivory-200 dark:border-[#26362f] bg-white dark:bg-[#17211d] shadow-sm sticky top-0 z-40">
       <p className="text-sm font-semibold text-charcoal">{title}</p>
       <div className="flex items-center gap-3">
         <ThemeToggleIconButton />

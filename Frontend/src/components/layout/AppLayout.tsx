@@ -10,7 +10,7 @@ import {
 } from "./AppSidebar";
 
 // Pages that hide the top page header (they have their own rich sticky bars)
-const PAGES_WITH_OWN_HEADER = ["/", "/about"];
+const PAGES_WITH_OWN_HEADER = ["/", "/about", "/assistant"];
 
 /**
  * AppLayout — Shared authenticated application shell.
@@ -35,9 +35,10 @@ export function AppLayout() {
   const closeDrawer   = useCallback(() => setDrawerOpen(false), []);
 
   const showPageHeader = !PAGES_WITH_OWN_HEADER.includes(location.pathname);
+  const isAssistant = location.pathname === "/assistant";
 
   return (
-    <div className="flex min-h-screen bg-[var(--app-bg)] text-[var(--app-fg)]">
+    <div className={`flex bg-[var(--app-bg)] text-[var(--app-fg)] ${isAssistant ? "h-screen overflow-hidden" : "min-h-screen"}`}>
 
       {/* ── Desktop sidebar ── */}
       <AppSidebar
@@ -46,7 +47,7 @@ export function AppLayout() {
       />
 
       {/* ── Main area ── */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className={`flex flex-col flex-1 min-w-0 ${isAssistant ? "h-screen overflow-hidden" : ""}`}>
 
         {/* Mobile top header */}
         <MobileHeader onMenuOpen={openDrawer} />
@@ -56,7 +57,7 @@ export function AppLayout() {
 
         {/* Page content */}
         <main
-          className="flex-1 w-full"
+          className={`flex-1 w-full ${isAssistant ? "min-h-0 flex flex-col overflow-hidden" : ""}`}
           id="main-content"
           tabIndex={-1}
         >

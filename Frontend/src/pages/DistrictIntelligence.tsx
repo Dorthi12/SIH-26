@@ -123,7 +123,7 @@ export function DistrictIntelligencePage() {
     <div className="min-h-screen bg-ivory">
 
       {/* ── Sticky context bar ── */}
-      <div className="sticky top-16 z-30 bg-ivory/95 backdrop-blur-sm border-b border-ivory-300 shadow-nav">
+      <div className="sticky top-16 z-30 bg-ivory dark:bg-[#101815] border-b border-ivory-300 dark:border-[#26362f] shadow-nav">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Layers className="h-3.5 w-3.5 text-forest/60 shrink-0" />
