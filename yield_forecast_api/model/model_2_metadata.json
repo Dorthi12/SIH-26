@@ -1,0 +1,24 @@
+{
+    "model_name": "CatBoost Future Yield Forecaster",
+    "model_id": "model_2a",
+    "algorithm": "CatBoostRegressor",
+    "target": "yield",
+    "training_year_start": 1997,
+    "training_year_end": 2017,
+    "validation_year": 2018,
+    "test_year": 2019,
+    "excluded_year": 2020,
+    "best_iteration": 376,
+    "test_metrics": {
+        "MAE": 21.09311199462318,
+        "RMSE": 299.28996858472215,
+        "R2": 0.9019390887111712,
+        "MedianAE": 1.0968882358376786
+    },
+    "notes": [
+        "Temporal forecasting model",
+        "Historical yield features use previous observations only",
+        "Production excluded to prevent target leakage",
+        "Negative predictions must be clipped to zero at inference"
+    ]
+}

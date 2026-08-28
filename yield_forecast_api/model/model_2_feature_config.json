@@ -1,0 +1,52 @@
+{
+    "model_name": "CatBoost Future Yield Forecaster",
+    "model_version": "2A",
+    "target": "yield",
+    "features": [
+        "state",
+        "district",
+        "crop",
+        "season",
+        "crop_year",
+        "area",
+        "yield_lag_1",
+        "yield_lag_2",
+        "yield_lag_3",
+        "historical_mean_yield",
+        "historical_median_yield",
+        "historical_std_yield",
+        "yield_change_1",
+        "yield_change_2",
+        "yield_growth_rate",
+        "historical_cv"
+    ],
+    "categorical_features": [
+        "state",
+        "district",
+        "crop",
+        "season"
+    ],
+    "categorical_indices": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "historical_features": [
+        "yield_lag_1",
+        "yield_lag_2",
+        "yield_lag_3",
+        "historical_mean_yield",
+        "historical_median_yield",
+        "historical_std_yield",
+        "yield_change_1",
+        "yield_change_2",
+        "yield_growth_rate",
+        "historical_cv"
+    ],
+    "forbidden_features": [
+        "production",
+        "yield"
+    ],
+    "prediction_constraint": "non_negative"
+}
