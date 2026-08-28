@@ -142,6 +142,8 @@ class SchemeInfoResponse(BaseModel):
 
 class SourceCitationResponse(BaseModel):
     source_id: str
+    citation_id: str = ""   # Short label: "S1", "S2" — maps to [S1] in answer text
+    chunk_id: str = ""       # Original Pinecone chunk ID for full traceability
     document_title: str
     scheme_name: str
     scheme_id: str
@@ -150,8 +152,8 @@ class SourceCitationResponse(BaseModel):
     source_url: str
     official_source: bool
     government_level: str
-    published_date: Optional[str]
-    document_version: Optional[str]
+    published_date: Optional[str] = None
+    document_version: Optional[str] = None
 
 
 class RetrievalMetaResponse(BaseModel):
@@ -172,6 +174,8 @@ class QueryResponse(BaseModel):
     retrieval: Optional[RetrievalMetaResponse] = None
     model_used: str
     latency_ms: int
+    confidence: str = "low"    # "high" | "medium" | "low" (from retrieval quality)
+    status: str = "success"    # success | insufficient_information | clarification_required | unsupported_scheme | error
     request_id: Optional[str] = None
     debug: Optional[Dict[str, Any]] = None  # latency breakdown, only when RAG_DEBUG=true
 
@@ -330,6 +334,8 @@ class ChatResponse(BaseModel):
     follow_up_questions: List[str] = []
     is_disambiguation: bool = False
     latency_ms: int = 0
+    confidence: Optional[str] = None   # "high" | "medium" | "low"
+    status: Optional[str] = None       # 5-value status enum
     request_id: Optional[str] = None
 
 

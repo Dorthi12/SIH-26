@@ -429,6 +429,8 @@ async def query(request: Request, req: QueryRequest) -> QueryResponse:
             sources=[
                 SourceCitationResponse(
                     source_id=src.source_id,
+                    citation_id=getattr(src, "citation_id", ""),
+                    chunk_id=getattr(src, "chunk_id", ""),
                     document_title=src.document_title,
                     scheme_name=src.scheme_name,
                     scheme_id=src.scheme_id,
@@ -452,6 +454,8 @@ async def query(request: Request, req: QueryRequest) -> QueryResponse:
             ) if (req.include_retrieval_debug and gen_result.retrieval) else None,
             model_used=gen_result.model_used,
             latency_ms=total_ms,
+            confidence=getattr(gen_result, "confidence", "low"),
+            status=getattr(gen_result, "status", "success"),
             request_id=request_id,
             debug=breakdown if config.RAG_DEBUG else None,
         )

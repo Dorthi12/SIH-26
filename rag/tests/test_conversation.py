@@ -244,11 +244,22 @@ def _use_temp_db(tmp_path_factory):
     state_module._store = None
 
 
+def _is_rate_limited(exc: Exception) -> bool:
+    """Return True if the exception is a Groq 429 rate-limit error."""
+    msg = str(exc).lower()
+    return "429" in msg or "rate_limit_exceeded" in msg or "rate limit" in msg
+
+
 def _chat(query: str, conv_id: str = None, profile: dict = None) -> dict:
     from rag.conversation.service import chat
     from rag.conversation.models import ChatRequest
     req = ChatRequest(query=query, conversation_id=conv_id, farmer_profile=profile)
-    result = chat(req)
+    try:
+        result = chat(req)
+    except Exception as exc:
+        if _is_rate_limited(exc):
+            pytest.skip(f"Groq TPD rate limit exhausted — try again tomorrow. ({exc})")
+        raise
     return {"conv_id": result.conversation_id, "answer": result.answer,
             "profile": result.farmer_profile, "intent": result.intent,
             "language": result.language, "disambiguation": result.is_disambiguation}

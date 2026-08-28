@@ -43,14 +43,22 @@ import uuid
 from typing import Dict, List, Optional
 
 from rag import config
+from rag.generation.answer_classifier import classify_query_status
 from rag.generation.citation_builder import build_citations, build_follow_ups, extract_schemes
 from rag.generation.context_builder import build_context
 from rag.generation.models import (
     GenerationResult,
     RetrievalMeta,
     SAFE_FALLBACK_ANSWERS,
+    GENERATION_STATUS_SUCCESS,
+    GENERATION_STATUS_INSUFFICIENT,
+    GENERATION_STATUS_CLARIFICATION,
+    GENERATION_STATUS_UNSUPPORTED,
+    GENERATION_STATUS_ERROR,
+    CONFIDENCE_HIGH, CONFIDENCE_MEDIUM, CONFIDENCE_LOW,
+    compute_confidence,
 )
-from rag.generation.prompts import build_system_prompt, build_user_message
+from rag.generation.prompts import build_system_prompt, build_user_message, PROMPT_VERSION
 from rag.retrieval.models import FarmerProfile, RetrievalResult
 from rag.retrieval.query_understanding import understand
 
@@ -180,7 +188,13 @@ class SchemeRAGGenerator:
         language = retrieval_result.language
         intent = retrieval_result.intent
 
-        log.info("[%s] Generating answer | intent=%s lang=%s", request_id, intent, language)
+        log.info(
+            "[%s] Generating answer | intent=%s lang=%s prompt_version=%s",
+            request_id, intent, language, PROMPT_VERSION,
+        )
+
+        # Step 0: Pre-generation status classification (no LLM)
+        pre_status = classify_query_status(retrieval_result.query, retrieval_result)
 
         # Step 1: Build context
         context_str, included_chunks = build_context(retrieval_result)
@@ -193,7 +207,84 @@ class SchemeRAGGenerator:
             context_chunks_used=len(included_chunks),
         )
 
-        # Step 2: Safe fallback if no qualifying context
+        # Compute deterministic confidence from retrieval quality
+        top_score = retrieval_result.results[0].semantic_score if retrieval_result.results else 0.0
+        confidence = compute_confidence(top_score, len(included_chunks))
+
+        # Step 2a: Clarification required — return without calling LLM
+        if pre_status == GENERATION_STATUS_CLARIFICATION:
+            log.info("[%s] Clarification required — returning disambiguation response", request_id)
+            clarification_answers = {
+                "en": (
+                    "Could you please provide more details? For example:\n"
+                    "- Which scheme are you asking about?\n"
+                    "- What is your state and crop?\n"
+                    "- How much land do you farm?"
+                ),
+                "hi": (
+                    "कृपया अधिक जानकारी दें। उदाहरण के लिए:\n"
+                    "- आप किस योजना के बारे में पूछ रहे हैं?\n"
+                    "- आपका राज्य और फसल क्या है?\n"
+                    "- आपके पास कितनी जमीन है?"
+                ),
+                "hinglish": (
+                    "Thodi aur jankari dijiye. Jaise ki:\n"
+                    "- Aap kaun si scheme ke baare mein pooch rahe hain?\n"
+                    "- Aapka state aur fasal kya hai?\n"
+                    "- Kitni zameen hai aapke paas?"
+                ),
+            }
+            clarification_text = clarification_answers.get(language, clarification_answers["en"])
+            latency_ms = int((time.perf_counter() - t_start) * 1000)
+            return GenerationResult(
+                answer=clarification_text,
+                language=language,
+                schemes=[],
+                sources=[],
+                follow_up_questions=[],
+                retrieval=retrieval_meta,
+                model_used="none (clarification)",
+                latency_ms=latency_ms,
+                confidence=CONFIDENCE_LOW,
+                status=GENERATION_STATUS_CLARIFICATION,
+            )
+
+        # Step 2b: Unsupported scheme — return without calling LLM
+        if pre_status == GENERATION_STATUS_UNSUPPORTED:
+            log.info("[%s] Unsupported scheme — returning not-found response", request_id)
+            unsupported_answers = {
+                "en": (
+                    "I couldn't find sufficient information about this scheme in the "
+                    "government documents currently available to me. "
+                    "Please check the official portal: https://agricoop.nic.in"
+                ),
+                "hi": (
+                    "वर्तमान में उपलब्ध सरकारी दस्तावेज़ों में इस योजना के बारे में "
+                    "पर्याप्त जानकारी नहीं मिली। "
+                    "कृपया आधिकारिक पोर्टल देखें: https://agricoop.nic.in"
+                ),
+                "hinglish": (
+                    "Is scheme ke baare mein available government documents mein "
+                    "kaafi information nahi mili. "
+                    "Kripya official portal check karein: https://agricoop.nic.in"
+                ),
+            }
+            unsupported_text = unsupported_answers.get(language, unsupported_answers["en"])
+            latency_ms = int((time.perf_counter() - t_start) * 1000)
+            return GenerationResult(
+                answer=unsupported_text,
+                language=language,
+                schemes=[],
+                sources=[],
+                follow_up_questions=[],
+                retrieval=retrieval_meta,
+                model_used="none (unsupported scheme)",
+                latency_ms=latency_ms,
+                confidence=CONFIDENCE_LOW,
+                status=GENERATION_STATUS_UNSUPPORTED,
+            )
+
+        # Step 2c: No qualifying context — safe fallback without LLM call
         if not included_chunks:
             log.info("[%s] No qualifying context — returning safe fallback", request_id)
             fallback_answer = SAFE_FALLBACK_ANSWERS.get(language, SAFE_FALLBACK_ANSWERS["en"])
@@ -207,6 +298,8 @@ class SchemeRAGGenerator:
                 retrieval=retrieval_meta,
                 model_used="none (safe fallback)",
                 latency_ms=latency_ms,
+                confidence=CONFIDENCE_LOW,
+                status=GENERATION_STATUS_INSUFFICIENT,
             )
 
         # Step 3: Build prompt messages
@@ -244,6 +337,8 @@ class SchemeRAGGenerator:
                 retrieval=retrieval_meta,
                 model_used="none (no credentials)",
                 latency_ms=latency_ms,
+                confidence=CONFIDENCE_LOW,
+                status=GENERATION_STATUS_INSUFFICIENT,
             )
         except RuntimeError as exc:
             log.error("[%s] LLM generation failed: %s", request_id, exc)
@@ -259,8 +354,9 @@ class SchemeRAGGenerator:
 
         latency_ms = int((time.perf_counter() - t_start) * 1000)
         log.info(
-            "[%s] Done | model=%s chunks=%d citations=%d latency=%dms",
-            request_id, config.LLM_MODEL, len(included_chunks), len(citations), latency_ms,
+            "[%s] Done | model=%s chunks=%d citations=%d confidence=%s latency=%dms",
+            request_id, config.LLM_MODEL, len(included_chunks), len(citations),
+            confidence, latency_ms,
         )
 
         return GenerationResult(
@@ -272,6 +368,8 @@ class SchemeRAGGenerator:
             retrieval=retrieval_meta,
             model_used=f"{config.LLM_PROVIDER}/{config.LLM_MODEL}",
             latency_ms=latency_ms,
+            confidence=confidence,
+            status=GENERATION_STATUS_SUCCESS,
         )
 
     async def agenerate(

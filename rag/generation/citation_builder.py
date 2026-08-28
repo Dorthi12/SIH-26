@@ -36,18 +36,28 @@ def build_citations(
 
     Citations come ONLY from retrieved metadata — no invention allowed.
     De-duplicated by (document_title, page_number) to avoid listing the same page twice.
+
+    Each citation receives:
+    - citation_id : short label "S1", "S2"... matching [S1] references in the LLM answer
+    - chunk_id    : original Pinecone chunk ID for full traceability
+    - source_id   : legacy "source_1" label (kept for API compatibility)
     """
     citations: List[SourceCitation] = []
     seen: set[tuple] = set()
+    citation_counter = 0
 
     for i, chunk in enumerate(included_chunks):
         key = (chunk.document_title, chunk.page_number)
         if key in seen:
             continue
         seen.add(key)
+        citation_counter += 1
+        cit_label = f"S{citation_counter}"  # S1, S2, S3...
 
         citations.append(SourceCitation(
             source_id=f"source_{i + 1}",
+            citation_id=cit_label,
+            chunk_id=chunk.chunk_id,
             document_title=chunk.document_title,
             scheme_name=chunk.scheme_name,
             scheme_id=chunk.scheme_id,

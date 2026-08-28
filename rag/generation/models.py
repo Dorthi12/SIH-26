@@ -34,7 +34,9 @@ class SchemeInfo:
 @dataclass
 class SourceCitation:
     """A traceable citation from the retrieved document metadata."""
-    source_id: str            # e.g. "source_1"
+    source_id: str            # e.g. "source_1" (legacy, kept for compat)
+    citation_id: str          # Short label: "S1", "S2" — maps to [S1] refs in LLM answer
+    chunk_id: str             # Original Pinecone chunk ID — full traceability
     document_title: str
     scheme_name: str
     scheme_id: str
@@ -71,6 +73,35 @@ class RetrievalMeta:
 # Final generation result
 # ---------------------------------------------------------------------------
 
+# Valid status values for GenerationResult
+GENERATION_STATUS_SUCCESS = "success"
+GENERATION_STATUS_INSUFFICIENT = "insufficient_information"
+GENERATION_STATUS_CLARIFICATION = "clarification_required"
+GENERATION_STATUS_UNSUPPORTED = "unsupported_scheme"
+GENERATION_STATUS_ERROR = "error"
+
+# Valid confidence values (deterministic — based on retrieval quality, NOT LLM self-assessment)
+CONFIDENCE_HIGH = "high"
+CONFIDENCE_MEDIUM = "medium"
+CONFIDENCE_LOW = "low"
+
+
+def compute_confidence(top_score: float, context_chunks: int) -> str:
+    """
+    Compute answer confidence from retrieval quality — deterministic, never from LLM.
+
+    Rules:
+      top_score >= 0.65 AND context_chunks >= 3  → high
+      top_score >= 0.40 AND context_chunks >= 1  → medium
+      otherwise                                   → low
+    """
+    if top_score >= 0.65 and context_chunks >= 3:
+        return CONFIDENCE_HIGH
+    if top_score >= 0.40 and context_chunks >= 1:
+        return CONFIDENCE_MEDIUM
+    return CONFIDENCE_LOW
+
+
 @dataclass
 class GenerationResult:
     """Full structured response from the RAG generation layer."""
@@ -82,6 +113,8 @@ class GenerationResult:
     retrieval: Optional[RetrievalMeta] = None
     model_used: str = ""
     latency_ms: int = 0
+    confidence: str = CONFIDENCE_LOW      # "high" | "medium" | "low"
+    status: str = GENERATION_STATUS_SUCCESS  # 5-value status enum
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)

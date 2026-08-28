@@ -264,6 +264,12 @@ pytestmark_integration = pytest.mark.skipif(
 )
 
 
+def _is_rate_limited(exc: Exception) -> bool:
+    """Return True if the exception is a Groq 429 rate-limit error."""
+    msg = str(exc).lower()
+    return "429" in msg or "rate_limit_exceeded" in msg or "rate limit" in msg
+
+
 @pytest.fixture(scope="module")
 def generator():
     from rag.generation.generator import get_generator
@@ -279,10 +285,15 @@ def retriever():
 def _retrieve_and_generate(retriever, generator, query, farmer_profile=None, language=None):
     """Helper: run end-to-end retrieval + generation."""
     from rag.retrieval.models import FarmerProfile as FP
-    result = retriever.retrieve(query, farmer_profile=farmer_profile)
-    if language:
-        result.language = language
-    return generator.generate(result, farmer_profile=farmer_profile)
+    try:
+        result = retriever.retrieve(query, farmer_profile=farmer_profile)
+        if language:
+            result.language = language
+        return generator.generate(result, farmer_profile=farmer_profile)
+    except Exception as exc:
+        if _is_rate_limited(exc):
+            pytest.skip(f"Groq TPD rate limit exhausted — try again tomorrow. ({exc})")
+        raise
 
 
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
