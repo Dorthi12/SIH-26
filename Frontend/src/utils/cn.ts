@@ -1,4 +1,7 @@
-// Small utility — avoids pulling in the full clsx package
-export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(" ");
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+/** Merges Tailwind class strings, resolving conflicts (e.g. `px-2 px-4` → `px-4`). */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }

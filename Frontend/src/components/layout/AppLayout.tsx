@@ -10,7 +10,7 @@ import {
 } from "./AppSidebar";
 
 // Pages that hide the top page header (they have their own rich sticky bars)
-const PAGES_WITH_OWN_HEADER = ["/", "/about", "/assistant"];
+const PAGES_WITH_OWN_HEADER = ["/about", "/assistant"];
 
 /**
  * AppLayout — Shared authenticated application shell.
