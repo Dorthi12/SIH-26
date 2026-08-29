@@ -29,14 +29,14 @@ import {
 
 function friendlyMessage(code: AuthErrorCode): string {
   switch (code) {
-    case "EMAIL_TAKEN":     return "An account with that email already exists. Try signing in instead.";
-    case "WEAK_PASSWORD":   return "Your password is too weak. Please use at least 8 characters.";
-    case "NETWORK_ERROR":   return "Network error. Please check your connection and try again.";
-    case "GOOGLE_CANCELLED":return "Google sign-in was cancelled.";
-    case "GOOGLE_ERROR":    return "Google sign-in couldn't be completed. Please try again.";
-    case "SERVER_ERROR":    return "Something went wrong on our end. Please try again in a moment.";
+    case "EMAIL_TAKEN": return "An account with that email already exists. Try signing in instead.";
+    case "WEAK_PASSWORD": return "Your password is too weak. Please use at least 8 characters.";
+    case "NETWORK_ERROR": return "Network error. Please check your connection and try again.";
+    case "GOOGLE_CANCELLED": return "Google sign-in was cancelled.";
+    case "GOOGLE_ERROR": return "Google sign-in couldn't be completed. Please try again.";
+    case "SERVER_ERROR": return "Something went wrong on our end. Please try again in a moment.";
     case "NOT_IMPLEMENTED": return "Authentication backend is not yet connected. This is a UI preview.";
-    default:                return "Something went wrong. Please try again.";
+    default: return "Something went wrong. Please try again.";
   }
 }
 
@@ -56,46 +56,71 @@ function Req({ met, label }: { met: boolean; label: string }) {
 
 /* ── Validation ──────────────────────────────────────────────────────────── */
 
-function validateName(v: string)  { return v.trim() ? "" : "Please enter your full name."; }
+function validateName(v: string) { return v.trim() ? "" : "Please enter your full name."; }
 function validateEmail(v: string) {
   if (!v.trim()) return "Please enter your email.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "Please enter a valid email address.";
   return "";
 }
+function validateRole(v: string) {
+  return v ? "" : "Please select your role.";
+}
 
+function validateGender(v: string) {
+  return v ? "" : "Please select your gender.";
+}
+
+function validateDob(v: string) {
+  if (!v) return "Please select your date of birth.";
+
+  const selectedDate = new Date(v);
+  const today = new Date();
+
+  if (selectedDate > today) {
+    return "Date of birth cannot be in the future.";
+  }
+
+  return "";
+}
 /* ── Component ───────────────────────────────────────────────────────────── */
 
 export function Signup() {
   const navigate = useNavigate();
-  const uid      = useId();
+  const uid = useId();
   const { setSession } = useAuth();
 
-  const [name,        setName]        = useState("");
-  const [email,       setEmail]       = useState("");
-  const [password,    setPassword]    = useState("");
-  const [confirmPw,   setConfirmPw]   = useState("");
-  const [showPw,      setShowPw]      = useState(false);
-  const [showCPw,     setShowCPw]     = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [gender, setGender] = useState("");
+  const [dob, setDob] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showCPw, setShowCPw] = useState(false);
 
-  const [nameErr,     setNameErr]     = useState("");
-  const [emailErr,    setEmailErr]    = useState("");
-  const [passErr,     setPassErr]     = useState("");
-  const [confirmErr,  setConfirmErr]  = useState("");
+  const [nameErr, setNameErr] = useState("");
+  const [emailErr, setEmailErr] = useState("");
+  const [roleErr, setRoleErr] = useState("");
+  const [genderErr, setGenderErr] = useState("");
+  const [dobErr, setDobErr] = useState("");
+  const [passErr, setPassErr] = useState("");
+  const [confirmErr, setConfirmErr] = useState("");
 
-  const [loading,     setLoading]     = useState(false);
-  const [gLoading,    setGLoading]    = useState(false);
-  const [error,       setError]       = useState("");
-  const [infoMsg,     setInfoMsg]     = useState("");
-  const [success,     setSuccess]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [gLoading, setGLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [infoMsg, setInfoMsg] = useState("");
+  const [success, setSuccess] = useState(false);
 
   /* ── Password requirements ── */
   const pwReqs = {
-    length:  password.length >= 8,
-    upper:   /[A-Z]/.test(password),
-    number:  /[0-9]/.test(password),
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
   };
-  const pwStrong  = Object.values(pwReqs).every(Boolean);
-  const pwMatch   = password === confirmPw && confirmPw.length > 0;
+  const pwStrong = Object.values(pwReqs).every(Boolean);
+  const pwMatch = password === confirmPw && confirmPw.length > 0;
   const pwNoMatch = confirmPw.length > 0 && password !== confirmPw;
 
   /* ── Handlers ── */
@@ -104,17 +129,29 @@ export function Signup() {
     e.preventDefault();
     const nErr = validateName(name);
     const eErr = validateEmail(email);
-    const pErr = !password ? "Please choose a password."
-               : !pwStrong ? "Password doesn't meet all requirements."
-               : "";
-    const cErr = !confirmPw ? "Please confirm your password."
-               : !pwMatch   ? "Passwords do not match."
-               : "";
-    setNameErr(nErr); setEmailErr(eErr); setPassErr(pErr); setConfirmErr(cErr);
-    if (nErr || eErr || pErr || cErr) return;
+    const rErr = validateRole(role);
+    const gErr = validateGender(gender);
+    const dErr = validateDob(dob);
 
+    const pErr = !password
+      ? "Please choose a password."
+      : !pwStrong
+        ? "Password doesn't meet all requirements."
+        : "";
+    const cErr = !confirmPw ? "Please confirm your password."
+      : !pwMatch ? "Passwords do not match."
+        : "";
+    setNameErr(nErr);
+    setEmailErr(eErr);
+    setRoleErr(rErr);
+    setGenderErr(gErr);
+    setDobErr(dErr);
+    setPassErr(pErr);
+    setConfirmErr(cErr);
+
+    if (nErr || eErr || rErr || gErr || dErr || pErr || cErr) return;
     setError(""); setInfoMsg(""); setLoading(true);
-    const result = await signupWithEmail(name, email, password);
+    const result = await signupWithEmail(name, email, password, role, dob, gender);
     setLoading(false);
 
     if (result.ok) {
@@ -196,8 +233,8 @@ export function Signup() {
       </div>
 
       {/* Error / Info banners */}
-      {error   && <AuthErrorBanner message={error} onDismiss={() => setError("")} />}
-      {infoMsg && <AuthInfoBanner  message={infoMsg} />}
+      {error && <AuthErrorBanner message={error} onDismiss={() => setError("")} />}
+      {infoMsg && <AuthInfoBanner message={infoMsg} />}
 
       {/* Google button */}
       <GoogleButton
@@ -240,6 +277,128 @@ export function Signup() {
           disabled={busy}
           required
         />
+        {/* Role */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor={`${uid}-role`}
+            className="block text-sm font-semibold text-charcoal"
+          >
+            Role
+          </label>
+
+          <select
+            id={`${uid}-role`}
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value);
+              if (roleErr) setRoleErr("");
+            }}
+            disabled={busy}
+            className={`
+      w-full rounded-xl border px-4 py-3 text-sm text-charcoal
+      bg-ivory/60 transition-all duration-150 outline-none
+      ${roleErr
+                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
+                : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
+              }
+    `}
+          >
+            <option value="">Select your role</option>
+            <option value="USER">User</option>
+            <option value="LEADER">Leader</option>
+            <option value="ADMINISTRATOR">Administrator</option>
+            <option value="REPRESENTATIVE">Representative</option>
+          </select>
+
+          {roleErr && (
+            <p className="text-xs font-medium text-red-500">
+              {roleErr}
+            </p>
+          )}
+        </div>
+
+        {/* Gender and Date of Birth */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          {/* Gender */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor={`${uid}-gender`}
+              className="block text-sm font-semibold text-charcoal"
+            >
+              Gender
+            </label>
+
+            <select
+              id={`${uid}-gender`}
+              value={gender}
+              onChange={(e) => {
+                setGender(e.target.value);
+                if (genderErr) setGenderErr("");
+              }}
+              disabled={busy}
+              className={`
+        w-full rounded-xl border px-4 py-3 text-sm text-charcoal
+        bg-ivory/60 transition-all duration-150 outline-none
+        ${genderErr
+                  ? "border-red-400"
+                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+                }
+      `}
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Others">Others</option>
+              <option value="Prefer not to say">
+                Prefer not to say
+              </option>
+            </select>
+
+            {genderErr && (
+              <p className="text-xs font-medium text-red-500">
+                {genderErr}
+              </p>
+            )}
+          </div>
+
+          {/* Date of Birth */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor={`${uid}-dob`}
+              className="block text-sm font-semibold text-charcoal"
+            >
+              Date of Birth
+            </label>
+
+            <input
+              id={`${uid}-dob`}
+              type="date"
+              value={dob}
+              onChange={(e) => {
+                setDob(e.target.value);
+                if (dobErr) setDobErr("");
+              }}
+              disabled={busy}
+              max={new Date().toISOString().split("T")[0]}
+              className={`
+        w-full rounded-xl border px-4 py-3 text-sm text-charcoal
+        bg-ivory/60 transition-all duration-150 outline-none
+        ${dobErr
+                  ? "border-red-400"
+                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+                }
+      `}
+            />
+
+            {dobErr && (
+              <p className="text-xs font-medium text-red-500">
+                {dobErr}
+              </p>
+            )}
+          </div>
+
+        </div>
 
         {/* Password */}
         <div className="space-y-1.5">
@@ -280,7 +439,7 @@ export function Signup() {
           {password.length > 0 && (
             <div id={`${uid}-password-req`} className="flex flex-wrap gap-x-4 gap-y-1 pt-1" aria-live="polite">
               <Req met={pwReqs.length} label="8+ characters" />
-              <Req met={pwReqs.upper}  label="Uppercase letter" />
+              <Req met={pwReqs.upper} label="Uppercase letter" />
               <Req met={pwReqs.number} label="Number" />
             </div>
           )}
@@ -309,8 +468,8 @@ export function Signup() {
                 ${confirmErr || pwNoMatch
                   ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
                   : pwMatch
-                  ? "border-forest/50 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
-                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
+                    ? "border-forest/50 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+                    : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
                 }
               `}
             />

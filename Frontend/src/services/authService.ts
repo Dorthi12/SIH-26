@@ -46,26 +46,50 @@ export async function loginWithEmail(
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  // ── Integration boundary ──────────────────────────────────────────────────
-  // When backend is ready, uncomment and adapt:
-  //
-  // const res = await fetch("/api/v1/auth/login", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify({ email, password }),
-  // });
-  // const data = await res.json();
-  // if (!res.ok) return { ok: false, code: "INVALID_CREDENTIALS", message: data.message ?? "Invalid credentials." };
-  // return { ok: true, user: data.user };
-  // ─────────────────────────────────────────────────────────────────────────
+  try {
+    console.log("Sending login request...");
 
-  void email; void password;
-  return {
-    ok: false,
-    code: "NOT_IMPLEMENTED",
-    message: "Authentication backend not yet connected. This is a frontend preview.",
-  };
+    const res = await fetch("http://localhost:5000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    console.log("Response received:", res.status);
+
+    const data = await res.json();
+
+    console.log("Response data:", data);
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        message: data.message ?? "Invalid credentials.",
+      };
+    }
+
+    return {
+      ok: true,
+      user: data.user,
+    };
+  } catch (error) {
+    console.error("Login fetch error:", error);
+
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Unable to connect to the server.",
+    };
+  }
 }
+
 
 // ── Email Signup ───────────────────────────────────────────────────────────────
 
@@ -77,12 +101,38 @@ export async function signupWithEmail(
   name: string,
   email: string,
   password: string,
+  role: string,
+  dob: string,
+  gender: string
 ): Promise<AuthResult> {
-  void name; void email; void password;
+  const res = await fetch("http://localhost:5000/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+      role,
+      dob,
+      gender,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      code: "INVALID_CREDENTIALS",
+      message: data.message ?? "Invalid credentials.",
+    };
+  }
+
   return {
-    ok: false,
-    code: "NOT_IMPLEMENTED",
-    message: "Authentication backend not yet connected. This is a frontend preview.",
+    ok: true,
+    user: data.user,
   };
 }
 
