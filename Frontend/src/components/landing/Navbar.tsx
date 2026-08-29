@@ -3,7 +3,7 @@
  * Replaced @tanstack/react-router with react-router-dom.
  */
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { CTAButton } from "./primitives";
@@ -61,7 +61,6 @@ const NAV = [
 export function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -95,15 +94,14 @@ export function LandingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
+          <Link
+            to="/login"
             className="rounded-full border border-landing-border px-5 py-2.5 text-sm font-semibold text-landing-fg transition-colors hover:border-landing-primary/40 hover:bg-landing-secondary/60"
           >
-            Dashboard
-          </button>
-          <CTAButton to="/recommendation" withArrow>
-            Get Crop Advice
+            Log In
+          </Link>
+          <CTAButton to="/signup" withArrow>
+            Get Started
           </CTAButton>
         </div>
 
@@ -130,8 +128,15 @@ export function LandingNavbar() {
                 {n.label}
               </a>
             ))}
-            <CTAButton to="/recommendation" withArrow className="mt-1 w-full">
-              Get Crop Advice
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="text-sm font-semibold text-landing-fg"
+            >
+              Log In
+            </Link>
+            <CTAButton to="/signup" withArrow className="mt-1 w-full">
+              Get Started
             </CTAButton>
           </nav>
         </div>
