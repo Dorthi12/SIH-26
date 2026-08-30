@@ -1,23 +1,26 @@
 /**
  * Assistant.tsx — /assistant route
  *
- * AI Agricultural Assistant page.
+ * AI Agricultural Assistant page — Government Scheme Assistant.
  *
  * Architecture:
  *  - All conversation state is React local state (no persistence).
- *  - queryAgricultureAssistant() is called on every send; the stub throws
- *    BACKEND_NOT_CONNECTED which we catch and surface as a clear UI message.
- *  - When the backend is wired up, ONLY assistantService.ts changes.
+ *  - conversationId is maintained across turns so the backend can
+ *    keep multi-turn memory for the current session.
+ *  - Resetting the conversation clears the ID, starting a fresh session.
+ *  - queryAgricultureAssistant() in assistantService.ts owns all
+ *    backend communication. This component only manages UI state.
  *
  * Sections:
  *  1. Page header  — AgriSense AI branding
  *  2. Message list — scrollable conversation
- *  3. Input area   — pinned to bottom
+ *  3. Follow-up question buttons — rendered after each assistant answer
+ *  4. Input area   — pinned to bottom
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Leaf, Sparkles, RotateCcw, Info } from "lucide-react";
+import { Leaf, Sparkles, RotateCcw, ShieldCheck } from "lucide-react";
 import { useScrollReveal } from "../utils/useScrollReveal";
 
 import { AssistantMessage } from "../components/assistant/AssistantMessage";
@@ -56,17 +59,17 @@ function AssistantHeader({ onClear, hasMessages }: { onClear: () => void; hasMes
               AgriSense <span className="text-forest">AI</span>
             </p>
             <p className="text-2xs text-charcoal-muted/60 mt-0.5 leading-none">
-              Agricultural Assistant
+              Government Scheme Assistant
             </p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Backend-not-connected notice */}
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber/25 bg-amber/8 px-3 py-1">
-            <Info className="h-3 w-3 text-amber-600 shrink-0" />
-            <span className="text-2xs font-medium text-amber-700">Backend not connected</span>
+          {/* Grounded in verified documents notice */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-forest/20 bg-forest/6 px-3 py-1">
+            <ShieldCheck className="h-3 w-3 text-forest/70 shrink-0" />
+            <span className="text-2xs font-medium text-forest/80">Grounded in govt. documents</span>
           </div>
           {hasMessages && (
             <button
@@ -77,13 +80,69 @@ function AssistantHeader({ onClear, hasMessages }: { onClear: () => void; hasMes
               className="flex items-center gap-1.5 rounded-lg border border-ivory-300 bg-white px-3 py-1.5 text-xs font-medium text-charcoal-muted hover:border-forest/20 hover:text-charcoal transition-all active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30 focus-visible:ring-offset-1"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Clear</span>
+              <span className="hidden sm:inline">New conversation</span>
             </button>
           )}
         </div>
       </div>
     </header>
   );
+}
+
+// ── Follow-up question buttons ─────────────────────────────────────────────
+
+function FollowUpQuestions({
+  questions,
+  onSelect,
+  disabled,
+}: {
+  questions: string[];
+  onSelect: (q: string) => void;
+  disabled: boolean;
+}) {
+  if (!questions || questions.length === 0) return null;
+  return (
+    <div className="mt-4 flex flex-wrap gap-2 px-1">
+      {questions.map((q) => (
+        <button
+          key={q}
+          type="button"
+          disabled={disabled}
+          onClick={() => onSelect(q)}
+          className="rounded-full border border-forest/20 bg-forest/6 px-3.5 py-1.5 text-xs font-medium text-forest hover:bg-forest hover:text-white transition-all duration-200 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-1 active:scale-[0.97]"
+        >
+          {q}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Friendly error text from thrown errors ─────────────────────────────────
+
+function friendlyError(err: unknown): string {
+  if (!(err instanceof Error)) {
+    return "We're having trouble connecting to the government scheme assistant. Please try again.";
+  }
+  if (err.message === "TIMEOUT") {
+    return "The request took too long. The assistant is still loading — please try again in a moment.";
+  }
+  if (err.message === "NETWORK_ERROR") {
+    return "We're having trouble connecting to the government scheme assistant. Please check your connection and try again.";
+  }
+  if (err.message.startsWith("RAG_ERROR:503")) {
+    return "The assistant is temporarily unavailable. Please try again shortly.";
+  }
+  if (err.message.startsWith("RAG_ERROR:422")) {
+    return "Your question could not be processed. Please rephrase and try again.";
+  }
+  if (err.message.startsWith("RAG_ERROR:429")) {
+    return "Too many requests. Please wait a moment and try again.";
+  }
+  if (err.message.startsWith("RAG_ERROR:")) {
+    return "We're having trouble reaching the government scheme assistant. Please try again.";
+  }
+  return "Something went wrong. Please try again.";
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
@@ -95,6 +154,19 @@ export function Assistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isPending, setIsPending] = useState(false);
+
+  /**
+   * Conversation ID from the backend.
+   * Maintained across turns to preserve multi-turn memory.
+   * Reset to undefined when the user starts a new conversation.
+   */
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+
+  /**
+   * Follow-up questions from the last assistant response.
+   * Cleared when the user sends a new message.
+   */
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
 
@@ -115,6 +187,7 @@ export function Assistant() {
       if (!query || isPending) return;
 
       setInputValue("");
+      setFollowUpQuestions([]); // clear previous follow-ups while loading
 
       // Add user message
       const userMsg: ChatMessage = {
@@ -137,11 +210,19 @@ export function Assistant() {
       setMessages((prev) => [...prev, userMsg, thinkingMsg]);
       setIsPending(true);
 
-      // ── Call service ───────────────────────────────────────────────────
+      // ── Call RAG backend ────────────────────────────────────────────────
       const request: AssistantRequest = { farmer_query: query };
 
       try {
-        const response = await queryAgricultureAssistant(request);
+        const response = await queryAgricultureAssistant(request, conversationId);
+
+        // Persist the conversation ID for subsequent turns
+        if (response.conversation_id) {
+          setConversationId(response.conversation_id);
+        }
+
+        // Surface follow-up questions for the next render
+        setFollowUpQuestions(response.follow_up_questions ?? []);
 
         // Replace thinking bubble with real response
         setMessages((prev) =>
@@ -157,13 +238,7 @@ export function Assistant() {
           )
         );
       } catch (err) {
-        // Catch BACKEND_NOT_CONNECTED or any other error
-        const isNotConnected =
-          err instanceof Error && err.message === "BACKEND_NOT_CONNECTED";
-
-        const errorText = isNotConnected
-          ? "The AgriSense AI backend isn't connected yet. Once the backend is available at POST /agent/query, your questions will be answered here in real time."
-          : "Something went wrong while reaching the AgriSense AI. Please try again.";
+        const errorText = friendlyError(err);
 
         setMessages((prev) =>
           prev.map((m) =>
@@ -175,6 +250,7 @@ export function Assistant() {
                   response: {
                     answer: errorText,
                     tools_used: [],
+                    status: "error",
                   },
                 }
               : m
@@ -184,10 +260,10 @@ export function Assistant() {
         setIsPending(false);
       }
     },
-    [inputValue, isPending]
+    [inputValue, isPending, conversationId]
   );
 
-  // ── Suggestion selected ──────────────────────────────────────────────────
+  // ── Suggestion / follow-up selected ─────────────────────────────────────
 
   const handleSuggestion = useCallback(
     (question: string) => {
@@ -202,6 +278,8 @@ export function Assistant() {
     setMessages([]);
     setInputValue("");
     setIsPending(false);
+    setConversationId(undefined); // start a fresh conversation on next send
+    setFollowUpQuestions([]);
   }, []);
 
   const hasMessages = messages.length > 0;
@@ -215,7 +293,7 @@ export function Assistant() {
       <div
         className="flex-1 overflow-y-auto"
         role="log"
-        aria-label="Conversation with AgriSense AI"
+        aria-label="Conversation with AgriSense Government Scheme Assistant"
         aria-live="polite"
       >
         <div
@@ -235,6 +313,16 @@ export function Assistant() {
                   onViewRecommendation={() => navigate("/results")}
                 />
               ))}
+
+              {/* Follow-up questions — shown after the latest assistant answer */}
+              {!isPending && followUpQuestions.length > 0 && (
+                <FollowUpQuestions
+                  questions={followUpQuestions}
+                  onSelect={handleSuggestion}
+                  disabled={isPending}
+                />
+              )}
+
               {/* Scroll anchor */}
               <div ref={scrollAnchorRef} className="h-1" aria-hidden />
             </div>
@@ -253,7 +341,7 @@ export function Assistant() {
             placeholder={
               hasMessages
                 ? "Ask a follow-up question…"
-                : "Ask AgriSense anything about your farm…"
+                : "Ask about PM-KISAN, crop insurance, or any government scheme…"
             }
           />
           <p className="mt-2 text-center text-2xs text-charcoal-muted/35">
