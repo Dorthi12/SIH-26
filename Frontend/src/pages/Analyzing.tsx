@@ -120,7 +120,8 @@ export function Analyzing() {
         if (cancelled.current) return;
 
         // Map API response to UI type
-        const mappedRecs: CropRecommendation[] = (res.recommendations || []).map((item: any) => {
+        const recommendationsList = res.data?.recommendations || res.recommendations || [];
+        const mappedRecs: CropRecommendation[] = recommendationsList.map((item: any) => {
           const yieldVal = item.historical_features?.median_yield || 0;
           const areaHa = farmerInput.land_area_acres * 0.404686;
           const estProduction = yieldVal * areaHa;

@@ -113,6 +113,17 @@ class ZeroProductionModel:
         if not self.loaded:
             raise RuntimeError("Model 3 not loaded — call load() first.")
 
+        # Canonicalise state, district, and season
+        from services.crop.artifact_loader import crop_artifacts
+        if crop_artifacts.loaded:
+            state_resolved = crop_artifacts.resolve_state(record.state)
+            if state_resolved:
+                record.state = state_resolved
+            record.district = crop_artifacts.resolve_district(record.district)
+            season_resolved = crop_artifacts.resolve_season(record.season)
+            if season_resolved:
+                record.season = season_resolved
+
         row           = self._enrich(record)
         df            = self._to_frame(row)
         raw_prob      = float(self._model.predict_proba(df)[:, 1][0])
@@ -137,6 +148,18 @@ class ZeroProductionModel:
             raise RuntimeError("Model 3 not loaded — call load() first.")
         if not records:
             return []
+
+        # Canonicalise state, district, and season for all records in the batch
+        from services.crop.artifact_loader import crop_artifacts
+        if crop_artifacts.loaded:
+            for r in records:
+                state_resolved = crop_artifacts.resolve_state(r.state)
+                if state_resolved:
+                    r.state = state_resolved
+                r.district = crop_artifacts.resolve_district(r.district)
+                season_resolved = crop_artifacts.resolve_season(r.season)
+                if season_resolved:
+                    r.season = season_resolved
 
         rows         = [self._enrich(r) for r in records]
         ordered_rows = [{col: row[col] for col in self.feature_order} for row in rows]

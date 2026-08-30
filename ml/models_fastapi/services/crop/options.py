@@ -59,7 +59,8 @@ def get_crops(
         df = df[df["state"].str.lower() == canonical_state.lower()]
 
     if district:
-        df = df[df["district"].str.lower() == district.strip().lower()]
+        resolved_district = crop_artifacts.resolve_district(district)
+        df = df[df["district"].str.lower() == resolved_district.lower()]
         if df.empty:
             raise HTTPException(
                 status_code=404,

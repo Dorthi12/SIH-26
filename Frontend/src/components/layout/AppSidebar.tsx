@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Settings, MessageSquareText, FlaskConical, Map,
   MoonStar, SunMedium, LogOut, TrendingUp, ShieldAlert,
+  Users, User,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
@@ -27,6 +28,8 @@ export const NAV_ITEMS = [
   { to: "/weather",               label: "Weather",               icon: CloudSun },
   { to: "/history",               label: "History",               icon: History },
   { to: "/explain",               label: "Why This Crop?",        icon: HelpCircle },
+  { to: "/community",             label: "Community",             icon: Users },
+  { to: "/profile",               label: "Profile",               icon: User },
 ] as const;
 
 // Routes where /results and /analyzing count as "Recommendation" active
@@ -498,6 +501,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/scenarios":              "Scenario Simulator",
   "/district-intelligence":  "District Intelligence",
   "/about":                  "About",
+  "/community":              "Community Feed",
+  "/profile":                "User Profile",
 };
 
 export function usePageTitle(): string {

@@ -25,6 +25,8 @@ import { DistrictIntelligencePage } from "./pages/DistrictIntelligence";
 import { DiseaseDetection }       from "./pages/DiseaseDetection";
 import { YieldForecast }          from "./pages/YieldForecast";
 import { ZeroProductionRisk }     from "./pages/ZeroProductionRisk";
+import { Community }              from "./pages/Community";
+import { Profile }                from "./pages/Profile";
 
 export default function App() {
   return (
@@ -57,6 +59,8 @@ export default function App() {
                   <Route path="/disease-detection"     element={<DiseaseDetection />} />
                   <Route path="/yield-forecast"        element={<YieldForecast />} />
                   <Route path="/zero-production-risk"  element={<ZeroProductionRisk />} />
+                  <Route path="/community"             element={<Community />} />
+                  <Route path="/profile"               element={<Profile />} />
 
                   {/* Catch-all inside protected area → dashboard */}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />

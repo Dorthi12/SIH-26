@@ -113,9 +113,10 @@ class CropArtifacts:
 
     def filter(self, state: str, district: str, season: str) -> pd.DataFrame:
         """Return all rows matching state + district + season (case-insensitive)."""
+        resolved_district = self.resolve_district(district)
         mask = (
             self._col_mask("state", state)
-            & self._col_mask("district", district)
+            & (self.df["district"].str.strip().str.lower() == resolved_district.lower())
             & self._col_mask("season", season)
         )
         return self.df[mask].copy()
@@ -135,6 +136,31 @@ class CropArtifacts:
             if s.lower() == key:
                 return s
         return None
+
+    def resolve_district(self, district: str) -> str:
+        """Resolve modern/synonym district names to the canonical dataset name and case."""
+        norm = self.normalize(district)
+        
+        # Mappings for known renamed/alternative district names
+        synonyms = {
+            "prayagraj": "allahabad",
+            "bengaluru": "bangalore",
+            "gurugram": "gurgaon",
+            "ayodhya": "faizabad",
+        }
+        
+        target = synonyms.get(norm, norm)
+        
+        # If dataset is loaded, return the exact case-sensitive name from unique districts
+        if self.loaded and not self.df.empty:
+            if not hasattr(self, "_unique_districts_lower"):
+                self._unique_districts_lower = {d.lower(): d for d in self.df["district"].unique()}
+            
+            if target in self._unique_districts_lower:
+                return self._unique_districts_lower[target]
+                
+        return district
+
 
 
 # ---------------------------------------------------------------------------

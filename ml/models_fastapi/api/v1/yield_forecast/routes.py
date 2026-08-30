@@ -113,6 +113,17 @@ def predict_yield(request: YieldPredictionRequest):
     request_id   = str(uuid.uuid4())
     request_dict = request.model_dump()
 
+    # Canonicalise state, district, and season
+    from services.crop.artifact_loader import crop_artifacts
+    if crop_artifacts.loaded:
+        state_resolved = crop_artifacts.resolve_state(request.state)
+        if state_resolved:
+            request_dict["state"] = state_resolved
+        request_dict["district"] = crop_artifacts.resolve_district(request.district)
+        season_resolved = crop_artifacts.resolve_season(request.season)
+        if season_resolved:
+            request_dict["season"] = season_resolved
+
     try:
         predicted_yield, clipping_applied, warnings = forecaster.predict(request_dict)
     except Exception as exc:
@@ -202,6 +213,17 @@ def predict_yield_from_history(request: FromHistoryRequest):
         **hist_features,
     }
 
+    # Canonicalise state, district, and season
+    from services.crop.artifact_loader import crop_artifacts
+    if crop_artifacts.loaded:
+        state_resolved = crop_artifacts.resolve_state(request.state)
+        if state_resolved:
+            request_dict["state"] = state_resolved
+        request_dict["district"] = crop_artifacts.resolve_district(request.district)
+        season_resolved = crop_artifacts.resolve_season(request.season)
+        if season_resolved:
+            request_dict["season"] = season_resolved
+
     request_id = str(uuid.uuid4())
 
     try:
@@ -266,6 +288,16 @@ def predict_yield_batch(request: YieldPredictionBatchRequest):
         item_request_id = str(uuid.uuid4())
         try:
             record_dict = record.model_dump()
+            # Canonicalise state, district, and season
+            from services.crop.artifact_loader import crop_artifacts
+            if crop_artifacts.loaded:
+                state_resolved = crop_artifacts.resolve_state(record.state)
+                if state_resolved:
+                    record_dict["state"] = state_resolved
+                record_dict["district"] = crop_artifacts.resolve_district(record.district)
+                season_resolved = crop_artifacts.resolve_season(record.season)
+                if season_resolved:
+                    record_dict["season"] = season_resolved
             predicted_yield, clipping_applied, warnings = forecaster.predict(record_dict)
             results.append(
                 BatchPredictionItem(
