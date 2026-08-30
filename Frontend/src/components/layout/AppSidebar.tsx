@@ -6,7 +6,7 @@ import {
   GitCompare, HelpCircle, UserCircle,
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Settings, MessageSquareText, FlaskConical, Map,
-  MoonStar, SunMedium, LogOut,
+  MoonStar, SunMedium, LogOut, TrendingUp, ShieldAlert,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
@@ -18,6 +18,9 @@ export const NAV_ITEMS = [
   { to: "/dashboard",             label: "Dashboard",             icon: LayoutDashboard },
   { to: "/assistant",             label: "AI Assistant",           icon: MessageSquareText },
   { to: "/recommendation",        label: "Recommendation",        icon: Sprout },
+  { to: "/disease-detection",     label: "Disease Detection",     icon: Leaf },
+  { to: "/yield-forecast",        label: "Yield Forecast",        icon: TrendingUp },
+  { to: "/zero-production-risk",  label: "Zero-Production Risk",  icon: ShieldAlert },
   { to: "/scenarios",             label: "Scenario Simulator",    icon: FlaskConical },
   { to: "/district-intelligence", label: "District Intelligence", icon: Map },
   { to: "/comparison",            label: "Compare Crops",         icon: GitCompare },

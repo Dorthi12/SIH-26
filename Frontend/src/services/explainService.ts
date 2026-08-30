@@ -16,7 +16,7 @@
  *   return mapApiResponseToExplanationResult(json);
  */
 
-import { MOCK_RANKINGS, MOCK_TOP_CROP } from "../data/mockRecommendation";
+import { MOCK_RANKINGS } from "../data/mockRecommendation";
 import { MOCK_HISTORICAL_DATA }         from "../data/mockHistoricalData";
 import { MOCK_WEATHER_DATA }            from "../data/mockWeather";
 import type { CropRecommendation }      from "../types/recommendation";
@@ -63,7 +63,8 @@ const DEFAULT_FARM: FarmContext = {
 // ── Service implementation ─────────────────────────────────────────────────
 
 export async function getRecommendationExplanation(
-  farm?: Partial<FarmContext>
+  farm?: Partial<FarmContext>,
+  recommendations?: CropRecommendation[]
 ): Promise<ExplanationResult> {
   const resolvedFarm: FarmContext = {
     district: farm?.district ?? DEFAULT_FARM.district,
@@ -71,17 +72,41 @@ export async function getRecommendationExplanation(
     acres:    farm?.acres    ?? DEFAULT_FARM.acres,
   };
 
-  const sorted      = [...MOCK_RANKINGS].sort((a, b) => a.rank - b.rank);
-  const topCrop     = MOCK_TOP_CROP;
-  const secondCrop  = sorted[1];
-  const topHistory  = MOCK_HISTORICAL_DATA.find((c) => c.crop === topCrop.crop)!;
+  const rankings = recommendations && recommendations.length > 0 ? recommendations : MOCK_RANKINGS;
+
+  const sorted      = [...rankings].sort((a, b) => a.rank - b.rank);
+  const topCrop     = sorted[0];
+  const secondCrop  = sorted[1] ?? sorted[0];
+
+  // Try to match mock historical data or construct dynamic list
+  let topHistory  = MOCK_HISTORICAL_DATA.find(
+    (c) => c.crop.toLowerCase() === topCrop.crop.toLowerCase()
+  );
+
+  if (!topHistory) {
+    const baseYield = topCrop.predicted_yield_t_per_ha;
+    topHistory = {
+      crop: topCrop.crop,
+      stability: topCrop.historical_stability,
+      trend: topCrop.yield_trend,
+      color: "#1a3d2e",
+      colorLight: "rgba(26,61,46,0.12)",
+      yearlyYield: [
+        { year: 2021, yield_t_per_ha: Math.round(baseYield * 0.85 * 10) / 10 },
+        { year: 2022, yield_t_per_ha: Math.round(baseYield * 0.90 * 10) / 10 },
+        { year: 2023, yield_t_per_ha: Math.round(baseYield * 0.95 * 10) / 10 },
+        { year: 2024, yield_t_per_ha: Math.round(baseYield * 0.98 * 10) / 10 },
+        { year: 2025, yield_t_per_ha: baseYield },
+      ],
+    };
+  }
 
   const scoreExplanation: ScoreExplanation = {
     illustrative: true as const,
     score:        topCrop.suitability_score,
     topYield:     topCrop.predicted_yield_t_per_ha,
-    minYield:     Math.min(...MOCK_RANKINGS.map((c) => c.predicted_yield_t_per_ha)),
-    maxYield:     Math.max(...MOCK_RANKINGS.map((c) => c.predicted_yield_t_per_ha)),
+    minYield:     Math.min(...rankings.map((c) => c.predicted_yield_t_per_ha)),
+    maxYield:     Math.max(...rankings.map((c) => c.predicted_yield_t_per_ha)),
   };
 
   return {

@@ -59,6 +59,97 @@ model User {
   issueReports    IssueReport[]   @relation("IssueReporter")
   assignedIssues  IssueReport[]   @relation("Assignee")
   conversations   Conversation[]
+
+  // ML prediction history
+  cropRecommendations CropRecommendation[]
+  yieldPredictions    YieldPrediction[]
+  diseasePredictions  DiseasePrediction[]
+  zeroProductionRisks ZeroProductionRisk[]
+}
+
+// ---------------------------------------------------------------------------
+// ML Prediction Models
+// ---------------------------------------------------------------------------
+
+model CropRecommendation {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state           String
+  district        String
+  season          String
+  topK            Int      @default(5)
+  recommendations Json     // Full ML response stored as JSON
+  modelName       String?
+  modelVersion    String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model YieldPrediction {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state           String
+  district        String
+  crop            String
+  season          String
+  cropYear        Int
+  area            Float
+  predictedYield  Float
+  requestPayload  Json     // Full request sent to ML service
+  responsePayload Json     // Full ML response
+  modelName       String?
+  modelVersion    String?
+  warnings        String[]
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model DiseasePrediction {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl        String?  // S3 URL of the uploaded image
+  status          String   // "prediction" or "uncertain"
+  crop            String?
+  disease         String?
+  isHealthy       Boolean?
+  confidence      Float?
+  responsePayload Json     // Full ML response
+  modelName       String?
+  modelVersion    String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model ZeroProductionRisk {
+  id                    String   @id @default(uuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state                 String
+  district              String
+  crop                  String
+  season                String
+  area                  Float
+  rawProbability        Float
+  calibratedProbability Float
+  zeroProductionFlag    Boolean
+  riskLevel             String
+  requestPayload        Json     // Request inputs stored as JSON
+  responsePayload       Json     // Full response payload stored as JSON
+  modelName             String?
+  modelVersion          String?
+  createdAt             DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
 }
 
 model Post {

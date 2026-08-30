@@ -104,6 +104,7 @@ export function Recommendation() {
   const handleSubmit = () => {
     setLoading(true);
     const input: FarmerInput = {
+      state:    form.state,
       district: form.district,
       season:   form.season as Season,
       land_area_acres: toAcres(form.area, form.areaUnit),

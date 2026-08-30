@@ -13,6 +13,10 @@ import communityRoutes from "./modules/community/community.routes.js";
 import issueRoutes from "./modules/issues/issue.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import aiRoutes from "./modules/ai/ai.routes.js";
+import cropRoutes from "./modules/crop-recommendation/crop.routes.js";
+import yieldRoutes from "./modules/yield-prediction/yield.routes.js";
+import diseaseRoutes from "./modules/disease-detection/disease.routes.js";
+import zeroProdRoutes from "./modules/zero-production-risk/zeroProduction.routes.js";
 
 
 const app = express();
@@ -69,6 +73,12 @@ app.use("/community", authMiddleware, communityRoutes);
 app.use("/issue", authMiddleware, issueRoutes);
 app.use("/users", authMiddleware, userRoutes);
 app.use("/ai", authMiddleware, aiRoutes);
+
+// ML microservice proxy routes
+app.use("/crop-recommendation", authMiddleware, cropRoutes);
+app.use("/yield-prediction", authMiddleware, yieldRoutes);
+app.use("/disease-detection", authMiddleware, diseaseRoutes);
+app.use("/zero-production-risk", authMiddleware, zeroProdRoutes);
 
 app.use(errorMiddleware);
 

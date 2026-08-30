@@ -77,24 +77,31 @@ function getTopAlternatives(rankings: typeof MOCK_RANKINGS, topRank: number) {
 
 export function Results() {
   const navigate = useNavigate();
-  const { farmerInput } = useRecommendation();
+  const { farmerInput, recommendations, status: recStatus, error: recError } = useRecommendation();
   const revealRef = useScrollReveal();
-
-  // Simulate a loaded state — in production this would come from the recommendation status
-  const [loadState] = useState<"ready" | "loading" | "error" | "empty">("ready");
 
   // Farm Decision Report modal
   const [reportOpen, setReportOpen] = useState(false);
+
+  const loadState: "ready" | "loading" | "error" | "empty" =
+    recStatus === "error" || recError
+      ? "error"
+      : recStatus === "loading"
+      ? "loading"
+      : recommendations.length === 0
+      ? "empty"
+      : "ready";
 
   const district = farmerInput?.district       ?? DEMO_DISTRICT;
   const season   = farmerInput?.season         ?? DEMO_SEASON;
   const acres    = farmerInput?.land_area_acres ?? DEMO_ACRES;
 
-  const top          = MOCK_TOP_CROP;
-  const alternatives = getTopAlternatives(MOCK_RANKINGS, top.rank);
+  const rankings     = recommendations.length > 0 ? recommendations : MOCK_RANKINGS;
+  const top          = rankings[0] ?? MOCK_TOP_CROP;
+  const alternatives = getTopAlternatives(rankings, top.rank);
   const { diff: yieldDiff, nextBestCrop } = getYieldDifference(
     top.predicted_yield_t_per_ha,
-    MOCK_RANKINGS
+    rankings
   );
 
   // ReportPreviewData — assembled from existing page data, no new data sources
@@ -404,7 +411,7 @@ export function Results() {
                   </button>
                 }
               />
-              <CropComparison rankings={MOCK_RANKINGS} />
+              <CropComparison rankings={rankings} />
             </section>
 
             {/* ── Section 8: WEATHER + HISTORY side by side ── */}

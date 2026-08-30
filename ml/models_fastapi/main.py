@@ -50,6 +50,10 @@ import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

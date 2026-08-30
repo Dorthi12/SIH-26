@@ -22,6 +22,9 @@ import { About }                  from "./pages/About";
 import { Assistant }              from "./pages/Assistant";
 import { ScenarioSimulator }      from "./pages/ScenarioSimulator";
 import { DistrictIntelligencePage } from "./pages/DistrictIntelligence";
+import { DiseaseDetection }       from "./pages/DiseaseDetection";
+import { YieldForecast }          from "./pages/YieldForecast";
+import { ZeroProductionRisk }     from "./pages/ZeroProductionRisk";
 
 export default function App() {
   return (
@@ -50,7 +53,10 @@ export default function App() {
                   <Route path="/about"                 element={<About />} />
                   <Route path="/assistant"             element={<Assistant />} />
                   <Route path="/scenarios"             element={<ScenarioSimulator />} />
-                  <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
+                   <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
+                  <Route path="/disease-detection"     element={<DiseaseDetection />} />
+                  <Route path="/yield-forecast"        element={<YieldForecast />} />
+                  <Route path="/zero-production-risk"  element={<ZeroProductionRisk />} />
 
                   {/* Catch-all inside protected area → dashboard */}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />

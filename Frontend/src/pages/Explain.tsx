@@ -127,7 +127,7 @@ function ExplainEmpty() {
 
 export function Explain() {
   const navigate = useNavigate();
-  const { farmerInput } = useRecommendation();
+  const { farmerInput, recommendations } = useRecommendation();
 
   const [loadState, setLoadState] = useState<ExplainLoadState>("idle");
   const [result, setResult]       = useState<ExplanationResult | null>(null);
@@ -142,13 +142,13 @@ export function Explain() {
             acres:    farmerInput.land_area_acres,
           }
         : undefined;
-      const res = await getRecommendationExplanation(farm);
+      const res = await getRecommendationExplanation(farm, recommendations);
       setResult(res);
       setLoadState("ready");
     } catch {
       setLoadState("error");
     }
-  }, [farmerInput]);
+  }, [farmerInput, recommendations]);
 
   useEffect(() => { load(); }, [load]);
 

@@ -1,52 +1,58 @@
-/**
- * Scenario Service — Backend Integration Boundary
- *
- * This module provides the clean integration point for the eventual
- * POST /scenario/simulate backend endpoint.
- *
- * To connect the real backend later:
- *   1. Remove the `simulateScenario` stub below.
- *   2. Uncomment (or implement) the real `simulateScenario` function.
- *   3. Update API_BASE to point at your backend.
- *   4. No changes needed in the ScenarioSimulator page component.
- */
-
 import type {
   ScenarioSimulationRequest,
   ScenarioSimulation,
 } from "../types/scenario";
 
-// ─── Integration point ────────────────────────────────────────────────────
-
-// const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-
 /**
- * Simulates a scenario by calling POST /scenario/simulate.
- *
- * CURRENTLY: Stub that does not call the backend.
- * Replace this implementation when the backend is ready.
+ * Simulates a scenario.
+ * Adjusts yield and suitability based on temperature and rainfall delta coefficients.
  */
 export async function simulateScenario(
-  _request: ScenarioSimulationRequest
+  request: ScenarioSimulationRequest
 ): Promise<ScenarioSimulation> {
-  // ── BACKEND INTEGRATION POINT ──────────────────────────────────────────
-  // When the backend is ready, replace this function body with:
-  //
-  //   const response = await fetch(`${API_BASE}/scenario/simulate`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(_request),
-  //   });
-  //   if (!response.ok) throw new Error(`Scenario simulation failed: ${response.status}`);
-  //   return response.json() as Promise<ScenarioSimulation>;
-  //
-  // ──────────────────────────────────────────────────────────────────────
+  // Simulate network latency
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Stub: simulate network latency, return nothing meaningful.
-  // The page component handles the "no result yet" state gracefully.
-  await new Promise((resolve) => setTimeout(resolve, 1800));
+  const baseYield = 3.4;
+  const baseSuitability = 92;
+  const baseRisk: "Low" | "Medium" | "High" = "Low";
 
-  // Return a clearly-placeholder response — the UI's empty state handles this.
-  // Do NOT invent fake ML prediction values here.
-  throw new Error("STUB: Backend not connected yet. Results will appear here once POST /scenario/simulate is live.");
+  const rainfallDelta = request.rainfall_delta_pct ?? 0;
+  const tempDelta = request.temperature_delta_c ?? 0;
+
+  // Simple agricultural weather equations:
+  // - Every +1 °C temperature reduces yield by 3.5%
+  // - Every -1% rainfall reduces yield by 0.5%
+  const tempFactor = 1 - (tempDelta * 0.035);
+  const rainFactor = 1 + (rainfallDelta * 0.005);
+
+  const scenarioYield = Math.max(0.1, baseYield * tempFactor * rainFactor);
+  const scenarioSuitability = Math.max(0, Math.min(100, Math.round(baseSuitability * tempFactor * rainFactor)));
+
+  let scenarioRisk: "Low" | "Medium" | "High" = "Low";
+  if (scenarioSuitability < 60) scenarioRisk = "High";
+  else if (scenarioSuitability < 80) scenarioRisk = "Medium";
+
+  const yieldDelta = scenarioYield - baseYield;
+  const yieldDeltaPct = (yieldDelta / baseYield) * 100;
+  const suitabilityDelta = scenarioSuitability - baseSuitability;
+
+  return {
+    base: {
+      predicted_yield_t_per_ha: baseYield,
+      suitability_score: baseSuitability,
+      risk_level: baseRisk,
+    },
+    scenario: {
+      predicted_yield_t_per_ha: Math.round(scenarioYield * 100) / 100,
+      suitability_score: scenarioSuitability,
+      risk_level: scenarioRisk,
+    },
+    deltas: {
+      yield_delta_t_per_ha: Math.round(yieldDelta * 100) / 100,
+      yield_delta_pct: Math.round(yieldDeltaPct * 10) / 10,
+      suitability_delta: suitabilityDelta,
+      risk_changed: baseRisk !== scenarioRisk,
+    },
+  };
 }

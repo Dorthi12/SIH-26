@@ -15,11 +15,10 @@ import { AnalysisVisualization } from "../components/analyzing/AnalysisVisualiza
 import { AnalysisMessage } from "../components/analyzing/AnalysisMessage";
 import { AnalysisSignalCard, type SignalStatus } from "../components/analyzing/AnalysisSignalCard";
 import { cn } from "../utils/cn";
+import { apiRequest } from "../utils/api";
+import type { CropRecommendation } from "../types/recommendation";
 
-// ---------------------------------------------------------------------------
-// Rotating contextual messages (one per stage, roughly)
-// ---------------------------------------------------------------------------
-
+// ── Rotating contextual messages (one per stage, roughly) ──
 const STAGE_MESSAGES: Record<number, string> = {
   1: "Reading your submitted farm details…",
   2: "Checking district-level agricultural conditions…",
@@ -31,10 +30,7 @@ const STAGE_MESSAGES: Record<number, string> = {
   8: "Preparing your crop recommendation…",
 };
 
-// ---------------------------------------------------------------------------
-// Signal card status helpers
-// ---------------------------------------------------------------------------
-
+// ── Signal card status helpers ──
 function weatherStatus(stage: number): SignalStatus {
   if (stage >= 4) return "ready";
   if (stage >= 3) return "analyzing";
@@ -53,17 +49,16 @@ function mlStatus(stage: number): SignalStatus {
   return "idle";
 }
 
-// ---------------------------------------------------------------------------
-// Analyzing page
-// ---------------------------------------------------------------------------
-
 export function Analyzing() {
   const navigate = useNavigate();
-  const { farmerInput, setStatus } = useRecommendation();
+  const { farmerInput, setRecommendations, setStatus, setError } = useRecommendation();
 
-  // currentStage: 0 = not started, 1–8 = active stage, 9 = done
+  // stage sequence tracking
   const [currentStage, setCurrentStage] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [animationDone, setAnimationDone] = useState(false);
+  const [apiDone, setApiDone] = useState(false);
+
   const sequenceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelled = useRef(false);
 
@@ -81,8 +76,6 @@ export function Analyzing() {
 
     ANALYSIS_STAGES.forEach((stage, idx) => {
       const stageNum = idx + 1;
-
-      // Activate this stage
       const activateAt = accumulated;
       sequenceRef.current = setTimeout(() => {
         if (cancelled.current) return;
@@ -93,34 +86,92 @@ export function Analyzing() {
       accumulated += stage.duration;
     });
 
-    // All stages complete → show done state
     const doneAt = accumulated;
     sequenceRef.current = setTimeout(() => {
       if (cancelled.current) return;
-      setCurrentStage(ANALYSIS_STAGES.length + 1); // past last = all completed
-          }, doneAt);
+      setCurrentStage(ANALYSIS_STAGES.length + 1);
+      setAnimationDone(true);
+    }, doneAt);
+  }, []);
 
-    // Navigate after short pause on done
-    sequenceRef.current = setTimeout(() => {
-      if (cancelled.current) return;
-      setStatus("success");
-      navigate("/results");
-    }, doneAt + 1400);
-  }, [navigate, setStatus]);
-
+  // ── Start animation & load API data in parallel ──
   useEffect(() => {
-    // Small initial delay for page enter animation
+    if (!farmerInput) return;
+
+    // Start progress animations
     const init = setTimeout(runSequence, 400);
+
+    // Call API
+    setStatus("loading");
+    setError(null);
+
+    const callApi = async () => {
+      try {
+        const res = await apiRequest("/crop-recommendation/recommend", {
+          method: "POST",
+          body: JSON.stringify({
+            state: farmerInput.state,
+            district: farmerInput.district,
+            season: farmerInput.season,
+            top_k: 5,
+          }),
+        });
+
+        if (cancelled.current) return;
+
+        // Map API response to UI type
+        const mappedRecs: CropRecommendation[] = (res.recommendations || []).map((item: any) => {
+          const yieldVal = item.historical_features?.median_yield || 0;
+          const areaHa = farmerInput.land_area_acres * 0.404686;
+          const estProduction = yieldVal * areaHa;
+
+          return {
+            crop: item.crop,
+            rank: item.rank,
+            suitability_score: Math.round(item.score_percent || 0),
+            predicted_yield_t_per_ha: Math.round(yieldVal * 100) / 100,
+            estimated_production_tonnes: Math.round(estProduction * 100) / 100,
+            historical_stability: item.stability_label || "Medium",
+            weather_compatibility: item.stability_label || "Medium",
+            yield_trend: item.trend_label || "Stable",
+          };
+        });
+
+        setRecommendations(mappedRecs);
+        setApiDone(true);
+      } catch (err: any) {
+        console.error("ML recommendation error:", err);
+        if (cancelled.current) return;
+        setError(err.message || "Failed to fetch recommendation");
+        setStatus("error");
+        navigate("/results");
+      }
+    };
+
+    callApi();
+
     return () => {
       clearTimeout(init);
       cancelled.current = true;
       if (sequenceRef.current) clearTimeout(sequenceRef.current);
     };
-  }, [runSequence]);
+  }, [farmerInput, runSequence, setRecommendations, setStatus, setError, navigate]);
+
+  // ── Final navigation once BOTH animation is done and API is successfully resolved ──
+  useEffect(() => {
+    if (animationDone && apiDone) {
+      const wait = setTimeout(() => {
+        setStatus("success");
+        navigate("/results");
+      }, 1000);
+      return () => clearTimeout(wait);
+    }
+  }, [animationDone, apiDone, navigate, setStatus]);
 
   const handleCancel = () => {
     cancelled.current = true;
     if (sequenceRef.current) clearTimeout(sequenceRef.current);
+    setStatus("idle");
     navigate("/recommendation");
   };
 

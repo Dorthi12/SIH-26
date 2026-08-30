@@ -2,9 +2,11 @@
 router.py — Root API v1 router for the unified Agriculture ML API.
 Mounts all sub-routers: plant disease, crop recommendation, yield forecast,
 and zero-production risk (Model 3 V3).
+
+All routes require a valid X-API-Key header (see core/api_key.py).
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from api.v1.disease import health as disease_health
 from api.v1.disease import routes as disease_routes
@@ -14,8 +16,9 @@ from api.v1.crop import options as crop_options
 from api.v1.yield_forecast import health as yield_health
 from api.v1.yield_forecast import routes as yield_routes
 from api.v1.zero_production import routes as zero_prod_routes
+from core.api_key import verify_api_key
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_api_key)])
 
 # ── Model 5: Plant Disease Detection (EfficientNet-B0) ──────────────────────
 router.include_router(disease_routes.router)
