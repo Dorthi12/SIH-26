@@ -298,7 +298,7 @@ export function Assistant() {
       >
         <div
           ref={revealRef as React.RefObject<HTMLDivElement>}
-          className="max-w-3xl mx-auto px-4 sm:px-6 py-6"
+          className="max-w-3xl mx-auto px-4 sm:px-6 py-6 pb-24"
         >
           {!hasMessages ? (
             // Welcome / empty state
@@ -323,8 +323,8 @@ export function Assistant() {
                 />
               )}
 
-              {/* Scroll anchor */}
-              <div ref={scrollAnchorRef} className="h-1" aria-hidden />
+              {/* Scroll anchor — extra height so last message clears the input bar */}
+              <div ref={scrollAnchorRef} className="h-4" aria-hidden />
             </div>
           )}
         </div>

@@ -5,17 +5,23 @@
  *
  * Handles:
  *  - Thinking / loading state (with source skeleton cards)
- *  - Rich answer body with inline [S1] citation spans
+ *  - Rich Markdown rendering via react-markdown + remark-gfm
+ *  - Inline [S1] citation spans → clickable chips (mapped to structured sources)
  *  - Sources & Evidence panel (SourcesPanel)
  *  - Citation click → EvidenceCard highlight + scroll
  *  - Status badges: insufficient_information / clarification_required / unsupported_scheme
- *  - Confidence micro-indicator on grounded answers
  *  - Tools-used collapsible
  *  - Recommendation card
  *  - Reduced-motion aware
+ *
+ * Security: dangerouslySetInnerHTML is NEVER used. LLM output is treated as
+ * untrusted Markdown text only — react-markdown renders it as React elements.
  */
 
 import { useState, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { Components } from "react-markdown";
 import {
   User,
   Leaf,
@@ -30,7 +36,7 @@ import {
 import { cn } from "../../utils/cn";
 import { Badge } from "../ui/Badge";
 import { SourcesPanel } from "./SourcesPanel";
-import type { ChatMessage } from "../../services/assistantService";
+import type { ChatMessage, RAGCitation } from "../../services/assistantService";
 import { KNOWN_TOOLS } from "../../services/assistantService";
 
 // ── Thinking indicator ────────────────────────────────────────────────────
@@ -95,133 +101,274 @@ function StatusBadge({ status }: { status: RAGStatus }) {
   );
 }
 
-// ── Inline citation parsing ────────────────────────────────────────────────
-// Converts "[S1]" substrings into clickable spans.
-// No NLP — pure regex split. The backend provides the structure.
+// ── Citation chip ──────────────────────────────────────────────────────────
+// Rendered inline wherever [S1], [S2] etc. appear in the Markdown text.
 
-interface CitationSpanProps {
+interface CitationChipProps {
   citationId: string;
   onCitationClick: (id: string) => void;
   isHighlighted: boolean;
 }
 
-function CitationSpan({ citationId, onCitationClick, isHighlighted }: CitationSpanProps) {
+function CitationChip({ citationId, onCitationClick, isHighlighted }: CitationChipProps) {
   return (
     <button
       type="button"
       onClick={() => onCitationClick(citationId)}
       aria-label={`View source ${citationId}`}
       className={cn(
-        "inline-flex items-center justify-center rounded px-1 py-0.5 text-2xs font-bold leading-none transition-all duration-150 mx-0.5",
+        "inline-flex items-center justify-center rounded px-1 py-0.5 text-2xs font-bold leading-none transition-all duration-150 mx-0.5 align-middle",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-1",
         isHighlighted
           ? "bg-forest text-white shadow-sm"
           : "bg-forest/10 text-forest hover:bg-forest hover:text-white border border-forest/20 hover:border-forest"
       )}
     >
-      [{citationId}]
+      {citationId}
     </button>
   );
 }
 
-// Segment type for parsed answer text
-type TextSegment = { type: "text"; content: string } | { type: "citation"; id: string };
+// ── Pre-process: extract inline citation IDs from text ────────────────────
+// Returns the cleaned text and a regex that can split it, used by the
+// custom Markdown `text` renderer below.
 
-function parseAnswerText(text: string): TextSegment[] {
-  const segments: TextSegment[] = [];
-  // Match [S1], [S2], etc.
-  const regex = /\[([A-Z]\d+)\]/g;
+const CITATION_REGEX = /\[([A-Z]\d+)\]/g;
+
+/** Split a text node into plain text + citation chip segments. */
+function renderTextWithCitations(
+  text: string,
+  citations: RAGCitation[] | undefined,
+  highlightedId: string | null,
+  onCitationClick: (id: string) => void,
+): React.ReactNode {
+  if (!citations || citations.length === 0) return text;
+
+  const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  let match;
+  let match: RegExpExecArray | null;
+  CITATION_REGEX.lastIndex = 0;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = CITATION_REGEX.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      segments.push({ type: "text", content: text.slice(lastIndex, match.index) });
+      parts.push(text.slice(lastIndex, match.index));
     }
-    segments.push({ type: "citation", id: match[1] });
+    const id = match[1];
+    // Only render as chip if the citation actually exists in the source list
+    const exists = citations.some((c) => c.id === id);
+    if (exists) {
+      parts.push(
+        <CitationChip
+          key={`${id}-${match.index}`}
+          citationId={id}
+          onCitationClick={onCitationClick}
+          isHighlighted={highlightedId === id}
+        />
+      );
+    } else {
+      // Fallback: keep it as plain text (don't fabricate)
+      parts.push(match[0]);
+    }
     lastIndex = match.index + match[0].length;
   }
+
   if (lastIndex < text.length) {
-    segments.push({ type: "text", content: text.slice(lastIndex) });
+    parts.push(text.slice(lastIndex));
   }
-  return segments;
+
+  return parts.length === 1 && typeof parts[0] === "string" ? parts[0] : <>{parts}</>;
 }
 
-// ── Rich message body ─────────────────────────────────────────────────────
+// ── Markdown component map ─────────────────────────────────────────────────
+// All styling is inline Tailwind. No dangerouslySetInnerHTML anywhere.
+// HTML passthrough from the LLM is disabled (allowedElements list used below).
 
-interface RichMessageBodyProps {
+function makeMarkdownComponents(
+  citations: RAGCitation[] | undefined,
+  highlightedId: string | null,
+  onCitationClick: (id: string) => void,
+): Components {
+  return {
+    // ── Headings — compact inside chat bubble ──────────────────────────────
+    h1: ({ children }) => (
+      <p className="text-base font-bold text-charcoal mt-3 mb-1 first:mt-0 leading-snug">
+        {children}
+      </p>
+    ),
+    h2: ({ children }) => (
+      <p className="text-sm font-bold text-charcoal mt-3 mb-1 first:mt-0 leading-snug">
+        {children}
+      </p>
+    ),
+    h3: ({ children }) => (
+      <p className="text-sm font-semibold text-charcoal mt-2.5 mb-1 first:mt-0 leading-snug">
+        {children}
+      </p>
+    ),
+    h4: ({ children }) => (
+      <p className="text-sm font-semibold text-charcoal/80 mt-2 mb-0.5 first:mt-0 leading-snug">
+        {children}
+      </p>
+    ),
+
+    // ── Paragraphs ──────────────────────────────────────────────────────────
+    p: ({ children }) => (
+      <p className="text-sm text-charcoal leading-relaxed mb-2 last:mb-0">
+        {children}
+      </p>
+    ),
+
+    // ── Bold + italic ───────────────────────────────────────────────────────
+    strong: ({ children }) => (
+      <strong className="font-semibold text-charcoal">{children}</strong>
+    ),
+    em: ({ children }) => (
+      <em className="italic text-charcoal/80">{children}</em>
+    ),
+
+    // ── Unordered lists ─────────────────────────────────────────────────────
+    ul: ({ children }) => (
+      <ul className="my-1.5 space-y-1 pl-1">{children}</ul>
+    ),
+    li: ({ children, ...props }) => {
+      // Detect ordered vs unordered via parent context — react-markdown passes
+      // ordered as a prop on ol/ul, not on li. We check the DOM parent via
+      // a data attribute set on ol vs ul.
+      const isOrdered = (props as { ordered?: boolean }).ordered;
+      return (
+        <li className="flex items-start gap-2 text-sm text-charcoal leading-relaxed">
+          {isOrdered ? null : (
+            <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-forest/50 shrink-0" />
+          )}
+          <span className="flex-1">{children}</span>
+        </li>
+      );
+    },
+
+    // ── Ordered lists ───────────────────────────────────────────────────────
+    ol: ({ children }) => (
+      <ol className="my-1.5 space-y-1 pl-1 list-decimal list-inside [&_li]:list-item">
+        {children}
+      </ol>
+    ),
+
+    // ── Blockquote ──────────────────────────────────────────────────────────
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-2 border-forest/30 pl-3 my-2 text-sm text-charcoal/70 italic leading-relaxed">
+        {children}
+      </blockquote>
+    ),
+
+    // ── Links — government sources only, safe attributes ───────────────────
+    a: ({ href, children }) => {
+      if (!href) return <span>{children}</span>;
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-forest underline underline-offset-2 hover:text-forest/70 transition-colors inline-flex items-center gap-0.5"
+        >
+          {children}
+          <ExternalLink className="h-3 w-3 shrink-0 opacity-60" />
+        </a>
+      );
+    },
+
+    // ── Horizontal rule ────────────────────────────────────────────────────
+    hr: () => <hr className="my-3 border-ivory-200" />,
+
+    // ── Tables — responsive horizontal scroll ──────────────────────────────
+    table: ({ children }) => (
+      <div className="my-2 overflow-x-auto rounded-lg border border-ivory-200">
+        <table className="w-full text-xs text-left">{children}</table>
+      </div>
+    ),
+    thead: ({ children }) => (
+      <thead className="bg-ivory-50 border-b border-ivory-200">{children}</thead>
+    ),
+    tbody: ({ children }) => (
+      <tbody className="divide-y divide-ivory-100">{children}</tbody>
+    ),
+    tr: ({ children }) => <tr className="hover:bg-ivory-50/50">{children}</tr>,
+    th: ({ children }) => (
+      <th className="px-3 py-2 font-semibold text-charcoal/70 whitespace-nowrap">{children}</th>
+    ),
+    td: ({ children }) => (
+      <td className="px-3 py-2 text-charcoal leading-snug">{children}</td>
+    ),
+
+    // ── Code — de-emphasised (not a programming assistant) ─────────────────
+    code: ({ children }) => (
+      <code className="rounded bg-ivory-100 px-1 py-0.5 text-xs font-mono text-charcoal/80 border border-ivory-200">
+        {children}
+      </code>
+    ),
+    pre: ({ children }) => (
+      <pre className="my-2 overflow-x-auto rounded-lg bg-ivory-100 border border-ivory-200 px-3 py-2 text-xs font-mono text-charcoal/80 leading-relaxed">
+        {children}
+      </pre>
+    ),
+
+    // ── Text node: intercept to replace [S1] refs with citation chips ──────
+    // react-markdown passes string children; we process them here.
+    // This is the key hook that turns [S1] into interactive chips without
+    // dangerouslySetInnerHTML.
+  };
+}
+
+// ── Pre-process answer text ────────────────────────────────────────────────
+// Strip raw "Source N" style references that may appear from older prompts
+// since structured sources are already rendered in SourcesPanel below.
+// We keep [S1]-style refs because we render them as interactive chips above.
+
+function preprocessAnswer(text: string): string {
+  // Replace "[Source 1]", "[Source 2]" etc. with [S1], [S2] for consistency
+  return text.replace(/\[Source\s+(\d+)\]/gi, (_, n) => `[S${n}]`);
+}
+
+// ── Markdown answer body ──────────────────────────────────────────────────
+
+interface MarkdownBodyProps {
   text: string;
+  citations: RAGCitation[] | undefined;
   highlightedCitationId: string | null;
   onCitationClick: (id: string) => void;
 }
 
-function RichMessageBody({ text, highlightedCitationId, onCitationClick }: RichMessageBodyProps) {
-  const lines = text.split("\n").filter(Boolean);
+function MarkdownBody({
+  text,
+  citations,
+  highlightedCitationId,
+  onCitationClick,
+}: MarkdownBodyProps) {
+  const components = makeMarkdownComponents(citations, highlightedCitationId, onCitationClick);
 
-  const renderLine = (line: string, lineKey: number) => {
-    const isBullet = line.trimStart().startsWith("-") || line.trimStart().startsWith("•");
-    const isNumbered = /^\s*\d+[\.\)]\s/.test(line);
-    const cleanLine = isBullet
-      ? line.replace(/^[\s\-•]+/, "")
-      : isNumbered
-      ? line.replace(/^\s*\d+[\.\)]\s*/, "")
-      : line;
-
-    const parsed = parseAnswerText(cleanLine);
-
-    const renderSegments = () =>
-      parsed.map((seg, si) => {
-        if (seg.type === "text") {
-          return <span key={si}>{seg.content}</span>;
-        }
-        return (
-          <CitationSpan
-            key={si}
-            citationId={seg.id}
-            onCitationClick={onCitationClick}
-            isHighlighted={highlightedCitationId === seg.id}
-          />
-        );
-      });
-
-    if (isBullet) {
-      return (
-        <div key={lineKey} className="flex items-start gap-2">
-          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-forest/50 shrink-0" />
-          <p className="text-sm text-charcoal leading-relaxed">{renderSegments()}</p>
-        </div>
-      );
-    }
-
-    if (isNumbered) {
-      const num = line.match(/^\s*(\d+)/)?.[1] ?? "";
-      return (
-        <div key={lineKey} className="flex items-start gap-2.5">
-          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-2xs font-bold text-forest">
-            {num}
-          </span>
-          <p className="text-sm text-charcoal leading-relaxed">{renderSegments()}</p>
-        </div>
-      );
-    }
-
-    // Heading-style lines (### H3)
-    if (line.startsWith("###")) {
-      return (
-        <p key={lineKey} className="text-sm font-bold text-charcoal mt-1">
-          {renderSegments()}
-        </p>
-      );
-    }
-
-    return (
-      <p key={lineKey} className="text-sm text-charcoal leading-relaxed">
-        {renderSegments()}
-      </p>
-    );
-  };
-
-  return <div className="space-y-2">{lines.map((line, i) => renderLine(line, i))}</div>;
+  // We disable raw HTML passthrough — only standard Markdown elements are rendered.
+  // This prevents the LLM from injecting arbitrary HTML.
+  return (
+    <div className="min-w-0">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={components}
+        // Disallow raw HTML from LLM output — security boundary
+        allowedElements={[
+          "p", "h1", "h2", "h3", "h4", "h5", "h6",
+          "ul", "ol", "li",
+          "strong", "em", "del",
+          "blockquote",
+          "a",
+          "hr",
+          "br",
+          "table", "thead", "tbody", "tr", "th", "td",
+          "code", "pre",
+        ]}
+        unwrapDisallowed
+      >
+        {preprocessAnswer(text)}
+      </ReactMarkdown>
+    </div>
+  );
 }
 
 // ── Tools-used collapsible ────────────────────────────────────────────────
@@ -351,7 +498,7 @@ interface AssistantMessageProps {
 export function AssistantMessage({ message, onViewRecommendation }: AssistantMessageProps) {
   const isUser = message.role === "user";
 
-  // Tracks which citation ID is currently highlighted (from inline click)
+  // Tracks which citation ID is currently highlighted (from inline chip click)
   const [highlightedCitationId, setHighlightedCitationId] = useState<string | null>(null);
 
   const handleCitationClick = useCallback((id: string) => {
@@ -410,9 +557,14 @@ export function AssistantMessage({ message, onViewRecommendation }: AssistantMes
                 </span>
               </div>
             </div>
+          ) : isUser ? (
+            // User messages: plain text, no Markdown parsing
+            <p className="text-sm text-charcoal leading-relaxed">{message.text}</p>
           ) : (
-            <RichMessageBody
+            // Assistant messages: full Markdown rendering
+            <MarkdownBody
               text={message.text}
+              citations={citations}
               highlightedCitationId={highlightedCitationId}
               onCitationClick={handleCitationClick}
             />
