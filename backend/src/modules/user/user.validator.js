@@ -27,5 +27,9 @@ export const updateUserSchema = z
     city: z.string().min(1, "City cannot be empty").max(100).optional(),
 
     state: z.string().min(1, "State cannot be empty").max(100).optional(),
+
+    position: z.string().max(100).optional(),
+
+    department: z.string().max(100).optional(),
   })
   .strict();

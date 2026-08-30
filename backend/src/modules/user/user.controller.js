@@ -24,10 +24,10 @@ export const getUserInfo = async (req, res, next) => {
         role: true,
         dateOfBirth: true,
         awsS3ObjectKey: true,
-        Department: true,
+        department: true,
         city: true,
         state: true,
-        position: true,
+        Position: true,
         themePreference: true,
         createdAt: true,
       },
@@ -46,6 +46,8 @@ export const getUserInfo = async (req, res, next) => {
       success: true,
       user: {
         ...user,
+        position: user.Position,
+        department: user.department,
         profileImageUrl,
       },
     });
@@ -110,6 +112,7 @@ export const updateUserInfo = async (req, res, next) => {
       "themePreference",
       "city",
       "state",
+      "department",
     ];
 
     const updateData = {};
@@ -118,6 +121,10 @@ export const updateUserInfo = async (req, res, next) => {
       if (req.body[key] !== undefined) {
         updateData[key] = req.body[key];
       }
+    }
+
+    if (req.body.position !== undefined) {
+      updateData.Position = req.body.position;
     }
     if (req.body.key) {
       const { isFlagged, labels } = await checkMultipleImages(req.body.key);
@@ -155,11 +162,15 @@ export const updateUserInfo = async (req, res, next) => {
         authProvider: true,
         city: true,
         state: true,
+        department: true,
+        Position: true,
       },
     });
 
     const response = {
       ...updatedUser,
+      position: updatedUser.Position,
+      department: updatedUser.department,
       profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${updatedUser.awsS3ObjectKey}`,
     };
 
