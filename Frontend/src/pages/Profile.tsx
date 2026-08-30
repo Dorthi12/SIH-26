@@ -80,7 +80,7 @@ export function Profile() {
       try {
         setLoading(true);
         setError(null);
-        const res = await apiRequest("/user");
+        const res = await apiRequest("/users");
         if (res) {
           setProfile(res);
           // Initialize edit form values
@@ -130,7 +130,7 @@ export function Profile() {
     setSaveSuccess(false);
 
     try {
-      const res = await apiRequest("/user", {
+      const res = await apiRequest("/users", {
         method: "PUT",
         body: JSON.stringify({
           name: editName,
