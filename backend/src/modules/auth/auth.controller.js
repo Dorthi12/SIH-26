@@ -55,6 +55,7 @@ export const register = async (req, res, next) => {
     const payload = {
       id: user.id,
       role: user.role,
+      email: user.email,
     };
 
     const accessToken = generateAccessToken(payload);
@@ -74,6 +75,13 @@ export const register = async (req, res, next) => {
     res.status(201).json({
       message: "User registered successfully",
       accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.authProvider === "GOOGLE" ? "google" : "email",
+      },
     });
   } catch (error) {
     next(error);
@@ -105,6 +113,7 @@ export const login = async (req, res, next) => {
     const payload = {
       id: user.id,
       role: user.role,
+      email: user.email,
     };
 
     const accessToken = generateAccessToken(payload);
@@ -122,7 +131,15 @@ export const login = async (req, res, next) => {
     });
 
     res.json({
+      message: "Logged in successfully",
       accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        provider: user.authProvider === "GOOGLE" ? "google" : "email",
+      },
     });
   } catch (error) {
     next(error);
@@ -187,6 +204,8 @@ export const oAuthSuccess = async (req, res) => {
     const payload = {
       id: user.id,
       role: user.role,
+      email: user.email,
+      name: user.name,
     };
 
     const accessToken = generateAccessToken(payload);
@@ -201,8 +220,15 @@ export const oAuthSuccess = async (req, res) => {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.redirect(`${process.env.FRONTEND_URL}?accessToken=${accessToken}`);
+
+    const targetBase =
+      process.env.FRONTEND_URL && process.env.FRONTEND_URL !== "*"
+        ? process.env.FRONTEND_URL
+        : "http://localhost:5173";
+
+    res.redirect(`${targetBase.replace(/\/$/, "")}/dashboard?accessToken=${accessToken}`);
   } catch (error) {
+    console.error("OAuth success error:", error);
     res.status(500).json({
       message: "OAuth authentication failed",
     });
@@ -214,17 +240,23 @@ export const logout = async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
-      const decoded = verifyRefreshToken(refreshToken);
-
-      await prisma.user.update({
-        where: { id: decoded.id },
-        data: { refreshToken: null },
-      });
+      try {
+        const decoded = verifyRefreshToken(refreshToken);
+        if (decoded?.id) {
+          await prisma.user.update({
+            where: { id: decoded.id },
+            data: { refreshToken: null },
+          });
+        }
+      } catch {
+        // Token invalid or already expired - proceed to clear cookie
+      }
     }
 
     res.clearCookie("refreshToken", cookieOptions);
 
     res.json({
+      success: true,
       message: "Logged out successfully",
     });
   } catch (error) {

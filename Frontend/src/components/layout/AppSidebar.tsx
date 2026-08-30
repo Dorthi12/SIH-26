@@ -6,10 +6,11 @@ import {
   GitCompare, HelpCircle, UserCircle,
   ChevronLeft, ChevronRight as ChevronRightIcon,
   Settings, MessageSquareText, FlaskConical, Map,
-  MoonStar, SunMedium,
+  MoonStar, SunMedium, LogOut,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 
 // ── Route definitions ─────────────────────────────────────────────────────
 
@@ -143,6 +144,12 @@ interface SidebarProps {
 
 export function AppSidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   const navigate = useNavigate();
+  const { user, clearSession } = useAuth();
+
+  function handleLogout() {
+    clearSession();
+    navigate("/login", { replace: true });
+  }
 
   return (
     <aside
@@ -230,17 +237,38 @@ export function AppSidebar({ collapsed, onToggleCollapse }: SidebarProps) {
           collapsed={collapsed}
         />
 
-        {/* Profile */}
-        {!collapsed && (
-          <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 mt-1">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest/10">
-              <UserCircle className="h-4 w-4 text-forest" />
+        {/* Profile & Logout */}
+        {!collapsed ? (
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-ivory-100/70 dark:bg-charcoal/30 px-3 py-2 mt-1">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase">
+                {user?.name ? user.name[0] : <UserCircle className="h-4 w-4 text-forest" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-charcoal truncate">{user?.name || "Farmer"}</p>
+                <p className="text-[10px] text-charcoal-muted truncate">{user?.email || "AgriSense user"}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-charcoal truncate">Farmer</p>
-              <p className="text-2xs text-charcoal-muted/60 truncate">AgriSense user</p>
-            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-charcoal-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/30"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
           </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleLogout}
+            title={`Sign Out (${user?.name || "Farmer"})`}
+            aria-label="Sign Out"
+            className="w-full flex justify-center items-center py-2.5 rounded-xl text-charcoal-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus-visible:outline-none"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         )}
       </div>
     </aside>
@@ -282,12 +310,7 @@ export function MobileHeader({ onMenuOpen }: MobileHeaderProps) {
 
         <AgriSenseLogo />
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full border border-ivory-300 bg-white px-2.5 py-1.5">
-            <UserCircle className="h-3.5 w-3.5 text-charcoal-muted" />
-            <span className="text-xs font-semibold text-charcoal-light">Farmer</span>
-          </div>
-        </div>
+        <ThemeToggleIconButton />
       </div>
     </header>
   );
@@ -302,6 +325,19 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, clearSession } = useAuth();
+
+  useEffect(() => {
+    onClose();
+  }, [location.pathname]);
+
+  if (!open) return null;
+
+  function handleLogout() {
+    clearSession();
+    navigate("/login", { replace: true });
+  }
 
   // Close on Escape
   useEffect(() => {
@@ -317,8 +353,6 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
-
-  if (!open) return null;
 
   return (
     <>
@@ -365,7 +399,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
 
         {/* Footer */}
         <div className="border-t border-ivory-200 p-3 space-y-2">
-            <ThemeToggleIconButton className="w-full justify-start px-4" />
+          <ThemeToggleIconButton className="w-full justify-start px-4" />
 
           <button
             type="button"
@@ -377,14 +411,26 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
             <span className="flex-1 text-left">New Recommendation</span>
             <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
-          <div className="flex items-center gap-2.5 px-3 py-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest/10">
-              <UserCircle className="h-4 w-4 text-forest" />
+
+          {/* Mobile Profile & Logout */}
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-ivory-100/70 dark:bg-charcoal/30 px-3 py-2.5">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase">
+                {user?.name ? user.name[0] : <UserCircle className="h-5 w-5 text-forest" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-charcoal truncate">{user?.name || "Farmer"}</p>
+                <p className="text-2xs text-charcoal-muted truncate">{user?.email || "AgriSense user"}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-charcoal">Farmer</p>
-              <p className="text-2xs text-charcoal-muted/60">AgriSense user</p>
-            </div>
+            <button
+              type="button"
+              onClick={() => { handleLogout(); onClose(); }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Sign Out
+            </button>
           </div>
         </div>
       </div>
@@ -396,6 +442,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
 
 export function DesktopPageHeader({ title }: { title: string }) {
   const navigate = useNavigate();
+  const { user, clearSession } = useAuth();
 
   return (
     <div className="hidden lg:flex h-16 shrink-0 items-center justify-between px-6 border-b border-ivory-200 dark:border-[#26362f] bg-white dark:bg-[#17211d] shadow-sm sticky top-0 z-40">
@@ -403,9 +450,23 @@ export function DesktopPageHeader({ title }: { title: string }) {
       <div className="flex items-center gap-3">
         <ThemeToggleIconButton />
         <div className="flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
-          <UserCircle className="h-4 w-4 text-charcoal-muted" />
-          <span className="text-xs font-semibold text-charcoal-light">Farmer</span>
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase">
+            {user?.name ? user.name[0] : <UserCircle className="h-3.5 w-3.5 text-charcoal-muted" />}
+          </div>
+          <span className="text-xs font-semibold text-charcoal-light">{user?.name || "Farmer"}</span>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            clearSession();
+            navigate("/login", { replace: true });
+          }}
+          title="Sign Out"
+          className="flex items-center gap-1.5 rounded-xl border border-ivory-300 bg-white px-3 py-1.5 text-xs font-medium text-charcoal-muted hover:text-red-500 hover:border-red-200 transition-all focus-visible:outline-none"
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          Sign Out
+        </button>
         <button
           type="button"
           onClick={() => navigate("/recommendation")}

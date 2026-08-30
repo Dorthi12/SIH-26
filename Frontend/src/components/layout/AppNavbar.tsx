@@ -3,11 +3,12 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Leaf, Sparkles, Menu, X, ChevronRight,
   LayoutDashboard, Sprout, CloudSun, History,
-  GitCompare, HelpCircle, UserCircle,
+  GitCompare, HelpCircle, UserCircle, LogOut,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { cn } from "../../utils/cn";
 import { ThemeToggleButton } from "./ThemeToggleButton";
+import { useAuth } from "../../context/AuthContext";
 
 // ── Nav items ──────────────────────────────────────────────────────────────
 
@@ -72,6 +73,7 @@ export function AppNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, clearSession } = useAuth();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -80,6 +82,11 @@ export function AppNavbar() {
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  function handleLogout() {
+    clearSession();
+    navigate("/login", { replace: true });
+  }
 
   return (
     <header
@@ -107,9 +114,21 @@ export function AppNavbar() {
 
             {/* Farm avatar chip */}
             <div className="hidden md:flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
-              <UserCircle className="h-4 w-4 text-charcoal-muted" />
-              <span className="text-xs font-semibold text-charcoal-light">Prayagraj Farm</span>
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase">
+                {user?.name ? user.name[0] : <UserCircle className="h-3.5 w-3.5 text-charcoal-muted" />}
+              </div>
+              <span className="text-xs font-semibold text-charcoal-light">{user?.name || "Farmer"}</span>
             </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Sign Out"
+              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-ivory-300 bg-white px-3 py-1.5 text-xs font-medium text-charcoal-muted hover:text-red-500 hover:border-red-200 transition-all focus-visible:outline-none"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Sign Out
+            </button>
 
             <Button
               variant="primary"
@@ -186,7 +205,7 @@ export function AppNavbar() {
               About
             </NavLink>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
               <Button
                 variant="primary"
                 size="md"
@@ -197,6 +216,18 @@ export function AppNavbar() {
               >
                 New Recommendation
               </Button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleLogout();
+                  setMobileOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out ({user?.name || "Farmer"})
+              </button>
             </div>
           </div>
         </div>

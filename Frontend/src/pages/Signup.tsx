@@ -14,7 +14,7 @@
 
 import { useState, useId } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Check, X, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Check, X, ArrowRight, CheckCircle2, Sprout } from "lucide-react";
 import {
   AuthLayout, AuthLogo, AuthInput, GoogleButton,
   AuthDivider, AuthErrorBanner, AuthInfoBanner,
@@ -157,12 +157,12 @@ export function Signup() {
     if (result.ok) {
       setSession(result.user);
       setSuccess(true);
-    } else if (!result.ok && result.code === "NOT_IMPLEMENTED") {
+    } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode — create local session
       setSession({ name, email, provider: "email" });
       setSuccess(true);
-    } else if (!result.ok) {
-      setError(friendlyMessage(result.code));
+    } else {
+      setError(result.message || friendlyMessage(result.code));
     }
   }
 
@@ -173,12 +173,12 @@ export function Signup() {
     if (result.ok) {
       setSession(result.user);
       navigate("/dashboard", { replace: true });
-    } else if (!result.ok && result.code === "NOT_IMPLEMENTED") {
+    } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode
       setSession({ name: "Google User", email: "user@gmail.com", provider: "google" });
       navigate("/dashboard", { replace: true });
-    } else if (!result.ok) {
-      setError(friendlyMessage(result.code));
+    } else {
+      setError(result.message || friendlyMessage(result.code));
     }
   }
 
@@ -532,6 +532,21 @@ export function Signup() {
           Sign in
         </Link>
       </p>
+
+      {/* Demo note */}
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setSession({ name: name || "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" });
+            navigate("/dashboard", { replace: true });
+          }}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-forest hover:text-forest-600 hover:underline focus-visible:outline-none py-1 px-2.5 rounded-lg hover:bg-forest/5 transition-colors"
+        >
+          <Sprout className="h-3.5 w-3.5" />
+          Quick Preview: Continue in Demo Mode
+        </button>
+      </div>
     </AuthLayout>
   );
 }

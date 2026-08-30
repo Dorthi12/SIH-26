@@ -24,9 +24,8 @@ passport.use(
           user = await prisma.user.create({
             data: {
               email,
-              name,
+              name: name || email.split("@")[0],
               googleId,
-              profileImageUrl: avatar,
               authProvider: "GOOGLE",
             },
           });

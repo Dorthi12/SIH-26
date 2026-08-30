@@ -13,18 +13,20 @@
  * DO NOT add any secrets (client_secret, API keys) to this file.
  */
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:5000";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export interface AuthUser {
   id:    string;
   name:  string;
   email: string;
-  provider: "email" | "google";
+  provider: "email" | "google" | "guest";
 }
 
 export type AuthResult =
-  | { ok: true;  user: AuthUser }
-  | { ok: false; code: AuthErrorCode; message: string };
+  | { ok: true;  user: AuthUser; accessToken?: string; code?: never; message?: never }
+  | { ok: false; code: AuthErrorCode; message: string; user?: never; accessToken?: never };
 
 export type AuthErrorCode =
   | "INVALID_CREDENTIALS"
@@ -38,18 +40,12 @@ export type AuthErrorCode =
 
 // ── Email Login ────────────────────────────────────────────────────────────────
 
-/**
- * Sign in with email + password.
- * Replace body with: POST /api/v1/auth/login
- */
 export async function loginWithEmail(
   email: string,
   password: string,
 ): Promise<AuthResult> {
   try {
-    console.log("Sending login request...");
-
-    const res = await fetch("http://localhost:5000/auth/login", {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -61,23 +57,41 @@ export async function loginWithEmail(
       }),
     });
 
-    console.log("Response received:", res.status);
-
-    const data = await res.json();
-
-    console.log("Response data:", data);
+    let data: any = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
 
     if (!res.ok) {
+      const errorMessage =
+        data.message ??
+        (Array.isArray(data.errors) && data.errors[0]?.message) ??
+        "Invalid email or password.";
+
       return {
         ok: false,
-        code: "INVALID_CREDENTIALS",
-        message: data.message ?? "Invalid credentials.",
+        code: res.status === 401 ? "INVALID_CREDENTIALS" : "SERVER_ERROR",
+        message: errorMessage,
       };
     }
 
+    if (data.accessToken) {
+      localStorage.setItem("agrisense_token", data.accessToken);
+    }
+
+    const user: AuthUser = data.user ?? {
+      id: "1",
+      name: email.split("@")[0],
+      email,
+      provider: "email",
+    };
+
     return {
       ok: true,
-      user: data.user,
+      user,
+      accessToken: data.accessToken,
     };
   } catch (error) {
     console.error("Login fetch error:", error);
@@ -85,18 +99,13 @@ export async function loginWithEmail(
     return {
       ok: false,
       code: "NETWORK_ERROR",
-      message: "Unable to connect to the server.",
+      message: "Unable to connect to the backend server. Please make sure the backend is running on port 5000.",
     };
   }
 }
 
-
 // ── Email Signup ───────────────────────────────────────────────────────────────
 
-/**
- * Create a new account with email + password.
- * Replace body with: POST /api/v1/auth/signup
- */
 export async function signupWithEmail(
   name: string,
   email: string,
@@ -105,74 +114,140 @@ export async function signupWithEmail(
   dob: string,
   gender: string
 ): Promise<AuthResult> {
-  const res = await fetch("http://localhost:5000/auth/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name,
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        role,
+        dob,
+        gender,
+      }),
+    });
+
+    let data: any = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+
+    if (!res.ok) {
+      const errorMessage =
+        data.message ??
+        (Array.isArray(data.errors) && data.errors[0]?.message) ??
+        "Registration failed. Please check the entered details.";
+
+      const code: AuthErrorCode =
+        data.message?.toLowerCase().includes("already exists")
+          ? "EMAIL_TAKEN"
+          : "INVALID_CREDENTIALS";
+
+      return {
+        ok: false,
+        code,
+        message: errorMessage,
+      };
+    }
+
+    if (data.accessToken) {
+      localStorage.setItem("agrisense_token", data.accessToken);
+    }
+
+    const user: AuthUser = data.user ?? {
+      id: "1",
+      name: name || email.split("@")[0],
       email,
-      password,
-      role,
-      dob,
-      gender,
-    }),
-  });
+      provider: "email",
+    };
 
-  const data = await res.json();
+    return {
+      ok: true,
+      user,
+      accessToken: data.accessToken,
+    };
+  } catch (error) {
+    console.error("Signup fetch error:", error);
 
-  if (!res.ok) {
     return {
       ok: false,
-      code: "INVALID_CREDENTIALS",
-      message: data.message ?? "Invalid credentials.",
+      code: "NETWORK_ERROR",
+      message: "Unable to connect to the backend server. Please make sure the backend is running on port 5000.",
     };
   }
-
-  return {
-    ok: true,
-    user: data.user,
-  };
 }
 
 // ── Google OAuth ───────────────────────────────────────────────────────────────
 
-/**
- * Initiate Google OAuth sign-in.
- *
- * When backend/OAuth is ready:
- *   Option A (Firebase): import { signInWithPopup, GoogleAuthProvider } from "firebase/auth"
- *   Option B (GIS):      use window.google.accounts.oauth2.initTokenClient(...)
- *   Option C (Supabase): supabase.auth.signInWithOAuth({ provider: "google" })
- *
- * NEVER put GOOGLE_CLIENT_SECRET here. Client ID is safe in an env var.
- *   VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
- */
 export async function loginWithGoogle(): Promise<AuthResult> {
-  // const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  // if (!clientId) console.warn("VITE_GOOGLE_CLIENT_ID not set");
-  //
-  // ... initiate Google flow here ...
+  // If backend is running, initiate Google OAuth redirect flow
+  try {
+    window.location.href = `${BACKEND_URL}/auth/google`;
+    return {
+      ok: false,
+      code: "NOT_IMPLEMENTED",
+      message: "Redirecting to Google...",
+    };
+  } catch {
+    return {
+      ok: false,
+      code: "GOOGLE_ERROR",
+      message: "Google authentication could not be initiated.",
+    };
+  }
+}
 
-  return {
-    ok: false,
-    code: "NOT_IMPLEMENTED",
-    message: "Google authentication not yet configured.",
-  };
+// ── Logout ─────────────────────────────────────────────────────────────────────
+
+export async function logoutUser(): Promise<void> {
+  try {
+    await fetch(`${BACKEND_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Logout request failed:", error);
+  } finally {
+    localStorage.removeItem("agrisense_session");
+    localStorage.removeItem("agrisense_token");
+  }
 }
 
 // ── Password Reset ─────────────────────────────────────────────────────────────
 
-/**
- * Request a password reset email.
- * Replace body with: POST /api/v1/auth/forgot-password
- */
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
-  void email;
-  return {
-    ok: false,
-    code: "NOT_IMPLEMENTED",
-    message: "Password reset is not yet available.",
-  };
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        code: "SERVER_ERROR",
+        message: "Password reset request failed.",
+      };
+    }
+
+    return {
+      ok: true,
+      user: { id: "", name: "", email, provider: "email" },
+    };
+  } catch {
+    return {
+      ok: false,
+      code: "NOT_IMPLEMENTED",
+      message: "Password reset service is not configured yet.",
+    };
+  }
 }

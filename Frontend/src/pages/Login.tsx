@@ -87,12 +87,12 @@ export function Login() {
     if (result.ok) {
       setSession(result.user);
       navigate(from, { replace: true });
-    } else if (!result.ok && result.code === "NOT_IMPLEMENTED") {
+    } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode: no backend yet — log in locally so the app is usable
       setSession({ name: email.split("@")[0], email, provider: "email" });
       navigate(from, { replace: true });
-    } else if (!result.ok) {
-      setError(friendlyMessage(result.code));
+    } else {
+      setError(result.message || friendlyMessage(result.code));
     }
   }
 
@@ -105,12 +105,12 @@ export function Login() {
     if (result.ok) {
       setSession(result.user);
       navigate(from, { replace: true });
-    } else if (!result.ok && result.code === "NOT_IMPLEMENTED") {
+    } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode
       setSession({ name: "Google User", email: "user@gmail.com", provider: "google" });
       navigate(from, { replace: true });
-    } else if (!result.ok) {
-      setError(friendlyMessage(result.code));
+    } else {
+      setError(result.message || friendlyMessage(result.code));
     }
   }
 
@@ -121,12 +121,12 @@ export function Login() {
     if (eErr) { setEmailErr(eErr); return; }
     setError(""); setInfoMsg("");
     const result = await requestPasswordReset(email);
-    if (!result.ok && result.code === "NOT_IMPLEMENTED") {
-      setInfoMsg("Password reset is not yet available. Please contact support.");
-    } else if (result.ok) {
+    if (result.ok) {
       setInfoMsg("If that email exists, you'll receive a reset link shortly.");
-    } else if (!result.ok) {
-      setError(friendlyMessage(result.code));
+    } else if (result.code === "NOT_IMPLEMENTED") {
+      setInfoMsg("Password reset is not yet available. Please contact support.");
+    } else {
+      setError(result.message || friendlyMessage(result.code));
     }
   }
 
@@ -215,10 +215,19 @@ export function Login() {
       </p>
 
       {/* Demo note */}
-      <p className="text-center text-xs text-charcoal-muted/50 leading-relaxed">
-        <Sprout className="inline h-3 w-3 mr-1" />
-        Demo mode: any credentials will grant access until the backend is connected.
-      </p>
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setSession({ name: email ? email.split("@")[0] : "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" });
+            navigate(from, { replace: true });
+          }}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-forest hover:text-forest-600 hover:underline focus-visible:outline-none py-1 px-2.5 rounded-lg hover:bg-forest/5 transition-colors"
+        >
+          <Sprout className="h-3.5 w-3.5" />
+          Quick Preview: Continue in Demo Mode
+        </button>
+      </div>
     </AuthLayout>
   );
 }
