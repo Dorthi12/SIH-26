@@ -81,20 +81,21 @@ export function Profile() {
         setLoading(true);
         setError(null);
         const res = await apiRequest("/users");
-        if (res) {
-          setProfile(res);
+        if (res && res.user) {
+          const userData = res.user;
+          setProfile(userData);
           // Initialize edit form values
-          setEditName(res.name || "");
-          setEditPhone(res.phoneNumber || "");
-          setEditGender(res.gender || "Prefer not to say");
-          setEditDOB(res.dateOfBirth ? new Date(res.dateOfBirth).toISOString().split("T")[0] : "");
-          setEditCity(res.city || "");
-          setEditState(res.state || "");
-          setEditPosition(res.position || "");
-          setEditDept(res.department || "");
+          setEditName(userData.name || "");
+          setEditPhone(userData.phoneNumber || "");
+          setEditGender(userData.gender || "Prefer not to say");
+          setEditDOB(userData.dateOfBirth ? new Date(userData.dateOfBirth).toISOString().split("T")[0] : "");
+          setEditCity(userData.city || "");
+          setEditState(userData.state || "");
+          setEditPosition(userData.position || "");
+          setEditDept(userData.department || "");
 
           // Load user posts
-          loadUserPosts(res.id);
+          loadUserPosts(userData.id);
         }
       } catch (err: any) {
         console.error(err);
@@ -144,8 +145,8 @@ export function Profile() {
         }),
       });
 
-      if (res) {
-        setProfile(res);
+      if (res && res.data) {
+        setProfile(res.data);
         setSaveSuccess(true);
         setIsEditing(false);
         setTimeout(() => setSaveSuccess(false), 3000);
