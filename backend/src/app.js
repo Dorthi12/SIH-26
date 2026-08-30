@@ -6,6 +6,8 @@ import rateLimit from "express-rate-limit";
 import passport from "./config/passport.js";
 import { authMiddleware } from "./middleware/auth.middleware.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { globalLogger } from "./middleware/logger.middleware.js";
+
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import communityRoutes from "./modules/community/community.routes.js";
@@ -54,6 +56,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+app.use(globalLogger)
 
 app.get("/health", (req, res) => {
   res.status(200).json({
