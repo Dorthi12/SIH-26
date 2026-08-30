@@ -6,12 +6,14 @@ import rateLimit from "express-rate-limit";
 import passport from "./config/passport.js";
 import { authMiddleware } from "./middleware/auth.middleware.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { loggerMiddleware } from "./middleware/logger.middleware.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import communityRoutes from "./modules/community/community.routes.js";
 import issueRoutes from "./modules/issues/issue.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import aiRoutes from "./modules/ai/ai.routes.js";
+
 
 const app = express();
 app.use(passport.initialize());
@@ -23,7 +25,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
-
+app.use(loggerMiddleware);
 app.use(
   cors({
     origin: (origin, callback) => {
