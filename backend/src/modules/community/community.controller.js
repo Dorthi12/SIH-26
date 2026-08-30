@@ -1,10 +1,11 @@
 import prisma from "../../config/db.js";
 import { sendKafkaMessage } from "../../utils/kafka.utils.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import path from "path";
 import s3Client from "../../config/s3.js";
+import mlClient from "../../config/mlService.js";
 import {
   checkMultipleImages,
   cleanupS3Objects,
@@ -97,6 +98,18 @@ export const createPost = async (req, res, next) => {
       },
     });
 
+    // Trigger background disease detection on images if present
+    if (mediaKeys && mediaKeys.length > 0) {
+      const imageKeys = mediaKeys.filter(key => 
+        !key.endsWith(".mp4") && !key.endsWith(".webm") && !key.endsWith(".mov")
+      );
+      if (imageKeys.length > 0) {
+        triggerDiseaseAnalysis(post.id, imageKeys).catch(err => 
+          console.error("Background disease analysis error:", err)
+        );
+      }
+    }
+
     const kafkaPayload = {
       postId: post.id,
       userId: req.user.id,
@@ -125,6 +138,55 @@ export const createPost = async (req, res, next) => {
   }
 };
 
+const triggerDiseaseAnalysis = async (postId, imageKeys) => {
+  try {
+    console.log(`Starting background disease analysis for post ${postId}`);
+    
+    // Analyze the first image in the post for disease detection
+    const key = imageKeys[0];
+    
+    // 1. Generate a presigned GET URL for S3 key (valid for 5 minutes)
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: key,
+    });
+    
+    const presignedDownloadUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: 300,
+    });
+
+    console.log(`Generated S3 presigned GET URL for ML service: ${presignedDownloadUrl}`);
+
+    // 2. Call FastAPI plant-disease prediction endpoint using the presigned URL
+    const response = await mlClient.post("/api/v1/plant-disease/predict-url", {
+      image_url: presignedDownloadUrl,
+    });
+
+    if (response.data && response.data.success && response.data.status === "prediction") {
+      const diseaseData = response.data;
+      
+      // 3. Create the AIAnalysis record in DB
+      await prisma.aIAnalysis.create({
+        data: {
+          contentType: "POST",
+          modelType: "DISEASE_DETECTION",
+          postId: postId,
+          confidence: diseaseData.confidence,
+          summary: `Detected ${diseaseData.disease} in ${diseaseData.crop} crop.`,
+          diseaseResult: diseaseData,
+          modelName: diseaseData.model?.name || "EfficientNet-B0",
+          modelVersion: diseaseData.model?.version || "1.0.0",
+        },
+      });
+      console.log(`Disease analysis successfully attached to post ${postId}`);
+    } else {
+      console.log(`ML service returned uncertain or empty result for post ${postId}`);
+    }
+  } catch (error) {
+    console.error(`Background disease analysis failed for post ${postId}:`, error.message);
+  }
+};
+
 export const getFeed = async (req, res, next) => {
   try {
     const { cursor } = req.query;
@@ -145,6 +207,7 @@ export const getFeed = async (req, res, next) => {
           },
         },
         media: true,
+        aianalyses: true,
         _count: {
           select: {
             votes: true,
@@ -194,6 +257,7 @@ export const getUserPosts = async (req, res, next) => {
       take: limit,
       include: {
         media: true,
+        aianalyses: true,
         _count: {
           select: {
             votes: true,
