@@ -1,32 +1,30 @@
-# React + TypeScript + Vite
+# 🌾 AgriSense (Netravaah) — Web Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisense--ruby.vercel.app-2ea44f?style=for-the-badge&logo=vercel)](https://agrisense-ruby.vercel.app/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Dorthi12%2FSIH--26-181717?style=for-the-badge&logo=github)](https://github.com/Dorthi12/SIH-26)
 
-Currently, two official plugins are available:
+This directory contains the **React 19 + TypeScript + Vite + Tailwind CSS** frontend web application for AgriSense (Netravaah), deployed live on **Vercel** at [https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Quick Links
+- 🌐 **Live Web Application**: [https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/)
+- 🐙 **GitHub Repository**: [https://github.com/Dorthi12/SIH-26](https://github.com/Dorthi12/SIH-26)
 
-## React Compiler
+## 🛠️ Tech Stack
+- **Framework**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS
+- **Icons & Visualization**: Lucide Icons, Recharts
+- **Deployment**: Vercel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚙️ Local Development Setup
 
-## Expanding the Oxlint configuration
+```bash
+# Install dependencies
+npm install
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+# Run local Vite development server
+npm run dev
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Build for production
+npm run build
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Access the local development server at `http://localhost:5173`.
