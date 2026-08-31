@@ -36,13 +36,13 @@
     "nodemon": "^3.1.14",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "@prisma/client": "^7.5.0",
+    "prisma": "^7.5.0",
     "redis": "^5.11.0",
     "viem": "^2.47.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^7.5.0",
-    "@types/node": "^25.3.3",
-    "prisma": "^7.5.0"
+    "@types/node": "^25.3.3"
   }
 }
