@@ -11,6 +11,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { logoutUser } from "../services/authService";
 
 export interface SessionUser {
+  id?:      string;
   name:     string;
   email:    string;
   provider: "email" | "google" | "guest";
@@ -49,6 +50,7 @@ function parseOAuthTokenFromUrl(): { user: SessionUser; token: string } | null {
     const decoded = JSON.parse(jsonPayload);
 
     const user: SessionUser = {
+      id: decoded.id,
       name: decoded.name || decoded.email?.split("@")[0] || "Google User",
       email: decoded.email || "user@gmail.com",
       provider: "google",

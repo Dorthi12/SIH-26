@@ -524,7 +524,7 @@ export function Community() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-charcoal text-sm">{post.author?.name || "Farmer"}</span>
-                          <Badge variant="default" size="xs">
+                          <Badge variant="default" size="sm">
                             {post.author?.role || "FARMER"}
                           </Badge>
                         </div>
@@ -537,7 +537,7 @@ export function Community() {
                     </div>
 
                     {/* Follow Toggle */}
-                    {currentUser?.email !== post.author?.email && (
+                    {currentUser?.id !== post.author?.id && (
                       <button
                         onClick={() => handleFollowToggle(post)}
                         className={cn(

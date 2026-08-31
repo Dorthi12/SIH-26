@@ -35,7 +35,6 @@ interface UserProfile {
   state?: string;
   position?: string;
   themePreference: string;
-  isEmailVerified: boolean;
   createdAt: string;
 }
 
@@ -189,18 +188,9 @@ export function Profile() {
           <div className="bg-white rounded-2xl border border-ivory-300 shadow-card p-6 text-center space-y-4">
             
             {/* Avatar */}
-            <div className="relative inline-block">
+            <div className="inline-block">
               <div className="h-24 w-24 rounded-full bg-forest/10 border-2 border-forest/30 flex items-center justify-center text-forest font-bold text-3xl uppercase mx-auto">
                 {profile.name[0]}
-              </div>
-              
-              {/* Verification Status Icon */}
-              <div className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white border border-ivory-200 shadow-sm">
-                {profile.isEmailVerified ? (
-                  <ShieldCheck className="h-5 w-5 text-forest" />
-                ) : (
-                  <ShieldAlert className="h-5 w-5 text-amber" />
-                )}
               </div>
             </div>
 
@@ -211,13 +201,6 @@ export function Profile() {
                 {profile.role}
               </span>
             </div>
-
-            {/* Verification Alert */}
-            {!profile.isEmailVerified && (
-              <div className="rounded-xl border border-amber/20 bg-amber/[0.04] p-3 text-center text-2xs text-amber-700 font-semibold">
-                Email Verification Pending. Please check your inbox for the verification link.
-              </div>
-            )}
 
             <div className="border-t border-ivory-200 pt-4 space-y-3.5 text-left text-xs">
               <div className="flex items-center gap-3 text-charcoal-light">
@@ -270,8 +253,8 @@ export function Profile() {
             </div>
             <div className="space-y-1 border-l border-ivory-200">
               <span className="text-2xs text-charcoal-muted uppercase font-bold">Status</span>
-              <p className="text-sm font-extrabold text-charcoal mt-1">
-                {profile.isEmailVerified ? "Verified" : "Pending"}
+              <p className="text-sm font-extrabold text-forest mt-1">
+                Active
               </p>
             </div>
           </div>
