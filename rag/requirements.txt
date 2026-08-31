@@ -7,3 +7,6 @@ pinecone>=5.0.0
 # Environment variable loading from .env files
 python-dotenv>=1.0.0
 slowapi
+fastapi
+uvicorn
+groq
