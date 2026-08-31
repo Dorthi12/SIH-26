@@ -23,7 +23,7 @@ export const getUserInfo = async (req, res, next) => {
         phoneNumber: true,
         role: true,
         dateOfBirth: true,
-        awsS3ObjectKey: true,
+        preSignedUrl: true,
         department: true,
         city: true,
         state: true,
@@ -40,7 +40,7 @@ export const getUserInfo = async (req, res, next) => {
       });
     }
 
-    const profileImageUrl = `${process.env.AWS_S3_BASE_URL}/${user.awsS3ObjectKey}`;
+    const profileImageUrl = user.preSignedUrl;
 
     res.status(200).json({
       success: true,
@@ -78,7 +78,7 @@ export const generateUploadUrl = async (req, res, next) => {
 
     const extension = path.extname(fileName);
 
-    const key = `uploads/${crypto.randomUUID()}${extension}`;
+    const key = `profile/${crypto.randomUUID()}${extension}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
@@ -136,7 +136,11 @@ export const updateUserInfo = async (req, res, next) => {
           flags: labels,
         });
       }
-      updateData.awsS3ObjectKey = req.body.key;
+      const key = req.body.key;
+      const fullUrl = key.startsWith("http://") || key.startsWith("https://")
+        ? key
+        : `${process.env.AWS_S3_BASE_URL_PROFILE}${key.startsWith("profile/") ? key.substring(8) : key}`;
+      updateData.preSignedUrl = fullUrl;
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -157,7 +161,7 @@ export const updateUserInfo = async (req, res, next) => {
         phoneNumber: true,
         role: true,
         dateOfBirth: true,
-        awsS3ObjectKey: true,
+        preSignedUrl: true,
         themePreference: true,
         authProvider: true,
         city: true,
@@ -171,7 +175,7 @@ export const updateUserInfo = async (req, res, next) => {
       ...updatedUser,
       position: updatedUser.Position,
       department: updatedUser.department,
-      profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${updatedUser.awsS3ObjectKey}`,
+      profileImageUrl: updatedUser.preSignedUrl,
     };
 
     return res.status(200).json({
@@ -280,13 +284,13 @@ export const searchUsers = async (req, res, next) => {
         department: true,
         city: true,
         state: true,
-        awsS3ObjectKey: true,
+        preSignedUrl: true,
       },
     });
 
     const usersWithUrls = users.map((user) => ({
       ...user,
-      profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${user.awsS3ObjectKey}`,
+      profileImageUrl: user.preSignedUrl,
     }));
 
     const nextCursor = users.length ? users[users.length - 1].id : null;

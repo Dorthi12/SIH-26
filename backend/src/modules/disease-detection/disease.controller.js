@@ -1,7 +1,7 @@
 import prisma from "../../config/db.js";
 import mlClient from "../../config/mlService.js";
 import s3Client from "../../config/s3.js";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import crypto from "crypto";
 import path from "path";
@@ -28,7 +28,7 @@ export const getPresignedUrl = async (req, res, next) => {
     }
 
     const extension = path.extname(fileName) || ".jpg";
-    const key = `disease/${crypto.randomUUID()}${extension}`;
+    const key = `diseases/${crypto.randomUUID()}${extension}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET,
@@ -40,7 +40,7 @@ export const getPresignedUrl = async (req, res, next) => {
       expiresIn: 300,
     });
 
-    const imageUrl = `${process.env.AWS_S3_BASE_URL}/${key}`;
+    const imageUrl = `${process.env.AWS_S3_BASE_URL_DISEASES}${key.startsWith("diseases/") ? key.substring(9) : key}`;
 
     res.json({
       success: true,
@@ -59,9 +59,22 @@ export const predictDisease = async (req, res, next) => {
     const parsed = diseasePredictSchema.parse(req.body);
     const userId = req.user.id;
 
-    // Call ML service with URL-based prediction
+    // Extract S3 key from the imageUrl
+    const urlObj = new URL(parsed.imageUrl);
+    const key = decodeURIComponent(urlObj.pathname.substring(1));
+
+    // Generate presigned GET URL for S3 key (valid for 5 minutes)
+    const getCommand = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: key,
+    });
+    const presignedDownloadUrl = await getSignedUrl(s3Client, getCommand, {
+      expiresIn: 300,
+    });
+
+    // Call ML service with URL-based prediction (using presigned URL)
     const { data } = await mlClient.post("/api/v1/plant-disease/predict-url", {
-      image_url: parsed.imageUrl,
+      image_url: presignedDownloadUrl,
     });
 
     // Persist to database

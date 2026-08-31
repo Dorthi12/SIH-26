@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import prisma from "../../config/db.js";
 import {
   generateAccessToken,
@@ -10,7 +9,6 @@ import {
   checkMultipleImages,
   cleanupS3Objects,
 } from "../../utils/obscenity.util.js";
-import { sendKafkaMessage } from "../../utils/kafka.utils.js";
 
 const cookieOptions = {
   httpOnly: true,
@@ -73,17 +71,6 @@ export const register = async (req, res, next) => {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
-    // Publish loosely-coupled user registration event to Kafka
-    try {
-      await sendKafkaMessage("user-registered", {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-      });
-    } catch (kafkaError) {
-      console.error("Kafka registration event failed to send:", kafkaError);
-    }
 
     res.status(201).json({
       message: "User registered successfully",
@@ -271,42 +258,6 @@ export const logout = async (req, res, next) => {
     res.json({
       success: true,
       message: "Logged out successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const verifyEmail = async (req, res, next) => {
-  try {
-    const { token } = req.query;
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: "Verification token is required",
-      });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || "AgriSense_JWT_Super_Secret_Key_2026");
-    } catch (err) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired verification token",
-      });
-    }
-
-    const { email } = decoded;
-
-    await prisma.user.update({
-      where: { email },
-      data: { isEmailVerified: true },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Email verified successfully!",
     });
   } catch (error) {
     next(error);

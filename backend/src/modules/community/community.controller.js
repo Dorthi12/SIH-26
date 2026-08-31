@@ -30,7 +30,7 @@ export const generateUploadUrls = async (req, res, next) => {
         });
       }
       const extension = path.extname(file.fileName);
-      const key = `posts/${crypto.randomUUID()}${extension}`;
+      const key = `diseases/posts/${crypto.randomUUID()}${extension}`;
 
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET,
@@ -82,14 +82,19 @@ export const createPost = async (req, res, next) => {
         media:
           mediaKeys && mediaKeys.length > 0
             ? {
-                create: mediaKeys.map((key) => ({
-                  awsS3ObjectKey: key,
-                  publicId: key,
-                  type:
-                    key.endsWith(".mp4") || key.endsWith(".webm")
-                      ? "VIDEO"
-                      : "IMAGE",
-                })),
+                create: mediaKeys.map((key) => {
+                  const fullUrl = key.startsWith("http://") || key.startsWith("https://")
+                    ? key
+                    : `${process.env.AWS_S3_BASE_URL_DISEASES}${key.startsWith("diseases/") ? key.substring(9) : key}`;
+                  return {
+                    imageUrl: fullUrl,
+                    publicId: key,
+                    type:
+                      key.endsWith(".mp4") || key.endsWith(".webm")
+                        ? "VIDEO"
+                        : "IMAGE",
+                  };
+                }),
               }
             : undefined,
       },
@@ -98,33 +103,9 @@ export const createPost = async (req, res, next) => {
       },
     });
 
-    // Trigger background disease detection on images if present
-    if (mediaKeys && mediaKeys.length > 0) {
-      const imageKeys = mediaKeys.filter(key => 
-        !key.endsWith(".mp4") && !key.endsWith(".webm") && !key.endsWith(".mov")
-      );
-      if (imageKeys.length > 0) {
-        triggerDiseaseAnalysis(post.id, imageKeys).catch(err => 
-          console.error("Background disease analysis error:", err)
-        );
-      }
-    }
-
-    const kafkaPayload = {
-      postId: post.id,
-      userId: req.user.id,
-      caption: post.caption,
-      locationName: post.locationName,
-      latitude: post.latitude,
-      longitude: post.longitude,
-      mediaKeys: mediaKeys || [],
-    };
-
-    await sendKafkaMessage("post-created", kafkaPayload);
-
     const mediaWithUrls = post.media.map((media) => ({
       ...media,
-      url: `${process.env.AWS_S3_BASE_URL}/${media.awsS3ObjectKey}`,
+      url: media.imageUrl,
     }));
     res.status(201).json({
       success: true,
@@ -203,7 +184,7 @@ export const getFeed = async (req, res, next) => {
             id: true,
             name: true,
             role: true,
-            awsS3ObjectKey: true,
+            preSignedUrl: true,
           },
         },
         media: true,
@@ -222,12 +203,12 @@ export const getFeed = async (req, res, next) => {
 
       author: {
         ...post.author,
-        profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${post.author.awsS3ObjectKey}`,
+        profileImageUrl: post.author.preSignedUrl,
       },
 
       media: post.media.map((m) => ({
         ...m,
-        url: `${process.env.AWS_S3_BASE_URL}/${m.awsS3ObjectKey}`,
+        url: m.imageUrl,
       })),
     }));
 
@@ -271,7 +252,7 @@ export const getUserPosts = async (req, res, next) => {
       ...post,
       media: post.media.map((m) => ({
         ...m,
-        url: `${process.env.AWS_S3_BASE_URL}/${m.awsS3ObjectKey}`,
+        url: m.imageUrl,
       })),
     }));
 
@@ -333,7 +314,7 @@ export const getPostVotes = async (req, res, next) => {
             id: true,
             name: true,
             role: true,
-            awsS3ObjectKey: true,
+            preSignedUrl: true,
           },
         },
       },
@@ -343,7 +324,7 @@ export const getPostVotes = async (req, res, next) => {
       ...vote,
       user: {
         ...vote.user,
-        profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${vote.user.awsS3ObjectKey}`,
+        profileImageUrl: vote.user.preSignedUrl,
       },
     }));
 
@@ -403,7 +384,7 @@ export const getPostComments = async (req, res, next) => {
             id: true,
             name: true,
             role: true,
-            awsS3ObjectKey: true,
+            preSignedUrl: true,
           },
         },
         _count: {
@@ -418,7 +399,7 @@ export const getPostComments = async (req, res, next) => {
       ...comment,
       author: {
         ...comment.author,
-        profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${comment.author.awsS3ObjectKey}`,
+        profileImageUrl: comment.author.preSignedUrl,
       },
     }));
 
@@ -453,7 +434,7 @@ export const getFollowers = async (req, res, next) => {
             id: true,
             name: true,
             role: true,
-            awsS3ObjectKey: true,
+            preSignedUrl: true,
           },
         },
       },
@@ -463,7 +444,7 @@ export const getFollowers = async (req, res, next) => {
       ...f,
       follower: {
         ...f.follower,
-        profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${f.follower.awsS3ObjectKey}`,
+        profileImageUrl: f.follower.preSignedUrl,
       },
     }));
 
@@ -499,7 +480,7 @@ export const getFollowing = async (req, res, next) => {
             id: true,
             name: true,
             role: true,
-            awsS3ObjectKey: true,
+            preSignedUrl: true,
           },
         },
       },
@@ -509,7 +490,7 @@ export const getFollowing = async (req, res, next) => {
       ...f,
       following: {
         ...f.following,
-        profileImageUrl: `${process.env.AWS_S3_BASE_URL}/${f.following.awsS3ObjectKey}`,
+        profileImageUrl: f.following.preSignedUrl,
       },
     }));
 

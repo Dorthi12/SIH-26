@@ -40,7 +40,7 @@ model User {
   phoneNumber     String?         @unique
   role            Role            @default(USER)
   dateOfBirth     DateTime?
-  awsS3ObjectKey  String          @default("profile/logo.png")
+  preSignedUrl  String          @default("https://netravaah-bucket.s3.ap-south-1.amazonaws.com/profile/default.png")
   refreshToken    String?
   department      String?
   city            String?
@@ -49,8 +49,6 @@ model User {
   themePreference ThemePreference @default(SYSTEM)
   authProvider    AuthProvider    @default(LOCAL)
   googleId        String?         @unique
-  isEmailVerified Boolean         @default(false)
-  verificationToken String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   posts           Post[]
@@ -61,12 +59,35 @@ model User {
   issueReports    IssueReport[]   @relation("IssueReporter")
   assignedIssues  IssueReport[]   @relation("Assignee")
   conversations   Conversation[]
+  complaints      Complaint[]
 
   // ML prediction history
   cropRecommendations CropRecommendation[]
   yieldPredictions    YieldPrediction[]
   diseasePredictions  DiseasePrediction[]
   zeroProductionRisks ZeroProductionRisk[]
+}
+
+model Complaint{
+  id                String   @id @default(uuid())
+  title             String
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          ComplaintCategory @default(OTHERS)
+  description       String
+  imageUrl          String?
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum ComplaintCategory {
+  IRRIGATION
+  CROP_STORAGE
+  MARKET_MONOPOLY
+  ORGANISED_CRIME
+  PANCHAYAT_MISJUDGEMENT
+  OTHERS
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +227,7 @@ model Media {
   issueReport    IssueReport? @relation(fields: [issueReportId], references: [id], onDelete: Cascade)
   messageId      String?
   message        Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  awsS3ObjectKey String?
+  imageUrl       String?
   publicId       String
   type           MediaType
   createdAt      DateTime     @default(now())

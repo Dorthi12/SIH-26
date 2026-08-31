@@ -27,6 +27,7 @@ passport.use(
               name: name || email.split("@")[0],
               googleId,
               authProvider: "GOOGLE",
+              ...(avatar && { preSignedUrl: avatar }),
             },
           });
         } else if (!user.googleId) {
