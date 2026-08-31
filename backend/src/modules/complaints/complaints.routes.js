@@ -23,9 +23,9 @@ router.post("/upload-url", validate(uploadUrlSchema), generateComplaintUploadUrl
 
 // Standard CRUD endpoints
 router.post("/", validate(createComplaintSchema), createComplaint);
-router.get("/", getComplaints);
+router.get("/", roleMiddleware("ADMINISTRATOR", "LEADER", "REPRESENTATIVE"),getComplaints);
 router.get("/me", getMyComplaints);
-router.get("/:id", getComplaintById);
+router.get("/:id", roleMiddleware("ADMINISTRATOR", "LEADER", "REPRESENTATIVE"),getComplaintById);
 
 // Update complaint status (restricted to admin, leader, representative)
 router.patch(
