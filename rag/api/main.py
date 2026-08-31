@@ -3,6 +3,14 @@ rag/api/main.py — Uvicorn entry point.
 Run: python -m rag.api
 """
 
+import sys
+from pathlib import Path
+
+_RAG_DIR = Path(__file__).resolve().parent.parent
+_PARENT_DIR = str(_RAG_DIR.parent)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
 import logging
 import uvicorn
 from rag import config

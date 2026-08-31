@@ -25,6 +25,15 @@ Start with: python -m rag.api
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Ensure parent directory is in sys.path so 'from rag...' imports work regardless of working directory
+_RAG_DIR = Path(__file__).resolve().parent.parent
+_PARENT_DIR = str(_RAG_DIR.parent)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
 import asyncio
 import logging
 from typing import Optional
