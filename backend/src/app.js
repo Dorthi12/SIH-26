@@ -21,6 +21,9 @@ import zeroProdRoutes from "./modules/zero-production-risk/zeroProduction.routes
 
 
 const app = express();
+
+app.set('trust proxy',1)
+
 app.use(passport.initialize());
 
 const allowedOrigins = [
