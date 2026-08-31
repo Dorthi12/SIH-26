@@ -13,6 +13,7 @@ import communityRoutes from "./modules/community/community.routes.js";
 import issueRoutes from "./modules/issues/issue.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import aiRoutes from "./modules/ai/ai.routes.js";
+import complaintRoutes from "./modules/complaints/complaints.routes.js";
 import cropRoutes from "./modules/crop-recommendation/crop.routes.js";
 import yieldRoutes from "./modules/yield-prediction/yield.routes.js";
 import diseaseRoutes from "./modules/disease-detection/disease.routes.js";
@@ -73,6 +74,7 @@ app.use("/community", authMiddleware, communityRoutes);
 app.use("/issue", authMiddleware, issueRoutes);
 app.use("/users", authMiddleware, userRoutes);
 app.use("/ai", authMiddleware, aiRoutes);
+app.use("/complaints", authMiddleware, complaintRoutes);
 
 // ML microservice proxy routes
 app.use("/crop-recommendation", authMiddleware, cropRoutes);
