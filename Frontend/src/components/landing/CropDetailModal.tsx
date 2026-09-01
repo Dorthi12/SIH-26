@@ -115,9 +115,9 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
         {/* Modal Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 scrollbar-thin">
           {/* Top 5 Producer States Section */}
-          <div className="rounded-2xl border border-landing-border bg-landing-secondary/20 p-4.5">
+          <div className="rounded-2xl border border-amber-200/70 bg-amber-50/40 p-4.5">
             <div className="flex items-center gap-2.5 mb-3.5">
-              <span className="flex size-8 items-center justify-center rounded-xl bg-landing-primary/10 text-landing-primary">
+              <span className="flex size-8 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700">
                 <Award className="size-4.5" />
               </span>
               <div>
@@ -125,7 +125,7 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
                   <h3 className="text-sm font-bold text-landing-fg sm:text-base">
                     Top 5 Producer States in India
                   </h3>
-                  <span className="text-[0.7rem] font-semibold text-landing-terracotta bg-landing-terracotta/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[0.7rem] font-semibold text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded-full">
                     भारत के शीर्ष 5 उत्पादक राज्य
                   </span>
                 </div>
@@ -184,7 +184,7 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
             </div>
           </div>
 
-          {/* Medium & Small Info Blocks Grid */}
+          {/* Medium & Small Info Blocks Grid with Unique Color Schemes */}
           <div>
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2 flex-wrap">
@@ -199,182 +199,182 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
             </div>
 
             <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Block 1: Climate & Temp */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 1: Climate & Temp - ORANGE / AMBER THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-orange-200/90 bg-orange-50/70 p-4 shadow-sm transition-all hover:shadow-md hover:border-orange-300">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-orange-500/20 text-orange-700">
                       <Thermometer className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-orange-800">
                         Climate & Temp / जलवायु-तापमान
                       </h4>
-                      <p className="text-sm font-extrabold text-landing-fg">
+                      <p className="text-sm font-extrabold text-orange-950">
                         {crop.details.climate.temp}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="flex items-center gap-1.5 font-semibold text-landing-fg text-xs">
-                      <Droplets className="size-3.5 text-blue-500" />
+                  <div className="mt-3 pt-2.5 border-t border-orange-200/70 text-xs space-y-1.5">
+                    <p className="flex items-center gap-1.5 font-bold text-orange-900 text-xs">
+                      <Droplets className="size-3.5 text-blue-600" />
                       Rainfall (वर्षा): {crop.details.climate.rainfall}
                     </p>
-                    <p className="text-[0.75rem] leading-relaxed text-landing-fg-muted">
+                    <p className="text-[0.75rem] leading-relaxed text-orange-950/80">
                       {crop.details.climate.note}
                     </p>
                   </div>
                 </div>
                 {crop.details.climate.noteHi && (
-                  <div className="mt-2.5 rounded-lg bg-landing-secondary/30 p-2 text-[0.725rem] leading-relaxed text-landing-fg/90">
-                    <span className="font-semibold text-landing-terracotta">हिंदी: </span>
+                  <div className="mt-2.5 rounded-lg bg-orange-100/80 p-2 text-[0.725rem] leading-relaxed text-orange-950 font-medium">
+                    <span className="font-bold text-orange-800">हिंदी: </span>
                     {crop.details.climate.noteHi}
                   </div>
                 )}
               </div>
 
-              {/* Block 2: Soil Requirements */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 2: Soil Requirements - EMERALD / GREEN THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/90 bg-emerald-50/70 p-4 shadow-sm transition-all hover:shadow-md hover:border-emerald-300">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-700">
                       <MapPin className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-emerald-800">
                         Soil & pH / मिट्टी और पीएच
                       </h4>
-                      <p className="text-sm font-extrabold text-landing-fg">
+                      <p className="text-sm font-extrabold text-emerald-950">
                         pH {crop.details.soil.ph}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="font-semibold text-landing-fg text-xs">
+                  <div className="mt-3 pt-2.5 border-t border-emerald-200/70 text-xs space-y-1.5">
+                    <p className="font-bold text-emerald-900 text-xs">
                       Type: {crop.details.soil.type}
                     </p>
-                    <p className="text-[0.75rem] leading-relaxed text-landing-fg-muted">
+                    <p className="text-[0.75rem] leading-relaxed text-emerald-950/80">
                       {crop.details.soil.note}
                     </p>
                   </div>
                 </div>
                 {crop.details.soil.noteHi && (
-                  <div className="mt-2.5 rounded-lg bg-landing-secondary/30 p-2 text-[0.725rem] leading-relaxed text-landing-fg/90">
-                    <span className="font-semibold text-landing-terracotta">हिंदी: </span>
+                  <div className="mt-2.5 rounded-lg bg-emerald-100/80 p-2 text-[0.725rem] leading-relaxed text-emerald-950 font-medium">
+                    <span className="font-bold text-emerald-800">हिंदी: </span>
                     {crop.details.soil.noteHi}
                   </div>
                 )}
               </div>
 
-              {/* Block 3: Season & Duration */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 3: Season & Duration - SKY BLUE THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-sky-200/90 bg-sky-50/70 p-4 shadow-sm transition-all hover:shadow-md hover:border-sky-300">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-sky-500/20 text-sky-700">
                       <Calendar className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-sky-800">
                         Season & Duration / समय
                       </h4>
-                      <p className="text-sm font-extrabold text-landing-fg">
+                      <p className="text-sm font-extrabold text-sky-950">
                         {crop.details.duration.days}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="font-semibold text-landing-fg text-xs">
+                  <div className="mt-3 pt-2.5 border-t border-sky-200/70 text-xs space-y-1.5">
+                    <p className="font-bold text-sky-900 text-xs">
                       Sowing (बुवाई): {crop.details.duration.sowingWindow}
                     </p>
-                    <p className="text-[0.75rem] leading-relaxed">
+                    <p className="text-[0.75rem] leading-relaxed text-sky-950/80">
                       Season (मौसम): {crop.details.duration.season}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Block 4: Expected Yield */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 4: Expected Yield - PURPLE / VIOLET THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-purple-200/90 bg-purple-50/70 p-4 shadow-sm transition-all hover:shadow-md hover:border-purple-300">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-purple-500/20 text-purple-700">
                       <TrendingUp className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-purple-800">
                         Expected Yield / अनुमानित उपज
                       </h4>
-                      <p className="text-sm font-extrabold text-landing-fg">
+                      <p className="text-sm font-extrabold text-purple-950">
                         {crop.details.yield.average}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="font-semibold text-landing-fg text-xs">
+                  <div className="mt-3 pt-2.5 border-t border-purple-200/70 text-xs space-y-1.5">
+                    <p className="font-bold text-purple-900 text-xs">
                       Optimal (अधिकतम): {crop.details.yield.optimal}
                     </p>
-                    <p className="text-[0.75rem] leading-relaxed">
+                    <p className="text-[0.75rem] leading-relaxed text-purple-950/80">
                       Depends on seeds & irrigation • बीज और सिंचाई पर निर्भर
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Block 5: Fertilizer Plan */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 5: Fertilizer Plan - GOLDEN / AMBER YELLOW THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-amber-300/90 bg-amber-50/80 p-4 shadow-sm transition-all hover:shadow-md hover:border-amber-400">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-800">
                       <FlaskConical className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-amber-900">
                         Nutrient / NPK Plan (उर्वरक)
                       </h4>
-                      <p className="text-sm font-extrabold text-landing-fg">
+                      <p className="text-sm font-extrabold text-amber-950">
                         {crop.details.fertilizer.npk}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="text-[0.75rem] leading-relaxed text-landing-fg-muted">
+                  <div className="mt-3 pt-2.5 border-t border-amber-200/70 text-xs space-y-1.5">
+                    <p className="text-[0.75rem] leading-relaxed text-amber-950/85 font-medium">
                       {crop.details.fertilizer.advice}
                     </p>
                   </div>
                 </div>
                 {crop.details.fertilizer.adviceHi && (
-                  <div className="mt-2.5 rounded-lg bg-landing-secondary/30 p-2 text-[0.725rem] leading-relaxed text-landing-fg/90">
-                    <span className="font-semibold text-landing-terracotta">हिंदी: </span>
+                  <div className="mt-2.5 rounded-lg bg-amber-100/90 p-2 text-[0.725rem] leading-relaxed text-amber-950 font-medium">
+                    <span className="font-bold text-amber-900">हिंदी: </span>
                     {crop.details.fertilizer.adviceHi}
                   </div>
                 )}
               </div>
 
-              {/* Block 6: Pest & Disease Protection */}
-              <div className="flex flex-col justify-between rounded-2xl border border-landing-border bg-landing-card p-4 shadow-sm transition-all hover:border-landing-primary/30">
+              {/* Block 6: Pest & Disease Protection - ROSE / RED THEME */}
+              <div className="flex flex-col justify-between rounded-2xl border border-rose-200/90 bg-rose-50/70 p-4 shadow-sm transition-all hover:shadow-md hover:border-rose-300">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-red-500/10 text-red-600">
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-700">
                       <ShieldAlert className="size-4.5" />
                     </div>
                     <div>
-                      <h4 className="text-[0.7rem] font-semibold uppercase tracking-wider text-landing-fg-muted">
+                      <h4 className="text-[0.7rem] font-bold uppercase tracking-wider text-rose-800">
                         Pest Protection / कीट सुरक्षा
                       </h4>
-                      <p className="text-xs font-bold text-landing-fg leading-tight">
+                      <p className="text-xs font-bold text-rose-950 leading-tight">
                         {crop.details.pestControl.commonPests}
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2.5 border-t border-landing-border/60 text-xs text-landing-fg-muted space-y-1.5">
-                    <p className="text-[0.75rem] leading-relaxed text-landing-fg-muted">
+                  <div className="mt-3 pt-2.5 border-t border-rose-200/70 text-xs space-y-1.5">
+                    <p className="text-[0.75rem] leading-relaxed text-rose-950/80 font-medium">
                       {crop.details.pestControl.prevention}
                     </p>
                   </div>
                 </div>
                 {crop.details.pestControl.preventionHi && (
-                  <div className="mt-2.5 rounded-lg bg-landing-secondary/30 p-2 text-[0.725rem] leading-relaxed text-landing-fg/90">
-                    <span className="font-semibold text-landing-terracotta">हिंदी: </span>
+                  <div className="mt-2.5 rounded-lg bg-rose-100/80 p-2 text-[0.725rem] leading-relaxed text-rose-950 font-medium">
+                    <span className="font-bold text-rose-800">हिंदी: </span>
                     {crop.details.pestControl.preventionHi}
                   </div>
                 )}
