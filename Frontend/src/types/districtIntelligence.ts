@@ -34,14 +34,28 @@ export interface CropIntelligence {
  * Full intelligence payload for a district.
  * Top-level fields are derived/provided by the backend.
  */
+export interface DistrictSubZone {
+  name: string;
+  crop: string;
+  suitability: number;
+  lat: number;
+  lng: number;
+}
+
 export interface DistrictIntelligence {
   district_id: string;
   district_name: string;
+  state?: string;
+  lat?: number;
+  lng?: number;
+  soil_type?: string;
+  climate_zone?: string;
+  arable_land_acres?: number;
+  sub_zones?: DistrictSubZone[];
   crops: CropIntelligence[];
-  /** Backend-derived summary fields */
   best_crop_id: string;
-  avg_district_suitability: number;  // 0–100
-  avg_district_yield: number;         // t/ha
+  avg_district_suitability: number;
+  avg_district_yield: number;
   overall_risk: WeatherRiskLevel;
 }
 

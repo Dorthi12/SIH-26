@@ -1,13 +1,7 @@
-/**
- * DistrictOverviewCards — four KPI summary cards for a selected district.
- *
- * Props come directly from DistrictIntelligence so the backend can populate
- * them without any UI changes.
- */
-
-import { Sprout, Star, TrendingUp, CloudLightning } from "lucide-react";
+import { Sprout, Star, TrendingUp, CloudLightning, Award } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
+import { useLanguage } from "../../context/LanguageContext";
 import { cn } from "../../utils/cn";
 import type { DistrictIntelligence, WeatherRiskLevel } from "../../types/districtIntelligence";
 
@@ -16,113 +10,105 @@ interface DistrictOverviewCardsProps {
 }
 
 export function DistrictOverviewCards({ intelligence }: DistrictOverviewCardsProps) {
+  const { t } = useLanguage();
   const { best_crop_id, crops, avg_district_suitability, avg_district_yield, overall_risk } = intelligence;
-  const bestCrop = crops.find((c) => c.crop_id === best_crop_id);
+  const bestCrop = crops.find((c) => c.crop_id === best_crop_id) ?? crops[0];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Best Performing Crop */}
       <OverviewCard
-        icon={<Sprout className="h-4 w-4" />}
-        label="Best Performing Crop"
-        accent="forest"
+        icon={<Sprout className="h-5 w-5" />}
+        label={t("Best Performing Crop", "सर्वश्रेष्ठ प्रदर्शन वाली फ़सल")}
+        accent="emerald"
       >
-        <p className="text-2xl font-bold text-charcoal tracking-tight truncate">
+        <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
           {bestCrop?.crop_name ?? "—"}
         </p>
         {bestCrop && (
-          <Badge variant="success" size="sm" dot className="mt-1">
-            Rank #1
+          <Badge variant="amber" size="sm" className="mt-1.5 font-extrabold shadow-2xs">
+            <Award className="h-3 w-3 mr-1" />
+            {t("Rank #1 Pick", "रैंक #1 पसंद")}
           </Badge>
         )}
       </OverviewCard>
 
       {/* Average Suitability */}
       <OverviewCard
-        icon={<Star className="h-4 w-4" />}
-        label="Avg. Suitability"
-        accent="forest"
+        icon={<Star className="h-5 w-5" />}
+        label={t("Avg. Suitability", "औसत उपयुक्तता")}
+        accent="emerald"
       >
-        <p className="text-2xl font-bold text-charcoal tabular-nums">
+        <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
           {avg_district_suitability}
-          <span className="text-base font-normal text-charcoal-muted ml-0.5">%</span>
+          <span className="text-sm font-bold text-slate-400 ml-0.5">%</span>
         </p>
         <SuitabilityBar value={avg_district_suitability} className="mt-2" />
       </OverviewCard>
 
       {/* Average Yield */}
       <OverviewCard
-        icon={<TrendingUp className="h-4 w-4" />}
-        label="Avg. Expected Yield"
-        accent="olive"
+        icon={<TrendingUp className="h-5 w-5" />}
+        label={t("Avg. Expected Yield", "औसत अनुमानित उपज")}
+        accent="teal"
       >
-        <p className="text-2xl font-bold text-charcoal tabular-nums">
+        <p className="text-xl sm:text-2xl font-black text-teal-600 dark:text-teal-400 tabular-nums">
           {avg_district_yield.toFixed(1)}
-          <span className="text-base font-normal text-charcoal-muted ml-1">t/ha</span>
+          <span className="text-sm font-semibold text-slate-400 ml-1">{t("t/ha", "टन/हेक्टेयर")}</span>
         </p>
       </OverviewCard>
 
       {/* Overall Risk */}
       <OverviewCard
-        icon={<CloudLightning className="h-4 w-4" />}
-        label="Overall Weather Risk"
-        accent={riskAccent(overall_risk)}
+        icon={<CloudLightning className="h-5 w-5" />}
+        label={t("Overall Weather Risk", "कुल मौसम जोखिम")}
+        accent={overall_risk === "Low" ? "emerald" : overall_risk === "Medium" ? "amber" : "danger"}
       >
         <RiskBadge risk={overall_risk} large />
-        <p className="text-2xs text-charcoal-muted/60 mt-2">
-          Across all evaluated crops
+        <p className="text-2xs font-medium text-slate-400 mt-2">
+          {t("Across all evaluated crops", "मूल्यांकन की गई सभी फ़सलों में")}
         </p>
       </OverviewCard>
     </div>
   );
 }
 
-// ── Overview card shell ───────────────────────────────────────────────────
-
 interface OverviewCardProps {
   icon: React.ReactNode;
   label: string;
   children: React.ReactNode;
-  accent: "forest" | "olive" | "amber" | "danger";
+  accent: "emerald" | "teal" | "amber" | "danger";
 }
 
-const accentBg: Record<string, string> = {
-  forest: "bg-forest/10",
-  olive: "bg-olive/10",
-  amber: "bg-amber/10",
-  danger: "bg-red-50",
-};
-const accentText: Record<string, string> = {
-  forest: "text-forest",
-  olive: "text-olive-600",
-  amber: "text-amber-600",
-  danger: "text-red-600",
+const accentStyle: Record<string, string> = {
+  emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  teal: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
+  amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  danger: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
 };
 
 function OverviewCard({ icon, label, children, accent }: OverviewCardProps) {
   return (
-    <Card className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg shrink-0", accentBg[accent], accentText[accent])}>
+    <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xl backdrop-blur-md space-y-3">
+      <div className="flex items-center gap-2.5">
+        <span className={cn("flex h-10 w-10 items-center justify-center rounded-2xl border shadow-sm shrink-0", accentStyle[accent])}>
           {icon}
         </span>
-        <p className="text-2xs font-bold uppercase tracking-widest text-charcoal-muted/60 leading-tight">
+        <p className="text-2xs font-extrabold uppercase tracking-widest text-slate-400 leading-tight">
           {label}
         </p>
       </div>
       <div>{children}</div>
-    </Card>
+    </div>
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-
 function SuitabilityBar({ value, className }: { value: number; className?: string }) {
-  const color = value >= 80 ? "bg-forest-500" : value >= 60 ? "bg-amber-400" : "bg-red-400";
+  const color = value >= 80 ? "bg-emerald-500" : value >= 60 ? "bg-amber-400" : "bg-rose-500";
   return (
-    <div className={cn("h-1.5 w-full rounded-full bg-ivory-300 overflow-hidden", className)}>
+    <div className={cn("h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden p-0.5 shadow-inner", className)}>
       <div
-        className={cn("h-full rounded-full transition-all duration-700 ease-out", color)}
+        className={cn("h-full rounded-full transition-all duration-700 ease-out shadow-sm", color)}
         style={{ width: `${value}%` }}
       />
     </div>
@@ -130,19 +116,16 @@ function SuitabilityBar({ value, className }: { value: number; className?: strin
 }
 
 export function RiskBadge({ risk, large }: { risk: WeatherRiskLevel; large?: boolean }) {
-  const map: Record<WeatherRiskLevel, { variant: "success" | "warning" | "danger"; dot: boolean }> = {
-    Low: { variant: "success", dot: true },
-    Medium: { variant: "warning", dot: true },
-    High: { variant: "danger", dot: true },
+  const { t } = useLanguage();
+  const map: Record<WeatherRiskLevel, { variant: "success" | "warning" | "danger"; textHi: string }> = {
+    Low: { variant: "success", textHi: "कम जोखिम" },
+    Medium: { variant: "warning", textHi: "मध्यम जोखिम" },
+    High: { variant: "danger", textHi: "उच्च जोखिम" },
   };
-  const { variant, dot } = map[risk];
+  const { variant, textHi } = map[risk];
   return (
-    <Badge variant={variant} size={large ? "md" : "sm"} dot={dot}>
-      {risk} Risk
+    <Badge variant={variant} size={large ? "md" : "sm"} dot className="font-extrabold">
+      {t(`${risk} Risk`, textHi)}
     </Badge>
   );
-}
-
-function riskAccent(risk: WeatherRiskLevel): "forest" | "amber" | "danger" {
-  return risk === "Low" ? "forest" : risk === "Medium" ? "amber" : "danger";
 }

@@ -1,13 +1,7 @@
-/**
- * CropComparisonChart — horizontal bar comparison of crop suitability & yield.
- *
- * Uses simple progress bars (no external chart library).
- * Structured to receive CropIntelligence[] from the backend.
- */
-
 import { cn } from "../../utils/cn";
-import { Card, CardHeader, CardTitle } from "../ui/Card";
 import { RiskBadge } from "./DistrictOverviewCards";
+import { useLanguage } from "../../context/LanguageContext";
+import { getCropName, getCropTheme } from "../../utils/cropTranslations";
 import type { CropIntelligence } from "../../types/districtIntelligence";
 
 interface CropComparisonChartProps {
@@ -16,38 +10,44 @@ interface CropComparisonChartProps {
 }
 
 export function CropComparisonChart({ crops, selectedCropId }: CropComparisonChartProps) {
+  const { t } = useLanguage();
   const maxYield = Math.max(...crops.map((c) => c.avg_yield));
 
   return (
-    <Card className="space-y-5">
-      <CardHeader className="mb-0">
-        <CardTitle>Crop Performance Comparison</CardTitle>
-        <p className="text-sm text-charcoal-muted mt-0.5">
-          Relative suitability and expected yield across evaluated crops.
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 md:p-8 space-y-6 backdrop-blur-md">
+      <div className="space-y-1">
+        <h3 className="text-lg font-black text-slate-900 dark:text-white">
+          {t("Crop Performance Comparison", "फ़सल प्रदर्शन तुलना")}
+        </h3>
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          {t("Relative suitability and expected yield across evaluated crops.", "मूल्यांकन की गई फ़सलों में सापेक्ष उपयुक्तता और अनुमानित उपज।")}
         </p>
-      </CardHeader>
+      </div>
 
       <div className="space-y-4">
         {crops.map((crop) => {
           const isSelected = crop.crop_id === selectedCropId;
+          const cropName = getCropName(crop.crop_name, t);
+          const theme = getCropTheme(crop.crop_name);
+
           return (
             <div
               key={crop.crop_id}
               className={cn(
-                "rounded-xl border px-4 py-3.5 transition-all duration-200",
+                "rounded-2xl border p-4 transition-all duration-200 shadow-sm",
                 isSelected
-                  ? "border-forest/20 bg-forest/[0.03]"
-                  : "border-ivory-200 bg-white"
+                  ? "border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent shadow-emerald-500/10"
+                  : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60"
               )}
             >
               {/* Crop name + risk */}
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2.5">
                   {isSelected && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-forest shrink-0" />
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                   )}
-                  <p className={cn("text-sm font-semibold", isSelected ? "text-forest" : "text-charcoal")}>
-                    {crop.crop_name}
+                  <p className={cn("text-base font-black", isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white")}>
+                    {cropName}
                   </p>
                 </div>
                 <RiskBadge risk={crop.weather_risk} />
@@ -56,20 +56,16 @@ export function CropComparisonChart({ crops, selectedCropId }: CropComparisonCha
               {/* Suitability bar */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-2xs">
-                  <span className="font-semibold uppercase tracking-wider text-charcoal-muted/60">
-                    Suitability
+                  <span className="font-extrabold uppercase tracking-widest text-slate-400">
+                    {t("Suitability", "उपयुक्तता")}
                   </span>
-                  <span className="font-bold text-charcoal tabular-nums">{crop.avg_suitability}%</span>
+                  <span className="font-black text-slate-900 dark:text-white tabular-nums">{crop.avg_suitability}%</span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-ivory-300 overflow-hidden">
+                <div className="h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden p-0.5 shadow-inner">
                   <div
                     className={cn(
-                      "h-full rounded-full transition-all duration-700 ease-out",
-                      crop.avg_suitability >= 80
-                        ? "bg-forest-500"
-                        : crop.avg_suitability >= 60
-                        ? "bg-amber-400"
-                        : "bg-red-400"
+                      "h-full rounded-full bg-gradient-to-r transition-all duration-700 ease-out shadow-sm",
+                      theme.barGradient
                     )}
                     style={{ width: `${crop.avg_suitability}%` }}
                   />
@@ -77,18 +73,18 @@ export function CropComparisonChart({ crops, selectedCropId }: CropComparisonCha
               </div>
 
               {/* Yield bar */}
-              <div className="space-y-1.5 mt-2.5">
+              <div className="space-y-1.5 mt-3">
                 <div className="flex items-center justify-between text-2xs">
-                  <span className="font-semibold uppercase tracking-wider text-charcoal-muted/60">
-                    Avg. Yield
+                  <span className="font-extrabold uppercase tracking-widest text-slate-400">
+                    {t("Avg. Yield", "औसत उपज")}
                   </span>
-                  <span className="font-bold text-charcoal tabular-nums">
-                    {crop.avg_yield.toFixed(1)} t/ha
+                  <span className="font-black text-slate-900 dark:text-white tabular-nums">
+                    {crop.avg_yield.toFixed(1)} {t("t/ha", "टन/हेक्टेयर")}
                   </span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-ivory-300 overflow-hidden">
+                <div className="h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden p-0.5 shadow-inner">
                   <div
-                    className="h-full rounded-full bg-olive-400/80 transition-all duration-700 ease-out"
+                    className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 transition-all duration-700 ease-out shadow-sm"
                     style={{ width: `${(crop.avg_yield / maxYield) * 100}%` }}
                   />
                 </div>
@@ -97,6 +93,6 @@ export function CropComparisonChart({ crops, selectedCropId }: CropComparisonCha
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

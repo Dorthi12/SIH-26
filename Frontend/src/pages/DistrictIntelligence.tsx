@@ -1,29 +1,18 @@
-/**
- * DistrictIntelligence page — /district-intelligence
- *
- * A professional agricultural intelligence dashboard for a selected district.
- *
- * Architecture:
- *   - All data-fetching state lives here.
- *   - fetchDistrictIntelligence() in districtIntelligenceService is the single
- *     backend integration point for GET /districts/{district_id}/intelligence.
- *   - Sub-components receive only the props they need.
- *   - No ML/calculation logic; no invented values.
- */
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MapPin, Sprout, History as HistoryIcon,
-  ArrowRight, RefreshCw, AlertCircle, Layers,
+  ArrowRight, RefreshCw, AlertCircle, Layers, Sparkles, Navigation, Globe
 } from "lucide-react";
 
 import { PageContainer } from "../components/ui/PageContainer";
 import { SectionHeader } from "../components/ui/SectionHeader";
 import { Badge } from "../components/ui/Badge";
 import { DistrictSelect } from "../components/ui/DistrictSelect";
-import { EmptyState } from "../components/ui/EmptyState";
+import { LanguageSwitcher } from "../components/layout/LanguageSwitcher";
+import { useLanguage } from "../context/LanguageContext";
 import { useScrollReveal } from "../utils/useScrollReveal";
+import { cn } from "../utils/cn";
 
 import { DistrictOverviewCards } from "../components/districtIntelligence/DistrictOverviewCards";
 import { CropIntelligenceTable } from "../components/districtIntelligence/CropIntelligenceTable";
@@ -35,6 +24,7 @@ import { IntelligenceSkeleton } from "../components/districtIntelligence/Intelli
 import {
   fetchDistricts,
   fetchDistrictIntelligence,
+  DETAILED_DISTRICTS,
 } from "../services/districtIntelligenceService";
 
 import type {
@@ -44,30 +34,31 @@ import type {
   DistrictIntelligenceStatus,
 } from "../types/districtIntelligence";
 
-// ── Page ──────────────────────────────────────────────────────────────────
-
 export function DistrictIntelligencePage() {
   const navigate = useNavigate();
   const revealRef = useScrollReveal();
+  const { t } = useLanguage();
 
   // District selector
   const [districts, setDistricts] = useState<DistrictOption[]>([]);
-  const [selectedDistrictId, setSelectedDistrictId] = useState<string>("");
+  // Auto-select Prayagraj by default so page is immediately populated!
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string>("prayagraj");
   const [districtsLoading, setDistrictsLoading] = useState(true);
 
   // Intelligence lifecycle
-  const [status, setStatus] = useState<DistrictIntelligenceStatus>("idle");
+  const [status, setStatus] = useState<DistrictIntelligenceStatus>("loading");
   const [intelligence, setIntelligence] = useState<DistrictIntelligence | null>(null);
   const [selectedCrop, setSelectedCrop] = useState<CropIntelligence | null>(null);
 
-  // Load district list on mount (currently returns the frontend constant)
+  // Load district list on mount
   useEffect(() => {
     fetchDistricts()
-      .then(setDistricts)
+      .then((data) => {
+        setDistricts(data);
+      })
       .finally(() => setDistrictsLoading(false));
   }, []);
 
-  // When a district is selected, fetch its intelligence
   const loadRef = useRef<string | null>(null);
 
   const loadIntelligence = useCallback(async (districtId: string) => {
@@ -80,36 +71,32 @@ export function DistrictIntelligencePage() {
 
     loadRef.current = districtId;
     setStatus("loading");
-    setIntelligence(null);
     setSelectedCrop(null);
 
     try {
-      // ── BACKEND INTEGRATION POINT ──────────────────────────────────────
-      // fetchDistrictIntelligence() will call GET /districts/{id}/intelligence
-      // when the backend is connected.
       const data = await fetchDistrictIntelligence(districtId);
-
-      // Guard against stale requests
       if (loadRef.current !== districtId) return;
 
       setIntelligence(data);
       setStatus("ready");
     } catch (_err) {
       if (loadRef.current !== districtId) return;
-
-      // Backend not connected yet — show the placeholder/empty state instead of error
-      // so the UI looks production-ready for demo/hackathon purposes.
-      // When the backend is live, this will naturally show real data.
-      setStatus("idle");
+      setStatus("error");
     }
   }, []);
+
+  // Fetch intelligence when selectedDistrictId changes
+  useEffect(() => {
+    if (selectedDistrictId) {
+      loadIntelligence(selectedDistrictId);
+    }
+  }, [selectedDistrictId, loadIntelligence]);
 
   const handleDistrictChange = useCallback(
     (value: string) => {
       setSelectedDistrictId(value);
-      loadIntelligence(value);
     },
-    [loadIntelligence]
+    []
   );
 
   const handleRetry = useCallback(() => {
@@ -117,128 +104,166 @@ export function DistrictIntelligencePage() {
   }, [selectedDistrictId, loadIntelligence]);
 
   const selectedDistrictLabel =
-    districts.find((d) => d.value === selectedDistrictId)?.label ?? selectedDistrictId;
+    districts.find((d) => d.value.toLowerCase() === selectedDistrictId.toLowerCase())?.label ?? selectedDistrictId;
 
   return (
-    <div className="min-h-screen bg-ivory">
+    <div className="min-h-screen bg-slate-50/60 dark:bg-[#090f0c] text-slate-900 dark:text-slate-100 transition-colors">
 
-      {/* ── Sticky context bar ── */}
-      <div className="sticky top-16 z-30 bg-ivory dark:bg-[#101815] border-b border-ivory-300 dark:border-[#26362f] shadow-nav">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+      {/* ── Sticky Context Bar with Language Switcher ── */}
+      <div className="sticky top-16 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Layers className="h-3.5 w-3.5 text-forest/60 shrink-0" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Layers className="h-4 w-4 shrink-0" />
+            </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
-              <p className="text-2xs font-bold uppercase tracking-widest text-charcoal-muted/50">
-                Intelligence
+              <p className="text-2xs font-extrabold uppercase tracking-widest text-slate-400">
+                {t("Intelligence", "बुद्धिमत्ता")}
               </p>
               {selectedDistrictId ? (
                 <>
-                  <p className="text-sm font-semibold text-charcoal truncate">
+                  <p className="text-sm font-black text-slate-900 dark:text-white truncate">
                     {selectedDistrictLabel}
                   </p>
-                  <Badge variant="default" size="sm">
-                    {status === "loading" ? "Loading…" : status === "ready" ? "Live" : "Ready"}
+                  <Badge variant="amber" size="sm" className="font-extrabold">
+                    {status === "loading" ? t("Loading…", "लोड हो रहा है…") : status === "ready" ? t("Live GIS", "लाइव") : t("Ready", "तैयार")}
                   </Badge>
                 </>
               ) : (
-                <p className="text-sm text-charcoal-muted">No district selected</p>
+                <p className="text-sm text-slate-400">{t("No district selected", "कोई ज़िला नहीं चुना गया")}</p>
               )}
             </div>
           </div>
 
-          {/* Historical link */}
-          <button
-            type="button"
-            onClick={() => navigate("/history")}
-            className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-charcoal-muted hover:text-forest transition-colors rounded-lg px-2 py-1 hover:bg-forest/[0.05]"
-          >
-            <HistoryIcon className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Historical Performance</span>
-            <ArrowRight className="h-3 w-3" />
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Switcher Button */}
+            <LanguageSwitcher className="shadow-sm" />
+
+            <button
+              type="button"
+              onClick={() => navigate("/history")}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+            >
+              <HistoryIcon className="h-3.5 w-3.5" />
+              <span>{t("Historical Performance", "ऐतिहासिक प्रदर्शन")}</span>
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
         </div>
       </div>
 
       <div ref={revealRef as React.Ref<HTMLDivElement>}>
         <PageContainer maxWidth="xl" className="py-8 md:py-12 space-y-10 animate-fade-in">
 
-          {/* ── Page header ── */}
-          <header className="space-y-4" data-reveal>
-            <div className="space-y-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-forest/60">
-                Agricultural Intelligence
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold text-charcoal tracking-tight">
-                District Intelligence
+          {/* ── 1. Vibrant Hero Banner ── */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900/90 via-teal-900/95 to-slate-950 p-8 sm:p-10 text-white shadow-2xl shadow-emerald-950/20 border border-emerald-500/20">
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+
+            <div className="relative space-y-4 max-w-3xl">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-2xs font-extrabold uppercase tracking-widest backdrop-blur-md">
+                <Globe className="h-3.5 w-3.5 text-amber-400 animate-spin-slow" />
+                {t("Agricultural GIS Intelligence", "कृषि जीआईएस बुद्धिमत्ता")}
+              </span>
+
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                {t("District Intelligence", "ज़िला कृषि बुद्धिमत्ता")}
               </h1>
-              <p className="text-base text-charcoal-muted max-w-xl leading-relaxed">
-                Explore crop suitability, expected performance, and weather risk across your district.
+
+              <p className="text-base sm:text-lg text-emerald-100/80 leading-relaxed font-medium">
+                {t(
+                  "Explore crop suitability, expected yield, weather risk, and soil maps for any district in Uttar Pradesh.",
+                  "उत्तर प्रदेश के किसी भी ज़िले के लिए फ़सल की उपयुक्तता, अनुमानित उपज, मौसम के जोखिम और मिट्टी का नक्शा देखें।"
+                )}
               </p>
             </div>
-          </header>
+          </div>
 
-          {/* ── District selector ── */}
-          <section
-            aria-labelledby="district-selector-heading"
-            data-reveal
-            data-delay="100"
-          >
+          {/* ── 2. Side-by-Side Google Maps Style Selection & Interactive GIS View ── */}
+          <section aria-labelledby="district-selector-heading" className="space-y-6">
             <SectionHeader
               id="district-selector-heading"
-              title="Select District"
-              subtitle="Choose a district to load agricultural intelligence."
-              className="mb-4"
+              title={t("Select District & Map View", "ज़िला चुनें और नक्शा देखें")}
+              subtitle={t("Click any district chip below or search to view GIS map & live intelligence.", "जीआईएस नक्शा और लाइव बुद्धिमत्ता देखने के लिए नीचे किसी भी ज़िले पर क्लिक करें या खोजें।")}
             />
-            <div className="max-w-sm">
-              <DistrictSelect
-                id="district-intelligence-selector"
-                label=""
-                options={districts}
-                value={selectedDistrictId}
-                onChange={handleDistrictChange}
-                placeholder={
-                  districtsLoading ? "Loading districts…" : "Search and select a district"
-                }
-                disabled={districtsLoading}
-              />
+
+            <div className="grid lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: District Selector & Popular Quick Cards (5 cols) */}
+              <div className="lg:col-span-5 space-y-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 backdrop-blur-md">
+                <div className="space-y-2">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {t("Search District Name", "ज़िले का नाम खोजें")}
+                  </label>
+                  <DistrictSelect
+                    id="district-intelligence-selector"
+                    label=""
+                    options={districts}
+                    value={selectedDistrictId}
+                    onChange={handleDistrictChange}
+                    placeholder={
+                      districtsLoading ? t("Loading districts…", "ज़िले लोड हो रहे हैं…") : t("Search and select a district…", "ज़िला खोजें और चुनें…")
+                    }
+                    disabled={districtsLoading}
+                  />
+                </div>
+
+                {/* Popular Districts Grid (Cards/Chips so districts are clearly seen) */}
+                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      {t("Popular Districts in UP", "उत्तर प्रदेश के लोकप्रिय ज़िले")}
+                    </p>
+                    <span className="text-3xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      {DETAILED_DISTRICTS.length} {t("Available", "उपलब्ध")}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2.5">
+                    {DETAILED_DISTRICTS.map((d) => {
+                      const isSelected = d.value.toLowerCase() === selectedDistrictId.toLowerCase();
+                      return (
+                        <button
+                          key={d.value}
+                          type="button"
+                          onClick={() => handleDistrictChange(d.value)}
+                          className={cn(
+                            "flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all duration-200 cursor-pointer select-none",
+                            isSelected
+                              ? "border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-slate-900 dark:text-white shadow-md scale-[1.02] font-black"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-emerald-500/40 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          )}
+                        >
+                          <div className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-colors",
+                            isSelected ? "bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 shadow-sm" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                          )}>
+                            <MapPin className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-black truncate">{d.label}</p>
+                            <p className="text-3xs text-slate-400 truncate">{d.best_crop} • {d.crops[0]?.suitability}%</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Google Maps Style GIS Map Visual (7 cols) */}
+              <div className="lg:col-span-7">
+                {intelligence ? (
+                  <DistrictMapVisual intelligence={intelligence} />
+                ) : (
+                  <div className="h-64 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+                    <p className="text-xs font-bold">{t("Loading Google Maps visual…", "गूगल मैप्स विजुअल लोड हो रहा है…")}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
 
-          {/* ── Main content area ── */}
-          {status === "idle" && !selectedDistrictId && (
-            /* Empty state — no district selected */
-            <div data-reveal data-delay="200">
-              <div className="bg-card rounded-2xl border border-ivory-300 shadow-card">
-                <EmptyState
-                  icon={<MapPin className="h-7 w-7" />}
-                  title="Select a district to explore agricultural intelligence"
-                  description="Choose a district from the selector above to see crop suitability, yield forecasts, and weather risk for your area."
-                  action={
-                    <button
-                      type="button"
-                      onClick={() => navigate("/recommendation")}
-                      className="flex items-center gap-2 rounded-xl bg-forest px-5 py-2.5 text-sm font-semibold text-white hover:bg-forest-600 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
-                    >
-                      <Sprout className="h-4 w-4" />
-                      Or start with Recommendation
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  }
-                />
-              </div>
-            </div>
-          )}
-
-          {status === "idle" && selectedDistrictId && (
-            /* District selected but no backend yet — placeholder state */
-            <div data-reveal data-delay="200">
-              <DistrictIntelligencePlaceholder
-                districtName={selectedDistrictLabel}
-                onRetry={handleRetry}
-              />
-            </div>
-          )}
-
+          {/* ── 3. Main Intelligence Analytics Section ── */}
           {status === "loading" && (
             <div data-reveal data-delay="150">
               <IntelligenceSkeleton />
@@ -247,74 +272,57 @@ export function DistrictIntelligencePage() {
 
           {status === "error" && (
             <div data-reveal data-delay="150">
-              <div className="bg-card rounded-2xl border border-ivory-300 shadow-card">
-                <div className="flex flex-col items-center justify-center py-20 gap-5 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 border border-red-100 text-red-500">
-                    <AlertCircle className="h-7 w-7" strokeWidth={1.5} />
-                  </div>
-                  <div className="space-y-1 max-w-sm">
-                    <h3 className="text-base font-bold text-charcoal">
-                      District intelligence is currently unavailable
-                    </h3>
-                    <p className="text-sm text-charcoal-muted leading-relaxed">
-                      We couldn't load intelligence data for{" "}
-                      <strong>{selectedDistrictLabel}</strong>. Please try again.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    id="retry-district-intelligence-btn"
-                    onClick={handleRetry}
-                    className="flex items-center gap-2 rounded-xl border border-forest/20 bg-white px-4 py-2.5 text-sm font-semibold text-forest hover:bg-forest/[0.04] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Try Again
-                  </button>
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-500/20 shadow-xl p-10 text-center space-y-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 mx-auto">
+                  <AlertCircle className="h-7 w-7" />
                 </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {t("District intelligence is currently unavailable", "ज़िला बुद्धिमत्ता वर्तमान में अनुपलब्ध है")}
+                  </h3>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {t(`Could not load data for ${selectedDistrictLabel}.`, `${selectedDistrictLabel} के लिए डेटा लोड नहीं हो सका।`)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-500 text-slate-950 font-black text-xs shadow-md"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  {t("Try Again", "फिर से प्रयास करें")}
+                </button>
               </div>
             </div>
           )}
 
           {status === "ready" && intelligence && (
             <div className="space-y-10">
-              {/* Overview KPI cards */}
-              <section aria-labelledby="overview-heading" data-reveal data-delay="100">
+              {/* Overview KPI Cards */}
+              <section aria-labelledby="overview-heading">
                 <SectionHeader
                   id="overview-heading"
-                  title="Intelligence Overview"
-                  subtitle={`Agricultural summary for ${intelligence.district_name}.`}
+                  title={t("Intelligence Overview", "बुद्धिमत्ता अवलोकन")}
+                  subtitle={t(`Agricultural summary for ${intelligence.district_name}.`, `${intelligence.district_name} का कृषि सारांश।`)}
                   className="mb-4"
                 />
                 <DistrictOverviewCards intelligence={intelligence} />
               </section>
 
-              {/* Map visual */}
-              <section aria-labelledby="map-heading" data-reveal data-delay="150">
-                <SectionHeader
-                  id="map-heading"
-                  title="District Agricultural Map"
-                  subtitle="Visual overview of agricultural zones and indicators."
-                  className="mb-4"
-                />
-                <DistrictMapVisual intelligence={intelligence} />
-              </section>
-
-              {/* Table + detail panel */}
-              <section aria-labelledby="crop-table-heading" data-reveal data-delay="200">
+              {/* Crop Intelligence Table & Detail Panel */}
+              <section aria-labelledby="crop-table-heading">
                 <SectionHeader
                   id="crop-table-heading"
-                  title="Crop Intelligence"
-                  subtitle="Suitability, yield, and risk for each evaluated crop. Click a row to explore."
+                  title={t("Crop Intelligence", "फ़सल बुद्धिमत्ता")}
+                  subtitle={t("Suitability, yield, and risk for each evaluated crop. Click a row to explore details.", "प्रत्येक मूल्यांकन की गई फ़सल की उपयुक्तता, उपज और जोखिम। विवरण देखने के लिए क्लिक करें।")}
                   className="mb-4"
                 />
-                <div className="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
-                  <div className="space-y-3">
-                    <CropIntelligenceTable
-                      crops={intelligence.crops}
-                      selectedCropId={selectedCrop?.crop_id ?? null}
-                      onSelectCrop={setSelectedCrop}
-                    />
-                  </div>
+                <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+                  <CropIntelligenceTable
+                    crops={intelligence.crops}
+                    selectedCropId={selectedCrop?.crop_id ?? null}
+                    onSelectCrop={setSelectedCrop}
+                  />
 
                   <div>
                     {selectedCrop ? (
@@ -324,12 +332,12 @@ export function DistrictIntelligencePage() {
                         onClose={() => setSelectedCrop(null)}
                       />
                     ) : (
-                      <div className="bg-card rounded-2xl border border-dashed border-ivory-300 flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest/8 text-forest/50">
-                          <Sprout className="h-5 w-5" strokeWidth={1.5} />
+                      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-3 py-16 px-6 text-center shadow-sm">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+                          <Sprout className="h-6 w-6" />
                         </div>
-                        <p className="text-sm font-medium text-charcoal-muted">
-                          Select a crop to view details
+                        <p className="text-xs font-black text-slate-500 dark:text-slate-400">
+                          {t("Select a crop row to view detailed recommendations", "विस्तृत सिफारिशों के लिए एक फ़सल चुनें")}
                         </p>
                       </div>
                     )}
@@ -337,12 +345,12 @@ export function DistrictIntelligencePage() {
                 </div>
               </section>
 
-              {/* Crop comparison */}
-              <section aria-labelledby="comparison-heading" data-reveal data-delay="250">
+              {/* Crop Comparison Chart */}
+              <section aria-labelledby="comparison-heading">
                 <SectionHeader
                   id="comparison-heading"
-                  title="Performance Comparison"
-                  subtitle="Compare crop suitability and yield side by side."
+                  title={t("Performance Comparison", "प्रदर्शन तुलना")}
+                  subtitle={t("Compare crop suitability and yield side by side.", "फ़सल उपयुक्तता और उपज की एक साथ तुलना करें।")}
                   className="mb-4"
                 />
                 <CropComparisonChart
@@ -351,27 +359,23 @@ export function DistrictIntelligencePage() {
                 />
               </section>
 
-              {/* Navigation CTAs */}
-              <div
-                className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 pb-4"
-                data-reveal
-                data-delay="300"
-              >
+              {/* Navigation Footer CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                 <button
                   type="button"
                   onClick={() => navigate("/history")}
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-ivory-300 text-sm font-semibold text-charcoal hover:border-forest/30 hover:bg-forest/[0.02] transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-black text-slate-800 dark:text-slate-200 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all shadow-md cursor-pointer"
                 >
-                  <HistoryIcon className="h-4 w-4 text-charcoal-muted" />
-                  View Historical Performance
+                  <HistoryIcon className="h-4 w-4 text-slate-500" />
+                  {t("View Historical Performance", "ऐतिहासिक प्रदर्शन देखें")}
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate("/recommendation")}
-                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-forest text-white text-sm font-semibold hover:bg-forest-600 transition-all duration-200 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
+                  className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black text-xs hover:from-emerald-400 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
                 >
                   <Sprout className="h-4 w-4" />
-                  New Recommendation
+                  {t("New Recommendation", "नई फ़सल सिफारिश")}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
@@ -379,77 +383,6 @@ export function DistrictIntelligencePage() {
           )}
 
         </PageContainer>
-      </div>
-    </div>
-  );
-}
-
-// ── Placeholder state (district selected, backend not yet connected) ───────
-
-function DistrictIntelligencePlaceholder({
-  districtName,
-  onRetry,
-}: {
-  districtName: string;
-  onRetry: () => void;
-}) {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Placeholder KPI cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Best Performing Crop", value: "—" },
-          { label: "Avg. Suitability", value: "—" },
-          { label: "Avg. Expected Yield", value: "—" },
-          { label: "Overall Weather Risk", value: "—" },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="bg-card rounded-2xl border border-ivory-300 shadow-card p-5 flex flex-col gap-3"
-          >
-            <p className="text-2xs font-bold uppercase tracking-widest text-charcoal-muted/60">
-              {item.label}
-            </p>
-            <p className="text-2xl font-bold text-charcoal-muted/25 select-none">
-              {item.value}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Central placeholder card */}
-      <div className="bg-card rounded-2xl border border-dashed border-forest/20 shadow-card p-10 flex flex-col items-center justify-center gap-5 text-center">
-        <div className="relative">
-          <div className="absolute h-20 w-20 rounded-full border border-forest/10 animate-pulse" />
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-forest/8 text-forest/50 animate-float shadow-sm">
-            <Layers className="h-7 w-7" />
-          </div>
-        </div>
-        <div className="space-y-2 max-w-md">
-          <h3 className="text-base font-bold text-charcoal">
-            Intelligence ready for {districtName}
-          </h3>
-          <p className="text-sm text-charcoal-muted leading-relaxed">
-            The district intelligence backend will populate this view with real crop
-            suitability, yield forecasts, and risk analysis once connected.
-          </p>
-          <p className="text-xs text-charcoal-muted/60 font-medium bg-ivory-100 rounded-lg px-3 py-2 mt-2 inline-block">
-            Connect{" "}
-            <code className="font-mono text-forest">
-              GET /districts/{"{district_id}"}/intelligence
-            </code>{" "}
-            to activate
-          </p>
-        </div>
-        <button
-          type="button"
-          id="district-intelligence-retry-btn"
-          onClick={onRetry}
-          className="flex items-center gap-2 rounded-xl border border-forest/20 bg-white px-4 py-2.5 text-sm font-semibold text-forest hover:bg-forest/[0.04] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Retry
-        </button>
       </div>
     </div>
   );
