@@ -314,22 +314,8 @@ function MandiContent() {
         {/* TAB 1: MARKETPLACE */}
         {activeTab === "marketplace" && !showRoleLanding && (
           <div className="space-y-6">
-            {/* Header Title */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-black text-charcoal dark:text-ivory-100 flex items-center gap-2">
-                  <ShoppingBag className="w-6 h-6 text-forest dark:text-emerald-400" />
-                  {t("Agricultural Produce Marketplace", "कृषि उपज मंडी बाज़ार")}
-                </h2>
-                <p className="text-xs text-charcoal-muted dark:text-ivory-400 mt-0.5">
-                  {t(
-                    "Discover verified listings with transparent evidence-backed prices",
-                    "पारदर्शी साक्ष्य-आधारित कीमतों के साथ सत्यापित लिस्टिंग खोजें"
-                  )}
-                </p>
-              </div>
-
-              {userRole === "SELLER" && (
+            {userRole === "SELLER" && (
+              <div className="flex justify-end">
                 <button
                   onClick={() => {
                     if (!farmerAuth) {
@@ -343,8 +329,8 @@ function MandiContent() {
                   <PlusCircle className="w-4 h-4 text-amber" />
                   {t("List New Crop", "नई फसल सूचीबद्ध करें")}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Layout Grid: Sidebar Filters + Listings Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
