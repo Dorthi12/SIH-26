@@ -11,8 +11,8 @@ from __future__ import annotations
 import logging
 from typing import List, Tuple
 
-from rag import config
-from rag.retrieval.models import RetrievalCandidate, RetrievalResult
+import config
+from retrieval.models import RetrievalCandidate, RetrievalResult
 
 log = logging.getLogger(__name__)
 

@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from rag.ingestion.discovery import DocumentInfo
+from ingestion.discovery import DocumentInfo
 
 log = logging.getLogger(__name__)
 

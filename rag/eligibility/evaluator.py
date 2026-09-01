@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from rag.eligibility.models import (
+from eligibility.models import (
     ConditionResult,
     EligibilityCondition,
     EligibilityFarmerProfile,

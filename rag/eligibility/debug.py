@@ -30,8 +30,8 @@ import os
 # Ensure the project root is on the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from rag.eligibility.models import EligibilityFarmerProfile, EligibilityStatus
-from rag.eligibility.service import check_eligibility, recommend_schemes
+from eligibility.models import EligibilityFarmerProfile, EligibilityStatus
+from eligibility.service import check_eligibility, recommend_schemes
 
 
 # ---------------------------------------------------------------------------

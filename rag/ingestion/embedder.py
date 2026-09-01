@@ -12,8 +12,8 @@ from __future__ import annotations
 import logging
 from typing import List, Optional
 
-from rag import config
-from rag.ingestion.chunker import Chunk
+import config
+from ingestion.chunker import Chunk
 
 log = logging.getLogger(__name__)
 

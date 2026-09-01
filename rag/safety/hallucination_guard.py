@@ -20,7 +20,7 @@ import logging
 import re
 from typing import List, Any
 
-from rag import config
+import config
 
 log = logging.getLogger(__name__)
 

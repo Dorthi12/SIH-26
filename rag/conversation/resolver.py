@@ -20,9 +20,9 @@ import logging
 import re
 from typing import Dict, List, Optional, Set
 
-from rag.conversation.models import ConversationMessage, ConversationState, ResolvedContext
-from rag.retrieval.query_understanding import understand
-from rag.retrieval.models import FarmerProfile
+from conversation.models import ConversationMessage, ConversationState, ResolvedContext
+from retrieval.query_understanding import understand
+from retrieval.models import FarmerProfile
 
 log = logging.getLogger(__name__)
 

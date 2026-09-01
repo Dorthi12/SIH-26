@@ -28,11 +28,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Ensure parent directory is in sys.path so 'from rag...' imports work regardless of working directory
+# Ensure rag directory is in sys.path so modules like 'config', 'retrieval', etc. are imported directly
 _RAG_DIR = Path(__file__).resolve().parent.parent
-_PARENT_DIR = str(_RAG_DIR.parent)
-if _PARENT_DIR not in sys.path:
-    sys.path.insert(0, _PARENT_DIR)
+if str(_RAG_DIR) not in sys.path:
+    sys.path.insert(0, str(_RAG_DIR))
 
 import asyncio
 import logging
@@ -45,8 +44,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from rag import config
-from rag.api.schemas import (
+import config
+from api.schemas import (
     ChatRequest,
     ChatResponse,
     ChunkResult,
@@ -71,22 +70,22 @@ from rag.api.schemas import (
     RetrieveRequest,
     RetrieveResponse,
 )
-from rag.retrieval.models import FarmerProfile
-from rag.retrieval.retriever import get_retriever
-from rag.generation.generator import get_generator
-from rag.generation.models import SAFE_FALLBACK_ANSWERS
-from rag.eligibility.models import EligibilityFarmerProfile
-from rag.eligibility.service import check_eligibility, recommend_schemes
-from rag.conversation.models import ChatRequest as ConvChatRequest
-from rag.conversation import service as conv_service
-from rag.safety.validators import validate_query, detect_injection, sanitize_query, validate_farmer_profile, validate_conversation_id
-from rag.safety.citation_validator import validate_citations
-from rag.safety.hallucination_guard import check_low_confidence, check_eligibility_language, sanitize_eligibility_language
-from rag.safety.request_id import generate_request_id
-from rag.observability.structured_log import log_rag_request, log_pipeline_stage
-from rag.observability.metrics import get_metrics
-from rag.observability.latency_tracker import LatencyTracker
-from rag.reliability.timeout_wrapper import async_with_timeout
+from retrieval.models import FarmerProfile
+from retrieval.retriever import get_retriever
+from generation.generator import get_generator
+from generation.models import SAFE_FALLBACK_ANSWERS
+from eligibility.models import EligibilityFarmerProfile
+from eligibility.service import check_eligibility, recommend_schemes
+from conversation.models import ChatRequest as ConvChatRequest
+from conversation import service as conv_service
+from safety.validators import validate_query, detect_injection, sanitize_query, validate_farmer_profile, validate_conversation_id
+from safety.citation_validator import validate_citations
+from safety.hallucination_guard import check_low_confidence, check_eligibility_language, sanitize_eligibility_language
+from safety.request_id import generate_request_id
+from observability.structured_log import log_rag_request, log_pipeline_stage
+from observability.metrics import get_metrics
+from observability.latency_tracker import LatencyTracker
+from reliability.timeout_wrapper import async_with_timeout
 
 log = logging.getLogger(__name__)
 
@@ -146,7 +145,7 @@ async def _startup() -> None:
 
     # 3. Embedding model warmup
     try:
-        from rag.retrieval.query_embedder import embed_query
+        from retrieval.query_embedder import embed_query
         embed_query("warmup")
         log.info("Embedding model ready: %s", config.EMBEDDING_MODEL)
     except Exception as exc:
@@ -214,7 +213,7 @@ async def health() -> HealthResponse:
 
     if config.RERANKER_ENABLED:
         try:
-            from rag.retrieval.reranker import get_reranker
+            from retrieval.reranker import get_reranker
             reranker_status = "loaded" if get_reranker().is_available else "unavailable"
         except Exception:
             reranker_status = "unavailable"
@@ -247,7 +246,7 @@ async def ready() -> ReadyResponse:
     reason = None
 
     try:
-        from rag.retrieval.query_embedder import embed_query
+        from retrieval.query_embedder import embed_query
         embed_query("ready_check")
         embedding_status = "loaded"
     except Exception as exc:

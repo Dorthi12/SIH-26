@@ -34,7 +34,7 @@ from typing import List, Optional
 
 from rank_bm25 import BM25Okapi
 
-from rag.retrieval.models import RetrievalCandidate
+from retrieval.models import RetrievalCandidate
 
 log = logging.getLogger(__name__)
 

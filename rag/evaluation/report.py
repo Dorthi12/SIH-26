@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
-from rag.evaluation.models import EvalReport, MetricSet
+from evaluation.models import EvalReport, MetricSet
 
 
 # ---------------------------------------------------------------------------

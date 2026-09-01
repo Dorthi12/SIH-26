@@ -16,21 +16,21 @@ import time
 import uuid
 from typing import Dict, List, Optional, Set
 
-from rag import config
-from rag.eligibility.evaluator import evaluate_all
-from rag.eligibility.models import (
+import config
+from eligibility.evaluator import evaluate_all
+from eligibility.models import (
     EligibilityFarmerProfile,
     EligibilityResponse,
     EligibilityResult,
     EligibilityStatus,
     RecommendationResponse,
 )
-from rag.eligibility.recommendation import rank_schemes, split_by_level
-from rag.eligibility.rule_extractor import extract_rules
-from rag.retrieval.models import FarmerProfile, RetrievalResult
-from rag.retrieval.retriever import get_retriever
-from rag.retrieval.query_understanding import understand
-from rag.generation.citation_builder import build_follow_ups
+from eligibility.recommendation import rank_schemes, split_by_level
+from eligibility.rule_extractor import extract_rules
+from retrieval.models import FarmerProfile, RetrievalResult
+from retrieval.retriever import get_retriever
+from retrieval.query_understanding import understand
+from generation.citation_builder import build_follow_ups
 
 log = logging.getLogger(__name__)
 

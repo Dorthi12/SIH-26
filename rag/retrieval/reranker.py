@@ -26,8 +26,8 @@ import logging
 import time
 from typing import List, Optional
 
-from rag import config
-from rag.retrieval.models import RetrievalCandidate
+import config
+from retrieval.models import RetrievalCandidate
 
 log = logging.getLogger(__name__)
 

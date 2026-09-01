@@ -15,8 +15,8 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional
 
-from rag.retrieval.models import QueryUnderstanding, RetrievalCandidate, RetrievalResult
-from rag.generation.models import SchemeInfo, SourceCitation
+from retrieval.models import QueryUnderstanding, RetrievalCandidate, RetrievalResult
+from generation.models import SchemeInfo, SourceCitation
 
 log = logging.getLogger(__name__)
 

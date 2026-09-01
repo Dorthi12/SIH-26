@@ -42,11 +42,11 @@ import time
 import uuid
 from typing import Dict, List, Optional
 
-from rag import config
-from rag.generation.answer_classifier import classify_query_status
-from rag.generation.citation_builder import build_citations, build_follow_ups, extract_schemes
-from rag.generation.context_builder import build_context
-from rag.generation.models import (
+import config
+from generation.answer_classifier import classify_query_status
+from generation.citation_builder import build_citations, build_follow_ups, extract_schemes
+from generation.context_builder import build_context
+from generation.models import (
     GenerationResult,
     RetrievalMeta,
     SAFE_FALLBACK_ANSWERS,
@@ -58,9 +58,9 @@ from rag.generation.models import (
     CONFIDENCE_HIGH, CONFIDENCE_MEDIUM, CONFIDENCE_LOW,
     compute_confidence,
 )
-from rag.generation.prompts import build_system_prompt, build_user_message, PROMPT_VERSION
-from rag.retrieval.models import FarmerProfile, RetrievalResult
-from rag.retrieval.query_understanding import understand
+from generation.prompts import build_system_prompt, build_user_message, PROMPT_VERSION
+from retrieval.models import FarmerProfile, RetrievalResult
+from retrieval.query_understanding import understand
 
 log = logging.getLogger(__name__)
 

@@ -23,14 +23,14 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Optional
 
-from rag import config
-from rag.ingestion.pinecone_store import PineconeStore
-from rag.retrieval.dense import dense_retrieve, parse_pinecone_results
-from rag.retrieval.filters import build_filter, filter_to_display
-from rag.retrieval.models import FarmerProfile, QueryUnderstanding, RetrievalCandidate, RetrievalResult
-from rag.retrieval.query_embedder import embed_query, embed_query_async
-from rag.retrieval.query_understanding import understand
-from rag.retrieval.ranker import rank_and_deduplicate
+import config
+from ingestion.pinecone_store import PineconeStore
+from retrieval.dense import dense_retrieve, parse_pinecone_results
+from retrieval.filters import build_filter, filter_to_display
+from retrieval.models import FarmerProfile, QueryUnderstanding, RetrievalCandidate, RetrievalResult
+from retrieval.query_embedder import embed_query, embed_query_async
+from retrieval.query_understanding import understand
+from retrieval.ranker import rank_and_deduplicate
 
 log = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class KnowledgeRetriever:
         top_k: Optional[int] = None,
     ) -> RetrievalResult:
         """Hybrid dense + keyword + RRF + reranking pipeline."""
-        from rag.retrieval.service import get_hybrid_service
+        from retrieval.service import get_hybrid_service
         return get_hybrid_service().search(
             query=query,
             farmer_profile=farmer_profile,

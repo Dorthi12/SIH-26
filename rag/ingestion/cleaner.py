@@ -15,7 +15,7 @@ import unicodedata
 from collections import Counter
 from typing import List
 
-from rag.ingestion.extractor import PageData
+from ingestion.extractor import PageData
 
 log = logging.getLogger(__name__)
 

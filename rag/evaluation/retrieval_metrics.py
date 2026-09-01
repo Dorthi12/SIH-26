@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional, Set
 
-from rag.evaluation.models import (
+from evaluation.models import (
     EvalQuestion,
     LanguageMetrics,
     MetricSet,

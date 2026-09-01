@@ -15,7 +15,7 @@ import logging
 import sys
 from typing import Optional
 
-from rag import config
+import config
 
 # ANSI colours (tty-aware)
 _B  = "\033[1m"    if sys.stdout.isatty() else ""
@@ -45,10 +45,10 @@ def run_debug(
     profile_crop: Optional[str] = None,
     verbose: bool = False,
 ) -> None:
-    from rag.retrieval.models import FarmerProfile
-    from rag.retrieval.query_understanding import understand, detect_language, detect_intent
-    from rag.retrieval.filters import build_filter
-    from rag.retrieval.retriever import get_retriever
+    from retrieval.models import FarmerProfile
+    from retrieval.query_understanding import understand, detect_language, detect_intent
+    from retrieval.filters import build_filter
+    from retrieval.retriever import get_retriever
 
     _p(f"\n{_B}{_C}AgriSense RAG — Retrieval Debug{_R}")
     _p(f"Query: {_B}{query}{_R}")
@@ -83,7 +83,7 @@ def run_debug(
 
     # ── Embedding ──
     _section("Query Embedding")
-    from rag.retrieval.query_embedder import embed_query
+    from retrieval.query_embedder import embed_query
     embedding = embed_query(qu.raw_query)
     _kv("Dimension:", len(embedding))
     _kv("First 5 values:", [round(v, 4) for v in embedding[:5]])

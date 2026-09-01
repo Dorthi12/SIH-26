@@ -27,7 +27,7 @@ import time
 from enum import Enum
 from typing import Any, Callable, Optional
 
-from rag import config
+import config
 
 log = logging.getLogger(__name__)
 

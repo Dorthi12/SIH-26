@@ -27,8 +27,8 @@ import threading
 from pathlib import Path
 from typing import List, Optional
 
-from rag import config
-from rag.conversation.models import ConversationMessage, ConversationState
+import config
+from conversation.models import ConversationMessage, ConversationState
 
 log = logging.getLogger(__name__)
 

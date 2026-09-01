@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 
-from rag.evaluation.retrieval_metrics import (
+from evaluation.retrieval_metrics import (
     hit_rate,
     precision_at_k,
     recall_at_k,
@@ -39,24 +39,24 @@ from rag.evaluation.retrieval_metrics import (
     aggregate_retrieval_metrics,
     compute_retrieval_result,
 )
-from rag.evaluation.citation_metrics import (
+from evaluation.citation_metrics import (
     validate_citations,
     citation_precision,
     citation_validity,
 )
-from rag.evaluation.generation_metrics import (
+from evaluation.generation_metrics import (
     is_uncertainty_expressed,
     extract_eligibility_decision,
 )
-from rag.evaluation.models import (
+from evaluation.models import (
     EvalQuestion,
     ConversationTurn,
     RetrievalEvalResult,
     MetricSet,
     RegressionCheckResult,
 )
-from rag.evaluation.dataset import load_dataset, validate_dataset
-from rag.evaluation.evaluator import check_thresholds
+from evaluation.dataset import load_dataset, validate_dataset
+from evaluation.evaluator import check_thresholds
 
 
 # ---------------------------------------------------------------------------
@@ -415,7 +415,7 @@ class TestRegressionThresholds:
         return m
 
     def test_all_pass(self):
-        import rag.config as cfg
+        import config as cfg
         cfg.RAG_MIN_RECALL_AT_5 = 0.75
         cfg.RAG_MIN_HIT_RATE = 0.80
         cfg.RAG_MIN_CITATION_VALIDITY = 0.90
@@ -426,7 +426,7 @@ class TestRegressionThresholds:
         assert result.failures == []
 
     def test_recall_fails(self):
-        import rag.config as cfg
+        import config as cfg
         cfg.RAG_MIN_RECALL_AT_5 = 0.85
         cfg.RAG_MIN_HIT_RATE = 0.80
         cfg.RAG_MIN_CITATION_VALIDITY = 0.90
@@ -437,7 +437,7 @@ class TestRegressionThresholds:
         assert any("recall_at_5" in f for f in result.failures)
 
     def test_citation_fails(self):
-        import rag.config as cfg
+        import config as cfg
         cfg.RAG_MIN_CITATION_VALIDITY = 0.95
         cfg.RAG_ENABLE_LLM_EVALUATION = False
 
@@ -447,7 +447,7 @@ class TestRegressionThresholds:
 
     def test_threshold_boundary(self):
         """Exactly at threshold → should pass (>=)."""
-        import rag.config as cfg
+        import config as cfg
         cfg.RAG_MIN_RECALL_AT_5 = 0.75
         cfg.RAG_ENABLE_LLM_EVALUATION = False
 
@@ -462,8 +462,8 @@ class TestRegressionThresholds:
 class TestCIExitCode:
 
     def test_ci_json_passed(self):
-        from rag.evaluation.report import ci_json
-        from rag.evaluation.models import EvalReport
+        from evaluation.report import ci_json
+        from evaluation.models import EvalReport
 
         report = EvalReport(
             dataset_path="test.json",
@@ -482,8 +482,8 @@ class TestCIExitCode:
         assert "recall_at_5" in result["metrics"]
 
     def test_ci_json_failed(self):
-        from rag.evaluation.report import ci_json
-        from rag.evaluation.models import EvalReport
+        from evaluation.report import ci_json
+        from evaluation.models import EvalReport
 
         report = EvalReport(
             dataset_path="test.json",
@@ -507,7 +507,7 @@ class TestDatasetValidation:
 
     def test_valid_dataset_loads(self):
         """The bundled golden dataset must load without errors."""
-        from rag.evaluation.dataset import DEFAULT_DATASET_PATH
+        from evaluation.dataset import DEFAULT_DATASET_PATH
         questions = load_dataset(DEFAULT_DATASET_PATH)
         assert len(questions) >= 30
         assert all(hasattr(q, "id") for q in questions)
@@ -540,13 +540,13 @@ class TestDatasetValidation:
             load_dataset("/nonexistent/path/to/dataset.json")
 
     def test_dataset_no_duplicate_ids(self):
-        from rag.evaluation.dataset import DEFAULT_DATASET_PATH
+        from evaluation.dataset import DEFAULT_DATASET_PATH
         questions = load_dataset(DEFAULT_DATASET_PATH)
         ids = [q.id for q in questions]
         assert len(ids) == len(set(ids)), "Dataset contains duplicate IDs"
 
     def test_hallucination_traps_have_empty_expected_schemes(self):
-        from rag.evaluation.dataset import DEFAULT_DATASET_PATH
+        from evaluation.dataset import DEFAULT_DATASET_PATH
         questions = load_dataset(DEFAULT_DATASET_PATH)
         traps = [q for q in questions if q.is_hallucination_trap]
         for trap in traps:

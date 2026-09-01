@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from rag import config
-from rag.retrieval.models import FarmerProfile
+import config
+from retrieval.models import FarmerProfile
 
 PROMPT_VERSION: str = config.GENERATION_PROMPT_VERSION
 

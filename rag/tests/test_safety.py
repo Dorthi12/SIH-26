@@ -42,25 +42,25 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 
-from rag.safety.validators import (
+from safety.validators import (
     validate_query,
     detect_injection,
     sanitize_query,
     validate_farmer_profile,
     validate_conversation_id,
 )
-from rag.safety.citation_validator import validate_citations
-from rag.safety.hallucination_guard import (
+from safety.citation_validator import validate_citations
+from safety.hallucination_guard import (
     check_low_confidence,
     check_unsupported_numbers,
     check_eligibility_language,
     sanitize_eligibility_language,
 )
-from rag.safety.request_id import generate_request_id
-from rag.observability.metrics import Metrics
-from rag.observability.latency_tracker import LatencyTracker
-from rag.reliability.circuit_breaker import CircuitBreaker, CircuitOpenError, CircuitState
-import rag.config as cfg
+from safety.request_id import generate_request_id
+from observability.metrics import Metrics
+from observability.latency_tracker import LatencyTracker
+from reliability.circuit_breaker import CircuitBreaker, CircuitOpenError, CircuitState
+import config as cfg
 
 
 # ---------------------------------------------------------------------------
@@ -413,7 +413,7 @@ class TestHealthEndpoint:
 
     def test_health_returns_component_statuses(self):
         from fastapi.testclient import TestClient
-        from rag.api.app import app
+        from api.app import app
 
         client = TestClient(app, raise_server_exceptions=False)
 
@@ -438,7 +438,7 @@ class TestHealthEndpoint:
 
     def test_ready_endpoint_structure(self):
         from fastapi.testclient import TestClient
-        from rag.api.app import app
+        from api.app import app
 
         client = TestClient(app, raise_server_exceptions=False)
 

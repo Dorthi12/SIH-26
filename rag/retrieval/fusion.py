@@ -28,7 +28,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional
 
-from rag.retrieval.models import RetrievalCandidate
+from retrieval.models import RetrievalCandidate
 
 log = logging.getLogger(__name__)
 

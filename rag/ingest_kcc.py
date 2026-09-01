@@ -67,7 +67,7 @@ def main():
     print(f"\n▶ Found {len(valid_pdfs)} valid PDF(s). Starting ingestion into Pinecone...")
     print()
 
-    from rag.ingestion.pipeline import run_pipeline
+    from ingestion.pipeline import run_pipeline
     run_pipeline(source_dir=KCC_DIR, force=True)
 
     print()

@@ -21,18 +21,18 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-from rag import config
-from rag.evaluation.citation_metrics import (
+import config
+from evaluation.citation_metrics import (
     citation_precision,
     citation_validity,
     validate_citations,
 )
-from rag.evaluation.generation_metrics import (
+from evaluation.generation_metrics import (
     evaluate_answer_relevance,
     evaluate_faithfulness,
     is_uncertainty_expressed,
 )
-from rag.evaluation.models import (
+from evaluation.models import (
     ConversationEvalResult,
     EvalQuestion,
     EvalReport,
@@ -41,13 +41,13 @@ from rag.evaluation.models import (
     RegressionCheckResult,
     RetrievalEvalResult,
 )
-from rag.evaluation.retrieval_metrics import (
+from evaluation.retrieval_metrics import (
     aggregate_retrieval_metrics,
     compute_retrieval_result,
     extract_scheme_ids_from_candidates,
 )
-from rag.retrieval.models import FarmerProfile
-from rag.retrieval.retriever import get_retriever
+from retrieval.models import FarmerProfile
+from retrieval.retriever import get_retriever
 
 log = logging.getLogger(__name__)
 
@@ -180,8 +180,8 @@ class RAGEvaluator:
         If retrieval_candidates is provided, skips retrieval.
         Otherwise runs retrieval first (avoids double retrieval when called after evaluate_retrieval).
         """
-        from rag.generation.generator import get_generator
-        from rag.retrieval.models import FarmerProfile
+        from generation.generator import get_generator
+        from retrieval.models import FarmerProfile
 
         profile = FarmerProfile.from_dict(question.farmer_profile)
         t_start = time.perf_counter()
@@ -198,7 +198,7 @@ class RAGEvaluator:
 
         # Run generation
         try:
-            from rag.retrieval.models import RetrievalResult
+            from retrieval.models import RetrievalResult
             if hasattr(retrieval_candidates, "results"):
                 # already a RetrievalResult
                 ret_obj = retrieval_candidates
@@ -316,8 +316,8 @@ class RAGEvaluator:
             )
 
         try:
-            from rag.conversation.service import chat
-            from rag.conversation.models import ChatRequest
+            from conversation.service import chat
+            from conversation.models import ChatRequest
 
             conv_id = None
             final_profile: Dict[str, Any] = {}
@@ -355,7 +355,7 @@ class RAGEvaluator:
             # Clean up test conversation
             if conv_id:
                 try:
-                    from rag.conversation.service import delete_conversation
+                    from conversation.service import delete_conversation
                     delete_conversation(conv_id)
                 except Exception:
                     pass

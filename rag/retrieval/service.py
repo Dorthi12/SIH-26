@@ -29,16 +29,16 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from rag import config
-from rag.ingestion.pinecone_store import PineconeStore
-from rag.retrieval.dense import dense_retrieve, parse_pinecone_results
-from rag.retrieval.filters import build_filter, filter_to_display
-from rag.retrieval.fusion import rrf_fusion
-from rag.retrieval.keyword import get_keyword_retriever
-from rag.retrieval.models import FarmerProfile, QueryUnderstanding, RetrievalCandidate, RetrievalResult
-from rag.retrieval.query_understanding import understand
-from rag.retrieval.ranker import _score_candidate
-from rag.retrieval.reranker import get_reranker
+import config
+from ingestion.pinecone_store import PineconeStore
+from retrieval.dense import dense_retrieve, parse_pinecone_results
+from retrieval.filters import build_filter, filter_to_display
+from retrieval.fusion import rrf_fusion
+from retrieval.keyword import get_keyword_retriever
+from retrieval.models import FarmerProfile, QueryUnderstanding, RetrievalCandidate, RetrievalResult
+from retrieval.query_understanding import understand
+from retrieval.ranker import _score_candidate
+from retrieval.reranker import get_reranker
 
 log = logging.getLogger(__name__)
 

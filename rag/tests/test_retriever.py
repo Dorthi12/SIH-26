@@ -13,7 +13,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
-from rag import config
+import config
 
 # Skip all tests in this module if Pinecone credentials are absent
 pytestmark = pytest.mark.skipif(
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def retriever():
-    from rag.retrieval.retriever import get_retriever
+    from retrieval.retriever import get_retriever
     return get_retriever()
 
 
@@ -200,7 +200,7 @@ def test_fallback_no_filter_no_crash(retriever):
 
 def test_state_filter_includes_central_schemes(retriever):
     """State filter must NOT exclude central schemes."""
-    from rag.retrieval.models import FarmerProfile
+    from retrieval.models import FarmerProfile
     profile = FarmerProfile(state="Uttar Pradesh")
     result = retriever.retrieve("Which schemes am I eligible for?", farmer_profile=profile, top_k=10)
     gov_levels = {r.government_level for r in result.results}

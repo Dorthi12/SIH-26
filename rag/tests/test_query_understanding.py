@@ -11,8 +11,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
-from rag.retrieval.query_understanding import understand, detect_language, detect_intent
-from rag.retrieval.models import FarmerProfile
+from retrieval.query_understanding import understand, detect_language, detect_intent
+from retrieval.models import FarmerProfile
 
 
 # ---------------------------------------------------------------------------

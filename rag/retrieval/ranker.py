@@ -29,8 +29,8 @@ import logging
 import re
 from typing import Dict, List, Optional, Tuple
 
-from rag import config
-from rag.retrieval.models import QueryUnderstanding, RetrievalCandidate
+import config
+from retrieval.models import QueryUnderstanding, RetrievalCandidate
 
 log = logging.getLogger(__name__)
 

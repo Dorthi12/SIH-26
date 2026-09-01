@@ -25,12 +25,12 @@ import logging
 import sys
 import os
 
-# Ensure project root is on path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+# Ensure project root (rag) is on path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rag.evaluation.dataset import DEFAULT_DATASET_PATH, filter_dataset, load_dataset
-from rag.evaluation.evaluator import RAGEvaluator
-from rag.evaluation.report import ci_json, print_report, print_per_question_debug, save_json_report
+from evaluation.dataset import DEFAULT_DATASET_PATH, filter_dataset, load_dataset
+from evaluation.evaluator import RAGEvaluator
+from evaluation.report import ci_json, print_report, print_per_question_debug, save_json_report
 
 logging.basicConfig(
     level=logging.WARNING,   # suppress INFO by default; verbose mode can increase
@@ -69,7 +69,7 @@ Examples:
 
     # Apply LLM eval override
     if args.enable_llm_eval:
-        import rag.config as cfg
+        import config as cfg
         cfg.RAG_ENABLE_LLM_EVALUATION = True
 
     # Increase log level in verbose mode

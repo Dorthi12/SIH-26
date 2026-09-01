@@ -19,12 +19,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import pytest
 from unittest.mock import patch, MagicMock
 
-from rag import config
-from rag.retrieval.models import RetrievalCandidate, RetrievalResult
-from rag.generation.context_builder import build_context
-from rag.generation.citation_builder import build_citations, extract_schemes, build_follow_ups
-from rag.generation.models import SAFE_FALLBACK_ANSWERS
-from rag.retrieval.query_understanding import understand
+import config
+from retrieval.models import RetrievalCandidate, RetrievalResult
+from generation.context_builder import build_context
+from generation.citation_builder import build_citations, extract_schemes, build_follow_ups
+from generation.models import SAFE_FALLBACK_ANSWERS
+from retrieval.query_understanding import understand
 
 # ---------------------------------------------------------------------------
 # Helpers — build mock RetrievalResult without hitting Pinecone
@@ -212,7 +212,7 @@ class TestSafeFallbackReturn:
 
     def test_empty_context_returns_fallback_not_llm(self):
         """When no chunks qualify, generator must NOT call LLM."""
-        from rag.generation.generator import SchemeRAGGenerator
+        from generation.generator import SchemeRAGGenerator
 
         gen = SchemeRAGGenerator()
         # Provide a result with very low score chunks
@@ -272,19 +272,19 @@ def _is_rate_limited(exc: Exception) -> bool:
 
 @pytest.fixture(scope="module")
 def generator():
-    from rag.generation.generator import get_generator
+    from generation.generator import get_generator
     return get_generator()
 
 
 @pytest.fixture(scope="module")
 def retriever():
-    from rag.retrieval.retriever import get_retriever
+    from retrieval.retriever import get_retriever
     return get_retriever()
 
 
 def _retrieve_and_generate(retriever, generator, query, farmer_profile=None, language=None):
     """Helper: run end-to-end retrieval + generation."""
-    from rag.retrieval.models import FarmerProfile as FP
+    from retrieval.models import FarmerProfile as FP
     try:
         result = retriever.retrieve(query, farmer_profile=farmer_profile)
         if language:
@@ -331,7 +331,7 @@ def test_integration_2_crop_loss(generator, retriever):
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_3_up_wheat_farmer(generator, retriever):
     """Test 3: UP wheat farmer — both central and state context included."""
-    from rag.retrieval.models import FarmerProfile
+    from retrieval.models import FarmerProfile
     profile = FarmerProfile(state="Uttar Pradesh", crop="wheat", land_size=3, land_unit="acre")
     gen = _retrieve_and_generate(
         retriever, generator,

@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import pytest
 from unittest.mock import patch, MagicMock
 
-from rag import config
-from rag.eligibility.models import (
+import config
+from eligibility.models import (
     EligibilityCondition,
     EligibilityFarmerProfile,
     EligibilityRule,
@@ -29,7 +29,7 @@ from rag.eligibility.models import (
     to_acres,
     to_hectares,
 )
-from rag.eligibility.evaluator import evaluate, _evaluate_condition
+from eligibility.evaluator import evaluate, _evaluate_condition
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ class TestConflictDetection:
 
     def test_test7_conflict_warning_surfaced(self):
         """Test 7: Conflicting document versions → conflict_warning set."""
-        from rag.eligibility.rule_extractor import _detect_conflicts
+        from eligibility.rule_extractor import _detect_conflicts
 
         # Simulate two conditions for the same field with different values
         cond1 = _make_condition("land_size_acres", "less_than_or_equal", 5.0)
@@ -289,7 +289,7 @@ class TestConflictDetection:
 
     def test_no_conflict_when_consistent(self):
         """No conflict warning when conditions are consistent."""
-        from rag.eligibility.rule_extractor import _detect_conflicts
+        from eligibility.rule_extractor import _detect_conflicts
 
         cond1 = _make_condition("land_size_acres", "less_than_or_equal", 5.0)
         cond2 = _make_condition("land_size_acres", "less_than_or_equal", 5.0)  # same value
@@ -321,7 +321,7 @@ def elig_profile():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_1_relevant_schemes_returned(elig_profile):
     """Test 1: UP wheat farmer with 3 acres — relevant schemes recommended."""
-    from rag.eligibility.service import recommend_schemes
+    from eligibility.service import recommend_schemes
     response = recommend_schemes(elig_profile)
 
     assert len(response.recommendations) > 0, "Should return at least one recommendation"
@@ -333,7 +333,7 @@ def test_integration_1_relevant_schemes_returned(elig_profile):
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_2_missing_state_asks_for_it():
     """Test 2: No state → follow-up asks for state."""
-    from rag.eligibility.service import recommend_schemes
+    from eligibility.service import recommend_schemes
     profile = EligibilityFarmerProfile(land_size=3, land_unit="acre", crop="wheat")
     response = recommend_schemes(profile)
 
@@ -346,7 +346,7 @@ def test_integration_2_missing_state_asks_for_it():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_3_missing_field_insufficient_not_ineligible():
     """Test 3: No land_ownership → INSUFFICIENT_INFORMATION, not INELIGIBLE."""
-    from rag.eligibility.service import check_eligibility
+    from eligibility.service import check_eligibility
     profile = EligibilityFarmerProfile(state="Uttar Pradesh", land_size=3, land_unit="acre")
     # No bank_account, land_ownership — should be INSUFFICIENT_INFORMATION for any scheme requiring them
     response = check_eligibility("Am I eligible for PM Kisan?", profile, scheme_ids={"pm_kisan"})
@@ -361,7 +361,7 @@ def test_integration_3_missing_field_insufficient_not_ineligible():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_6_central_and_state_schemes(elig_profile):
     """Test 6: UP farmer — both central and state-level schemes can appear."""
-    from rag.eligibility.service import recommend_schemes
+    from eligibility.service import recommend_schemes
     response = recommend_schemes(elig_profile)
 
     all_levels = {r.government_level for r in response.recommendations}
@@ -372,7 +372,7 @@ def test_integration_6_central_and_state_schemes(elig_profile):
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_8_hindi_response():
     """Test 8: Hindi query → language detected as hi."""
-    from rag.eligibility.service import check_eligibility
+    from eligibility.service import check_eligibility
     profile = EligibilityFarmerProfile(state="Uttar Pradesh", land_size=3, land_unit="acre")
     response = check_eligibility("क्या मैं पीएम किसान के लिए पात्र हूं?", profile)
     assert response.language == "hi", f"Expected 'hi', got '{response.language}'"
@@ -381,7 +381,7 @@ def test_integration_8_hindi_response():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_9_hinglish_response():
     """Test 9: Hinglish query → language detected as hinglish."""
-    from rag.eligibility.service import check_eligibility
+    from eligibility.service import check_eligibility
     profile = EligibilityFarmerProfile(state="Uttar Pradesh", land_size=3, land_unit="acre")
     response = check_eligibility("Kya main PM Kisan ke liye eligible hoon?", profile)
     assert response.language in ("hinglish", "en"), f"Got unexpected language: {response.language}"
@@ -390,7 +390,7 @@ def test_integration_9_hinglish_response():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_10_unknown_scheme_not_fabricated():
     """Test 10: Unknown scheme — system must not invent it."""
-    from rag.eligibility.service import check_eligibility
+    from eligibility.service import check_eligibility
     profile = EligibilityFarmerProfile(state="Uttar Pradesh")
     response = check_eligibility("Am I eligible for PM SuperFarm 9999?", profile)
 

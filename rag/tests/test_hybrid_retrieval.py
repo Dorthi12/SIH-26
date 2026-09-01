@@ -31,10 +31,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 
-from rag.retrieval.models import RetrievalCandidate, RetrievalResult
-from rag.retrieval.keyword import normalize_query, _tokenize, KeywordRetriever
-from rag.retrieval.fusion import rrf_fusion, _apply_source_diversity
-from rag.retrieval.dense import parse_pinecone_results
+from retrieval.models import RetrievalCandidate, RetrievalResult
+from retrieval.keyword import normalize_query, _tokenize, KeywordRetriever
+from retrieval.fusion import rrf_fusion, _apply_source_diversity
+from retrieval.dense import parse_pinecone_results
 
 
 # ---------------------------------------------------------------------------
@@ -306,7 +306,7 @@ class TestRerankerOrdering:
 
     def _make_reranker_with_scores(self, scores):
         """Create a CrossEncoderReranker with a mocked model returning given scores."""
-        from rag.retrieval.reranker import CrossEncoderReranker
+        from retrieval.reranker import CrossEncoderReranker
         reranker = CrossEncoderReranker.__new__(CrossEncoderReranker)
         reranker._model_name = "mock"
         reranker._available = True
@@ -316,7 +316,7 @@ class TestRerankerOrdering:
         return reranker
 
     def test_reranker_sorts_by_score_descending(self):
-        import rag.config as cfg
+        import config as cfg
         old = cfg.RERANKER_ENABLED
         try:
             cfg.RERANKER_ENABLED = True
@@ -334,7 +334,7 @@ class TestRerankerOrdering:
             cfg.RERANKER_ENABLED = old
 
     def test_reranker_sets_final_rank(self):
-        import rag.config as cfg
+        import config as cfg
         old = cfg.RERANKER_ENABLED
         try:
             cfg.RERANKER_ENABLED = True
@@ -347,7 +347,7 @@ class TestRerankerOrdering:
             cfg.RERANKER_ENABLED = old
 
     def test_reranker_truncates_to_top_k(self):
-        import rag.config as cfg
+        import config as cfg
         old = cfg.RERANKER_ENABLED
         try:
             cfg.RERANKER_ENABLED = True
@@ -367,7 +367,7 @@ class TestRerankerFallback:
 
     def test_fallback_to_rrf_order_on_exception(self):
         """When scoring raises, return candidates sorted by rrf_score."""
-        from rag.retrieval.reranker import CrossEncoderReranker
+        from retrieval.reranker import CrossEncoderReranker
         reranker = CrossEncoderReranker.__new__(CrossEncoderReranker)
         reranker._model_name = "mock"
         reranker._available = True
@@ -390,8 +390,8 @@ class TestRerankerFallback:
 
     def test_unavailable_reranker_returns_rrf_order(self):
         """If _available=False, return RRF-sorted candidates."""
-        from rag.retrieval.reranker import CrossEncoderReranker
-        import rag.config as cfg
+        from retrieval.reranker import CrossEncoderReranker
+        import config as cfg
         old = cfg.RERANKER_ENABLED
         try:
             cfg.RERANKER_ENABLED = True
@@ -417,8 +417,8 @@ class TestDenseOnlyBackwardCompat:
 
     def test_dense_only_path_calls_dense_retrieve(self):
         """When HYBRID_RETRIEVAL_ENABLED=False, _hybrid_retrieve is NOT called."""
-        import rag.config as cfg
-        from rag.retrieval.retriever import KnowledgeRetriever
+        import config as cfg
+        from retrieval.retriever import KnowledgeRetriever
 
         old = cfg.HYBRID_RETRIEVAL_ENABLED
         try:
@@ -458,11 +458,11 @@ class TestHybridScoreFields:
 
     def test_rerank_score_set_after_reranking(self):
         """After reranking, rerank_score is set on each candidate."""
-        import rag.config as cfg
+        import config as cfg
         old = cfg.RERANKER_ENABLED
         try:
             cfg.RERANKER_ENABLED = True
-            from rag.retrieval.reranker import CrossEncoderReranker
+            from retrieval.reranker import CrossEncoderReranker
             reranker = CrossEncoderReranker.__new__(CrossEncoderReranker)
             reranker._model_name = "mock"
             reranker._available = True

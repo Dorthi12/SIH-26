@@ -19,14 +19,14 @@ import time
 import uuid
 from typing import Dict, List, Optional, Set
 
-from rag import config
-from rag.eligibility.models import (
+import config
+from eligibility.models import (
     EligibilityCondition,
     EligibilityRule,
     RuleEvidence,
     SUPPORTED_OPERATORS,
 )
-from rag.retrieval.models import RetrievalCandidate
+from retrieval.models import RetrievalCandidate
 
 log = logging.getLogger(__name__)
 

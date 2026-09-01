@@ -14,9 +14,9 @@ import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from rag.ingestion.extractor import PageData
-from rag.ingestion.metadata import DocumentMetadata
-from rag import config
+from ingestion.extractor import PageData
+from ingestion.metadata import DocumentMetadata
+import config
 
 log = logging.getLogger(__name__)
 

@@ -17,14 +17,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 
-from rag.conversation.models import (
+from conversation.models import (
     ConversationMessage,
     ConversationState,
     ResolvedContext,
     _redact_sensitive,
 )
-from rag.conversation.resolver import resolve
-from rag import config
+from conversation.resolver import resolve
+import config
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -32,7 +32,7 @@ from rag import config
 
 def _fresh_store(tmp_path: str):
     """Create a ConversationStore backed by a temp SQLite file."""
-    from rag.conversation.state import ConversationStore
+    from conversation.state import ConversationStore
     return ConversationStore(os.path.join(tmp_path, "test.db"))
 
 
@@ -234,7 +234,7 @@ _skip_integration = not _has_keys
 @pytest.fixture(scope="module", autouse=True)
 def _use_temp_db(tmp_path_factory):
     """Redirect conversation DB to a temp file for integration tests."""
-    import rag.conversation.state as state_module
+    import conversation.state as state_module
     tmp_db = str(tmp_path_factory.mktemp("conv") / "test_conv.db")
     original = config.CONV_DB_PATH
     config.CONV_DB_PATH = tmp_db
@@ -251,8 +251,8 @@ def _is_rate_limited(exc: Exception) -> bool:
 
 
 def _chat(query: str, conv_id: str = None, profile: dict = None) -> dict:
-    from rag.conversation.service import chat
-    from rag.conversation.models import ChatRequest
+    from conversation.service import chat
+    from conversation.models import ChatRequest
     req = ChatRequest(query=query, conversation_id=conv_id, farmer_profile=profile)
     try:
         result = chat(req)
@@ -344,7 +344,7 @@ def test_integration_7_crop_change():
 @pytest.mark.skipif(_skip_integration, reason="Keys not set")
 def test_integration_8_delete_conversation():
     """Test 8: Delete conversation → subsequent GET returns 404."""
-    from rag.conversation.service import delete_conversation, get_history
+    from conversation.service import delete_conversation, get_history
     r1 = _chat("I farm in UP.")
     conv_id = r1["conv_id"]
 

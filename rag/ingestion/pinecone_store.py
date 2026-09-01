@@ -14,8 +14,8 @@ import logging
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
-from rag import config
-from rag.ingestion.chunker import Chunk
+import config
+from ingestion.chunker import Chunk
 
 log = logging.getLogger(__name__)
 

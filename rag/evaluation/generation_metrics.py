@@ -143,7 +143,7 @@ def evaluate_faithfulness(
     Returns None if LLM evaluation is disabled or fails.
     """
     try:
-        from rag import config
+        import config
         if not config.RAG_ENABLE_LLM_EVALUATION:
             return None
         if not config.LLM_API_KEY:
@@ -186,7 +186,7 @@ def evaluate_answer_relevance(
     Returns None if LLM evaluation is disabled or fails.
     """
     try:
-        from rag import config
+        import config
         if not config.RAG_ENABLE_LLM_EVALUATION:
             return None
         if not config.LLM_API_KEY:

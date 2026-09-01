@@ -148,7 +148,7 @@ class EligibilityFarmerProfile:
 
     def to_base_profile(self):
         """Convert to retrieval-layer FarmerProfile for existing retriever compatibility."""
-        from rag.retrieval.models import FarmerProfile
+        from retrieval.models import FarmerProfile
         return FarmerProfile(
             state=self.state,
             district=self.district,

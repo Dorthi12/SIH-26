@@ -20,22 +20,22 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-from rag import config
-from rag.conversation.models import (
+import config
+from conversation.models import (
     ChatRequest,
     ChatResponse,
     ConversationMessage,
     ConversationState,
     ResolvedContext,
 )
-from rag.conversation.resolver import resolve
-from rag.conversation.state import get_store
-from rag.conversation.summarizer import should_summarize, summarize
-from rag.eligibility.models import EligibilityFarmerProfile
-from rag.eligibility.service import check_eligibility, recommend_schemes
-from rag.generation.generator import get_generator
-from rag.retrieval.models import FarmerProfile
-from rag.retrieval.retriever import get_retriever
+from conversation.resolver import resolve
+from conversation.state import get_store
+from conversation.summarizer import should_summarize, summarize
+from eligibility.models import EligibilityFarmerProfile
+from eligibility.service import check_eligibility, recommend_schemes
+from generation.generator import get_generator
+from retrieval.models import FarmerProfile
+from retrieval.retriever import get_retriever
 
 log = logging.getLogger(__name__)
 

@@ -24,7 +24,7 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Set
 
-from rag.evaluation.models import CitationValidation
+from evaluation.models import CitationValidation
 
 log = logging.getLogger(__name__)
 

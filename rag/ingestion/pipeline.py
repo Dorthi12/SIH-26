@@ -37,15 +37,15 @@ def _configure_logging(verbose: bool) -> None:
 # Imports (after logging is configured)
 # ---------------------------------------------------------------------------
 
-from rag import config
-from rag.ingestion.discovery import discover_documents, load_manifest
-from rag.ingestion.extractor import extract_pages
-from rag.ingestion.cleaner import clean_pages
-from rag.ingestion.chunker import chunk_document
-from rag.ingestion.embedder import get_embedder
-from rag.ingestion.metadata import infer_metadata
-from rag.ingestion.pinecone_store import PineconeStore
-from rag.ingestion.state_store import StateStore, compute_file_hash
+import config
+from ingestion.discovery import discover_documents, load_manifest
+from ingestion.extractor import extract_pages
+from ingestion.cleaner import clean_pages
+from ingestion.chunker import chunk_document
+from ingestion.embedder import get_embedder
+from ingestion.metadata import infer_metadata
+from ingestion.pinecone_store import PineconeStore
+from ingestion.state_store import StateStore, compute_file_hash
 
 log = logging.getLogger(__name__)
 

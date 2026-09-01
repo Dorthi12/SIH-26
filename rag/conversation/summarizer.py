@@ -21,8 +21,8 @@ from __future__ import annotations
 import logging
 from typing import List
 
-from rag import config
-from rag.conversation.models import ConversationMessage, ConversationState
+import config
+from conversation.models import ConversationMessage, ConversationState
 
 log = logging.getLogger(__name__)
 

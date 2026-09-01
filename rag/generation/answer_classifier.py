@@ -20,13 +20,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from rag.generation.models import (
+from generation.models import (
     GENERATION_STATUS_CLARIFICATION,
     GENERATION_STATUS_INSUFFICIENT,
     GENERATION_STATUS_SUCCESS,
     GENERATION_STATUS_UNSUPPORTED,
 )
-from rag import config
+import config
 
 # ---------------------------------------------------------------------------
 # Ambiguous query signals

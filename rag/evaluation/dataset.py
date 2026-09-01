@@ -15,7 +15,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from rag.evaluation.models import EvalQuestion
+from evaluation.models import EvalQuestion
 
 log = logging.getLogger(__name__)
 

@@ -14,9 +14,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from rag.ingestion.pinecone_store import PineconeStore
-from rag.retrieval.models import QueryUnderstanding, RetrievalCandidate
-from rag.retrieval.query_embedder import embed_query
+from ingestion.pinecone_store import PineconeStore
+from retrieval.models import QueryUnderstanding, RetrievalCandidate
+from retrieval.query_embedder import embed_query
 
 log = logging.getLogger(__name__)
 

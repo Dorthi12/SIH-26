@@ -33,11 +33,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import pytest
 from unittest.mock import patch, MagicMock
 
-from rag.retrieval.models import RetrievalCandidate, RetrievalResult
-from rag.generation.context_builder import build_context
-from rag.generation.citation_builder import build_citations
-from rag.generation.answer_classifier import classify_query_status
-from rag.generation.models import (
+from retrieval.models import RetrievalCandidate, RetrievalResult
+from generation.context_builder import build_context
+from generation.citation_builder import build_citations
+from generation.answer_classifier import classify_query_status
+from generation.models import (
     GenerationResult,
     GENERATION_STATUS_SUCCESS,
     GENERATION_STATUS_INSUFFICIENT,
@@ -47,14 +47,14 @@ from rag.generation.models import (
     CONFIDENCE_HIGH, CONFIDENCE_MEDIUM, CONFIDENCE_LOW,
     SAFE_FALLBACK_ANSWERS,
 )
-from rag.generation.prompts import build_system_prompt, build_user_message
-from rag.safety.citation_validator import validate_citations
-from rag.safety.hallucination_guard import (
+from generation.prompts import build_system_prompt, build_user_message
+from safety.citation_validator import validate_citations
+from safety.hallucination_guard import (
     check_unsupported_numbers,
     check_eligibility_language,
     sanitize_eligibility_language,
 )
-import rag.config as cfg
+import config as cfg
 
 
 # ---------------------------------------------------------------------------
@@ -337,7 +337,7 @@ class TestUnknownSchemeClassifier:
         assert status == GENERATION_STATUS_SUCCESS
 
     def test_generator_returns_unsupported_status_without_llm(self):
-        from rag.generation.generator import SchemeRAGGenerator
+        from generation.generator import SchemeRAGGenerator
         gen = SchemeRAGGenerator()
 
         # Build a result where the query mentions an unknown scheme AND retrieval is empty
@@ -384,7 +384,7 @@ class TestAmbiguousQuery:
         assert status == GENERATION_STATUS_SUCCESS
 
     def test_generator_returns_clarification_without_llm(self):
-        from rag.generation.generator import SchemeRAGGenerator
+        from generation.generator import SchemeRAGGenerator
         gen = SchemeRAGGenerator()
         result = _make_result(query="Am I eligible?", candidates=[])
         with patch.object(gen, "_get_client") as mock_client:
@@ -424,7 +424,7 @@ class TestNumberGrounding:
     """Confirm number grounding module imports correctly from generation context."""
 
     def test_module_importable(self):
-        from rag.safety.hallucination_guard import check_unsupported_numbers
+        from safety.hallucination_guard import check_unsupported_numbers
         assert callable(check_unsupported_numbers)
 
     def test_year_in_answer_not_in_context_flagged(self):
@@ -470,16 +470,16 @@ class TestConflictingDocuments:
 class TestFollowUpGeneration:
 
     def test_returns_at_most_3(self):
-        from rag.generation.citation_builder import build_follow_ups
-        from rag.retrieval.query_understanding import understand
+        from generation.citation_builder import build_follow_ups
+        from retrieval.query_understanding import understand
         qu = understand("kaunsi schemes hain?")
         result = _make_result(intent="scheme_recommendation")
         follow_ups = build_follow_ups(qu, result, "en")
         assert len(follow_ups) <= 3
 
     def test_no_follow_up_when_state_known(self):
-        from rag.generation.citation_builder import build_follow_ups
-        from rag.retrieval.query_understanding import understand
+        from generation.citation_builder import build_follow_ups
+        from retrieval.query_understanding import understand
         qu = understand("UP mein wheat farmer ke liye kaunsi schemes hain?")
         result = _make_result()
         follow_ups = build_follow_ups(qu, result, "hinglish")
@@ -555,7 +555,7 @@ class TestConversationFreshRetrieval:
         This test verifies generator.generate() accepts history kwarg without error,
         and still returns citations from retrieved chunks (not from history).
         """
-        from rag.generation.generator import SchemeRAGGenerator
+        from generation.generator import SchemeRAGGenerator
         gen = SchemeRAGGenerator()
 
         chunk = _make_candidate(chunk_id="fresh_chunk_1")
@@ -585,7 +585,7 @@ class TestConversationFreshRetrieval:
 
     def test_generate_safe_fallback_no_history_needed(self):
         """Empty retrieval → fallback, regardless of conversation history."""
-        from rag.generation.generator import SchemeRAGGenerator
+        from generation.generator import SchemeRAGGenerator
         gen = SchemeRAGGenerator()
         result = _make_result(candidates=[])  # empty
 

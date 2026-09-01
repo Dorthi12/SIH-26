@@ -22,7 +22,7 @@ import re
 import unicodedata
 from typing import Dict, List, Optional, Tuple
 
-from rag.retrieval.models import FarmerProfile, QueryUnderstanding
+from retrieval.models import FarmerProfile, QueryUnderstanding
 
 log = logging.getLogger(__name__)
 

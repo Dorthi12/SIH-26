@@ -24,7 +24,7 @@ import textwrap
 from pathlib import Path
 from typing import List, Optional
 
-from rag import config
+import config
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def check_discovery(source_dir: Path) -> Optional[Path]:
     """Check 1: PDF discovery."""
     _section("Check 1 — PDF Discovery")
     try:
-        from rag.ingestion.discovery import discover_documents, load_manifest
+        from ingestion.discovery import discover_documents, load_manifest
         manifest = load_manifest(source_dir)
         docs = discover_documents(source_dir, manifest)
         if not docs:
@@ -92,7 +92,7 @@ def check_extraction(pdf_path: Path) -> Optional[list]:
     """Check 2: Text extraction."""
     _section("Check 2 — Text Extraction")
     try:
-        from rag.ingestion.extractor import extract_pages
+        from ingestion.extractor import extract_pages
         pages = extract_pages(pdf_path)
         if not pages:
             _fail("No pages extracted", "PDF may be corrupt or encrypted.")
@@ -121,11 +121,11 @@ def check_chunking(pages: list, pdf_path: Path) -> Optional[list]:
     """Check 3: Chunk generation."""
     _section("Check 3 — Chunk Generation")
     try:
-        from rag.ingestion.cleaner import clean_pages
-        from rag.ingestion.chunker import chunk_document
-        from rag.ingestion.metadata import infer_metadata
-        from rag.ingestion.discovery import discover_documents, load_manifest, DocumentInfo
-        from rag.ingestion.state_store import compute_file_hash
+        from ingestion.cleaner import clean_pages
+        from ingestion.chunker import chunk_document
+        from ingestion.metadata import infer_metadata
+        from ingestion.discovery import discover_documents, load_manifest, DocumentInfo
+        from ingestion.state_store import compute_file_hash
 
         # Build a minimal DocumentInfo for the PDF
         source_dir = pdf_path.parent.parent.parent  # go up to root
@@ -161,7 +161,7 @@ def check_embedding(chunks: list) -> Optional[list]:
     """Check 4: Embedding dimension."""
     _section("Check 4 — Embedding Dimension")
     try:
-        from rag.ingestion.embedder import get_embedder
+        from ingestion.embedder import get_embedder
         embedder = get_embedder()
         # Embed only the first chunk for speed
         sample = chunks[:1]
@@ -192,7 +192,7 @@ def check_pinecone_upsert(chunks: list) -> bool:
     """Check 5: Pinecone upsert."""
     _section("Check 5 — Pinecone Upsert")
     try:
-        from rag.ingestion.pinecone_store import PineconeStore
+        from ingestion.pinecone_store import PineconeStore
         config.require_pinecone_config()
         store = PineconeStore.from_config()
         upserted = store.upsert_chunks(chunks)
@@ -218,8 +218,8 @@ def check_pinecone_query(chunks: list) -> bool:
     """Check 6: Pinecone query-back."""
     _section("Check 6 — Pinecone Query-Back")
     try:
-        from rag.ingestion.pinecone_store import PineconeStore
-        from rag.ingestion.embedder import get_embedder
+        from ingestion.pinecone_store import PineconeStore
+        from ingestion.embedder import get_embedder
 
         config.require_pinecone_config()
         store = PineconeStore.from_config()

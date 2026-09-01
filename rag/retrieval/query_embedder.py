@@ -17,8 +17,8 @@ import asyncio
 import logging
 from typing import List
 
-from rag import config
-from rag.ingestion.embedder import get_embedder
+import config
+from ingestion.embedder import get_embedder
 
 log = logging.getLogger(__name__)
 

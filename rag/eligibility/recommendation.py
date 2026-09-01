@@ -16,14 +16,14 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, Tuple
 
-from rag import config
-from rag.eligibility.models import (
+import config
+from eligibility.models import (
     EligibilityFarmerProfile,
     EligibilityResult,
     EligibilityStatus,
     SchemeRecommendation,
 )
-from rag.retrieval.models import RetrievalCandidate, RetrievalResult
+from retrieval.models import RetrievalCandidate, RetrievalResult
 
 log = logging.getLogger(__name__)
 
