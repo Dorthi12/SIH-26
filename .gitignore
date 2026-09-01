@@ -11,3 +11,6 @@ backend.tar.gz
 rag/evaluation/results/*.json
 rag/evaluation/results/*.jsonl
 !rag/evaluation/results/.gitkeep
+*.zip
+*.csv
+
