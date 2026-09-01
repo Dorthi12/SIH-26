@@ -1,4 +1,6 @@
 # rag/.gitignore
+conversations.db-shm
+conversations.db-wal
 
 # Environment / credentials — NEVER commit
 .env

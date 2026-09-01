@@ -123,6 +123,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API Key Protection Middleware
+@app.middleware("http")
+async def verify_api_key_middleware(request: Request, call_next):
+    """Enforce X-RAG-API-KEY header verification for non-public routes."""
+    public_paths = {"/api/rag/health", "/api/rag/ready", "/docs", "/redoc", "/openapi.json"}
+    if request.url.path in public_paths:
+        return await call_next(request)
+
+    expected_key = config.RAG_SECRET_API_KEY
+    if expected_key:
+        api_key = request.headers.get("X-RAG-API-KEY") or request.headers.get("x-rag-api-key")
+        if not api_key or api_key != expected_key:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": {"error": "Unauthorized: Invalid or missing X-RAG-API-KEY header"}},
+            )
+    return await call_next(request)
+
+
 
 # ---------------------------------------------------------------------------
 # Startup validation

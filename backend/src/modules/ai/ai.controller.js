@@ -1,6 +1,8 @@
 import prisma from "../../config/db.js";
 import llm from "../../config/llm.js";
 import { generateRAGResponse } from "../../services/rag.service.js";
+import { sendRagChat } from "../../services/ragClient.js";
+
 export const createConversation = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -187,3 +189,29 @@ export const deleteConversation = async (req, res, next) => {
     next(error);
   }
 };
+
+export const ragChatProxy = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const { query, farmer_query, conversation_id, conversationId, farmer_profile } = req.body;
+
+    const queryText = query || farmer_query;
+    const convId = conversation_id || conversationId;
+
+    if (!queryText) {
+      return res.status(400).json({ success: false, message: "Query text is required" });
+    }
+
+    const ragResponse = await sendRagChat({
+      query: queryText,
+      conversationId: convId,
+      farmerProfile: farmer_profile,
+      userId,
+    });
+
+    res.status(200).json(ragResponse);
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -24,11 +24,14 @@ import type { CropRecommendation } from "../types/recommendation";
 // ── Config ─────────────────────────────────────────────────────────────────
 // VITE_RAG_API_URL is set in .env — no secrets, only the base URL.
 
-const RAG_API_BASE: string = (
-  import.meta.env.VITE_RAG_API_URL as string | undefined ?? "http://localhost:8001"
+const BACKEND_API_BASE: string = (
+  import.meta.env.VITE_BACKEND_URL as string | undefined ??
+  import.meta.env.VITE_API_BASE_URL as string | undefined ??
+  "http://localhost:5000"
 ).replace(/\/$/, "");
 
-const RAG_CHAT_ENDPOINT = `${RAG_API_BASE}/api/rag/chat`;
+const RAG_CHAT_ENDPOINT = `${BACKEND_API_BASE}/ai/chat`;
+
 
 // ── Request ────────────────────────────────────────────────────────────────
 
@@ -271,15 +274,29 @@ export async function queryAgricultureAssistant(
     body.conversation_id = conversationId;
   }
 
+  const token =
+    localStorage.getItem("agrisense_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("accessToken");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   let response: Response;
   try {
     response = await fetch(RAG_CHAT_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
+      credentials: "include",
       body: JSON.stringify(body),
       // 35s — slightly longer than the backend's own 30s generation timeout
       signal: AbortSignal.timeout(35_000),
     });
+
   } catch (err) {
     if (err instanceof Error && err.name === "TimeoutError") {
       throw new Error("TIMEOUT");

@@ -310,3 +310,7 @@ CIRCUIT_BREAKER_FAILURE_THRESHOLD: int = int(_os2.environ.get("CIRCUIT_BREAKER_F
 
 CIRCUIT_BREAKER_RESET_TIMEOUT: int = int(_os2.environ.get("CIRCUIT_BREAKER_RESET_TIMEOUT", "30"))
 """Seconds the circuit stays open before attempting half-open probe."""
+
+RAG_SECRET_API_KEY: str = _os2.environ.get("RAG_SECRET_API_KEY", "")
+"""API key required for authenticating requests between Node backend and RAG microservice."""
+

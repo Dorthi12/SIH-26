@@ -13,4 +13,5 @@ rag/evaluation/results/*.jsonl
 !rag/evaluation/results/.gitkeep
 *.zip
 *.csv
+pem/
 
