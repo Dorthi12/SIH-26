@@ -28,6 +28,10 @@ import { YieldForecast }          from "./pages/YieldForecast";
 import { ZeroProductionRisk }     from "./pages/ZeroProductionRisk";
 import { Community }              from "./pages/Community";
 import { Profile }                from "./pages/Profile";
+import ViewComplaints from "./pages/ViewComplaints";
+import CreateComplaint from "./pages/CreateComplaints";
+import MyComplaints from "./pages/myComplaints";
+import Complaints from "./pages/Complaints"
 
 export default function App() {
   return (
@@ -63,6 +67,10 @@ export default function App() {
                     <Route path="/zero-production-risk"  element={<ZeroProductionRisk />} />
                     <Route path="/community"             element={<Community />} />
                     <Route path="/profile"               element={<Profile />} />
+                     <Route path="/complaints"               element={<Complaints />} />
+                      <Route path="/mycomplaints"               element={<MyComplaints />} />
+                       <Route path="/createcomplaints"               element={<CreateComplaint />} />
+                        <Route path="/viewcomplaints"               element={<ViewComplaints />} />
 
                     {/* Catch-all inside protected area → dashboard */}
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />

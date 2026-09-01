@@ -15,6 +15,7 @@ export interface SessionUser {
   name:     string;
   email:    string;
   provider: "email" | "google" | "guest";
+  role:string,
 }
 
 interface AuthState {
@@ -53,6 +54,7 @@ function parseOAuthTokenFromUrl(): { user: SessionUser; token: string } | null {
       id: decoded.id,
       name: decoded.name || decoded.email?.split("@")[0] || "Google User",
       email: decoded.email || "user@gmail.com",
+      role:decoded.role,
       provider: "google",
     };
 

@@ -8,6 +8,7 @@ import {
   Settings, MessageSquareText, FlaskConical, Map,
   MoonStar, SunMedium, LogOut, TrendingUp, ShieldAlert,
   Users, User,
+  FileText,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
@@ -17,6 +18,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export const NAV_ITEMS = [
   { to: "/dashboard",             label: "Dashboard",             icon: LayoutDashboard },
+  {to:"/complaints",              label:"Complaints",              icon:FileText  },         
   { to: "/assistant",             label: "AI Assistant",           icon: MessageSquareText },
   { to: "/recommendation",        label: "Recommendation",        icon: Sprout },
   { to: "/disease-detection",     label: "Disease Detection",     icon: Leaf },

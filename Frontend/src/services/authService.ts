@@ -21,6 +21,7 @@ export interface AuthUser {
   id:    string;
   name:  string;
   email: string;
+  role:string;
   provider: "email" | "google" | "guest";
 }
 
@@ -85,6 +86,7 @@ export async function loginWithEmail(
       id: "1",
       name: email.split("@")[0],
       email,
+      role:"USER",
       provider: "email",
     };
 
@@ -165,6 +167,7 @@ export async function signupWithEmail(
       name: name || email.split("@")[0],
       email,
       provider: "email",
+      role:"USER"
     };
 
     return {
@@ -241,7 +244,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
 
     return {
       ok: true,
-      user: { id: "", name: "", email, provider: "email" },
+      user: { id: "", name: "", email, provider: "email",role:"user" },
     };
   } catch {
     return {
