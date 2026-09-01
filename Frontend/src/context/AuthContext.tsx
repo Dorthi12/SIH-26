@@ -7,8 +7,8 @@
  * the login/logout implementations here; all consuming components stay unchanged.
  */
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { logoutUser } from "../services/authService";
+import { createContext, useContext, useState, useCallback,useEffect, type ReactNode } from "react";
+import { logoutUser,refreshAccessToken } from "../services/authService";
 
 export interface SessionUser {
   id?:      string;
@@ -101,6 +101,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("agrisense_token");
     setUser(null);
   }, []);
+
+  const refreshToken = useCallback(async () => {
+  if (!user) return;
+
+  const token = localStorage.getItem("agrisense_token");
+  if (!token) return;
+
+  const newToken = await refreshAccessToken();
+
+  if (!newToken) {
+    console.warn("Failed to refresh access token");
+  }
+}, [user]);
+
+useEffect(() => {
+  if (!user) return;
+
+  // Refresh every 10 minutes
+  const interval = setInterval(() => {
+    refreshToken();
+  }, 10 * 60 * 1000);
+
+  // Refresh when user returns to the tab
+  const handleFocus = () => {
+    refreshToken();
+  };
+
+  window.addEventListener("focus", handleFocus);
+
+  return () => {
+    clearInterval(interval);
+    window.removeEventListener("focus", handleFocus);
+  };
+}, [user, refreshToken]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated: !!user, user, setSession, clearSession }}>

@@ -254,3 +254,30 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
     };
   }
 }
+
+
+export async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+
+    if (!data.accessToken) {
+      return null;
+    }
+
+    localStorage.setItem("agrisense_token", data.accessToken);
+
+    return data.accessToken;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    return null;
+  }
+}
