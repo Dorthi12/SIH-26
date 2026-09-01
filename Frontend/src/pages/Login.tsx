@@ -89,7 +89,7 @@ export function Login() {
       navigate(from, { replace: true });
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode: no backend yet — log in locally so the app is usable
-      setSession({ name: email.split("@")[0], email, provider: "email" });
+      setSession({ name: email.split("@")[0], email, provider: "email" ,role:""});
       navigate(from, { replace: true });
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -104,10 +104,11 @@ export function Login() {
 
     if (result.ok) {
       setSession(result.user);
+      
       navigate(from, { replace: true });
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode
-      setSession({ name: "Google User", email: "user@gmail.com", provider: "google" });
+      setSession({ name: "Google User", email: "user@gmail.com", provider: "google" ,role:"user"});
       navigate(from, { replace: true });
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -219,7 +220,7 @@ export function Login() {
         <button
           type="button"
           onClick={() => {
-            setSession({ name: email ? email.split("@")[0] : "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" });
+            setSession({ name: email ? email.split("@")[0] : "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" ,role:"user"});
             navigate(from, { replace: true });
           }}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-forest hover:text-forest-600 hover:underline focus-visible:outline-none py-1 px-2.5 rounded-lg hover:bg-forest/5 transition-colors"

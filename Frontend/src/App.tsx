@@ -1,51 +1,67 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { RecommendationProvider } from "./context/RecommendationContext";
-import { ThemeProvider }          from "./context/ThemeContext";
-import { AuthProvider }           from "./context/AuthContext";
-import { LanguageProvider }       from "./context/LanguageContext";
-import { AppLayout }              from "./components/layout/AppLayout";
-import { ProtectedRoute }         from "./components/auth/ProtectedRoute";
-import { ScrollToTop }            from "./components/layout/ScrollToTop";
+import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
+import { LanguageProvider } from "./context/LanguageContext";
+import { AppLayout } from "./components/layout/AppLayout";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { ScrollToTop } from "./components/layout/ScrollToTop";
 
-import { LandingPage }            from "./pages/LandingPage";
-import { Login }                  from "./pages/Login";
-import { Signup }                 from "./pages/Signup";
-import { Dashboard }              from "./pages/Dashboard";
-import { Recommendation }         from "./pages/Recommendation";
-import { Analyzing }              from "./pages/Analyzing";
-import { Results }                from "./pages/Results";
-import { Comparison }             from "./pages/Comparison";
-import { Explain }                from "./pages/Explain";
-import { Weather }                from "./pages/Weather";
-import { History }                from "./pages/History";
-import { About }                  from "./pages/About";
-import { Assistant }              from "./pages/Assistant";
-import { ScenarioSimulator }      from "./pages/ScenarioSimulator";
+import { LandingPage } from "./pages/LandingPage";
+import { Login } from "./pages/Login";
+import { Signup } from "./pages/Signup";
+import { Dashboard } from "./pages/Dashboard";
+import { Recommendation } from "./pages/Recommendation";
+import { Analyzing } from "./pages/Analyzing";
+import { Results } from "./pages/Results";
+import { Comparison } from "./pages/Comparison";
+import { Explain } from "./pages/Explain";
+import { Weather } from "./pages/Weather";
+import { History } from "./pages/History";
+import { About } from "./pages/About";
+import { Assistant } from "./pages/Assistant";
+import { ScenarioSimulator } from "./pages/ScenarioSimulator";
 import { DistrictIntelligencePage } from "./pages/DistrictIntelligence";
+<<<<<<< HEAD
 import { DiseaseDetection }       from "./pages/DiseaseDetection";
 import { YieldForecast }          from "./pages/YieldForecast";
 import { ZeroProductionRisk }     from "./pages/ZeroProductionRisk";
 import { Community }              from "./pages/Community";
 import { Profile }                from "./pages/Profile";
+=======
+import { DiseaseDetection } from "./pages/DiseaseDetection";
+import { YieldForecast } from "./pages/YieldForecast";
+import { ZeroProductionRisk } from "./pages/ZeroProductionRisk";
+import { Community } from "./pages/Community";
+import { Profile } from "./pages/Profile";
+import { MandiPage } from "./pages/MandiPage";
+
+import CreateComplaint from "./pages/CreateComplaints";
+import ViewComplaints from "./pages/ViewComplaints";
+import MyComplaints from "./pages/myComplaints";
+import Complaints from "./pages/Complaints";
+>>>>>>> 037e558 (add complaints functionality)
 
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
             <RecommendationProvider>
               <Routes>
-                {/* ── Public standalone pages (no sidebar, no auth required) ── */}
-                <Route path="/"       element={<LandingPage />} />
-                <Route path="/login"  element={<Login />} />
+                {/* Public standalone pages */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
 
-                {/* ── Protected app routes (require login → redirect to /login) ── */}
+                {/* Protected app routes */}
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AppLayout />}>
+<<<<<<< HEAD
                     <Route path="/dashboard"             element={<Dashboard />} />
                     <Route path="/recommendation"        element={<Recommendation />} />
                     <Route path="/analyzing"             element={<Analyzing />} />
@@ -63,9 +79,65 @@ export default function App() {
                     <Route path="/zero-production-risk"  element={<ZeroProductionRisk />} />
                     <Route path="/community"             element={<Community />} />
                     <Route path="/profile"               element={<Profile />} />
+=======
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/mandi" element={<MandiPage />} />
+                    <Route
+                      path="/recommendation"
+                      element={<Recommendation />}
+                    />
+                    <Route path="/analyzing" element={<Analyzing />} />
+                    <Route path="/results" element={<Results />} />
+                    <Route path="/comparison" element={<Comparison />} />
+                    <Route path="/explain" element={<Explain />} />
+                    <Route path="/weather" element={<Weather />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/assistant" element={<Assistant />} />
+                    <Route
+                      path="/scenarios"
+                      element={<ScenarioSimulator />}
+                    />
+                    <Route
+                      path="/district-intelligence"
+                      element={<DistrictIntelligencePage />}
+                    />
+                    <Route
+                      path="/disease-detection"
+                      element={<DiseaseDetection />}
+                    />
+                    <Route
+                      path="/yield-forecast"
+                      element={<YieldForecast />}
+                    />
+                    <Route
+                      path="/zero-production-risk"
+                      element={<ZeroProductionRisk />}
+                    />
+                    <Route path="/community" element={<Community />} />
+                    <Route path="/profile" element={<Profile />} />
+>>>>>>> 037e558 (add complaints functionality)
 
-                    {/* Catch-all inside protected area → dashboard */}
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    {/* Complaint routes */}
+                    <Route path="/complaints" element={<Complaints />} />
+                    <Route
+                      path="/createcomplaints"
+                      element={<CreateComplaint />}
+                    />
+                    <Route
+                      path="/viewcomplaints"
+                      element={<ViewComplaints />}
+                    />
+                    <Route
+                      path="/viewmycomplaints"
+                      element={<MyComplaints />}
+                    />
+
+                    {/* Catch-all */}
+                    <Route
+                      path="*"
+                      element={<Navigate to="/dashboard" replace />}
+                    />
                   </Route>
                 </Route>
               </Routes>

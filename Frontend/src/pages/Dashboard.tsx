@@ -4,7 +4,7 @@ import {
   Sprout, CloudSun, History, GitCompare, HelpCircle,
   ArrowRight, TrendingUp, MapPin, Droplets, RefreshCw,
   AlertCircle, Sparkles, Leaf, Wheat, ThermometerSun,
-  BarChart3, ShieldCheck, Zap, Wind, BookOpen, BrainCircuit,
+  BarChart3, ShieldCheck, Zap, Wind, BookOpen, BrainCircuit,FileText
 } from "lucide-react";
 
 import { useRecommendation } from "../context/RecommendationContext";
@@ -190,11 +190,11 @@ function NavCard({ icon, title, desc, route, accent }: { icon: React.ReactNode; 
 /* ── Main Dashboard ────────────────────────────────────────────────────────── */
 
 export function Dashboard() {
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
   const { farmerInput } = useRecommendation();
 
-  const [loadState, setLoadState]     = useState<DashboardLoadState>("idle");
-  const [data, setData]               = useState<DashboardData | null>(null);
+  const [loadState, setLoadState] = useState<DashboardLoadState>("idle");
+  const [data, setData] = useState<DashboardData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const load = useCallback(async (showRefreshSpinner = false) => {
@@ -246,11 +246,11 @@ export function Dashboard() {
   }
 
   const { farm, topCrop, rankings, weather, topHistory, latestYield } = data;
-  const insight    = getDashboardInsight(data);
+  const insight = getDashboardInsight(data);
   const farmStatus = getFarmStatus(data);
 
   const yieldSparkValues = topHistory.yearlyYield.map((y) => y.yield_t_per_ha);
-  const tempSparkValues  = (weather.forecast ?? []).slice(0, 7).map((f) => f.temp_c);
+  const tempSparkValues = (weather.forecast ?? []).slice(0, 7).map((f) => f.temp_c);
 
   return (
     <div className="min-h-screen bg-[#f5f3ef] dark:bg-[#0f1714]">
@@ -287,7 +287,7 @@ export function Dashboard() {
           {/* grid lines background */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.06] pointer-events-none" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice" aria-hidden>
             {[...Array(12)].map((_, i) => <line key={i} x1={i * 72} y1={0} x2={i * 72} y2={200} stroke="white" strokeWidth="0.6" />)}
-            {[...Array(6)].map((_, i)  => <line key={i+12} x1={0} y1={i * 40} x2={800} y2={i * 40} stroke="white" strokeWidth="0.6" />)}
+            {[...Array(6)].map((_, i) => <line key={i + 12} x1={0} y1={i * 40} x2={800} y2={i * 40} stroke="white" strokeWidth="0.6" />)}
           </svg>
           {/* floating ambient orbs */}
           <div className="absolute top-[-40px] right-[-40px] h-56 w-56 rounded-full bg-white/[0.04] blur-2xl pointer-events-none" />
@@ -550,16 +550,29 @@ export function Dashboard() {
               desc="Explore historical crop yields, long-term trends and year-on-year stability patterns."
               route="/history"
               accent="bg-olive/[0.08] text-olive-600" />
-            <NavCard icon={<GitCompare className="h-5 w-5 text-forest" strokeWidth={1.5} />}
+            <NavCard
+              icon={<GitCompare className="h-5 w-5 text-forest" strokeWidth={1.5} />}
               title="Crop Comparison"
               desc="Compare all candidate crops side-by-side across predicted yield, weather fit, and historical signals."
               route="/comparison"
-              accent="bg-forest/[0.06] text-forest" />
-            <NavCard icon={<HelpCircle className="h-5 w-5 text-charcoal-muted" strokeWidth={1.5} />}
+              accent="bg-forest/[0.06] text-forest"
+            />
+
+            <NavCard
+              icon={<FileText className="h-5 w-5 text-red-600" strokeWidth={1.5} />}
+              title="Complaints"
+              desc="Report an issue, view all complaints, or track the complaints you have submitted."
+              route="/complaints"
+              accent="bg-red-50 text-red-600"
+            />
+
+            <NavCard
+              icon={<HelpCircle className="h-5 w-5 text-charcoal-muted" strokeWidth={1.5} />}
               title="Why This Crop?"
               desc="Understand how AgriSense arrived at this recommendation — signals, evidence, and the decision flow."
               route="/explain"
-              accent="bg-charcoal/[0.06] text-charcoal-muted" />
+              accent="bg-charcoal/[0.06] text-charcoal-muted"
+            />
           </div>
         </section>
 
@@ -593,7 +606,7 @@ export function Dashboard() {
         <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-forest-800 via-forest to-olive text-white px-8 py-10 text-center">
           <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none" viewBox="0 0 600 140" preserveAspectRatio="xMidYMid slice" aria-hidden>
             {[...Array(9)].map((_, i) => <line key={i} x1={i * 70} y1={0} x2={i * 70} y2={140} stroke="white" strokeWidth="0.8" />)}
-            {[...Array(4)].map((_, i) => <line key={i+9} x1={0} y1={i * 40} x2={600} y2={i * 40} stroke="white" strokeWidth="0.8" />)}
+            {[...Array(4)].map((_, i) => <line key={i + 9} x1={0} y1={i * 40} x2={600} y2={i * 40} stroke="white" strokeWidth="0.8" />)}
           </svg>
           <div className="relative space-y-4">
             <h2 className="text-xl sm:text-2xl font-bold">Ready to explore another crop decision?</h2>

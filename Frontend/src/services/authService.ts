@@ -21,6 +21,7 @@ export interface AuthUser {
   id:    string;
   name:  string;
   email: string;
+  role:string;
   provider: "email" | "google" | "guest";
 }
 
@@ -241,7 +242,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
 
     return {
       ok: true,
-      user: { id: "", name: "", email, provider: "email" },
+      user: { id: "", name: "", email, provider: "email" ,role:""},
     };
   } catch {
     return {
