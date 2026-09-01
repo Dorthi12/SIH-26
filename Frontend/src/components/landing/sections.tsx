@@ -3,6 +3,7 @@
  * Replaced @tanstack/react-router with react-router-dom.
  * Asset imports use relative paths.
  */
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -16,8 +17,8 @@ import {
   Sun,
   Wind,
 } from "lucide-react";
-import type { ReactNode } from "react";
 import { Reveal, Section, SectionHead } from "./primitives";
+import { CropDetailModal, type CropGuideItem } from "./CropDetailModal";
 import paddyImg    from "../../assets/crop-paddy.jpg";
 import wheatImg    from "../../assets/crop-wheat.jpg";
 import cottonImg   from "../../assets/crop-cotton.jpg";
@@ -106,16 +107,264 @@ export function QuickAccess() {
 
 /* ---------------- 2. Crop Guide ---------------- */
 
-const CROP_GUIDE = [
-  { name: "Paddy (Dhaan)",    season: "Kharif Season", text: "High-yielding varieties, planting time, irrigation and care.",                        img: paddyImg },
-  { name: "Wheat (Gehu)",     season: "Rabi Season",   text: "Best varieties, sowing time, fertilizers and yield management.",                      img: wheatImg },
-  { name: "Cotton",           season: "Kharif Season", text: "Seed selection, pest control, irrigation and harvesting.",                             img: cottonImg },
-  { name: "Mustard (Sarson)", season: "Rabi Season",   text: "Growing guide, disease management and best practices.",                                img: mustardImg },
-  { name: "Maize",            season: "Kharif Season", text: "Sowing time, nutrients, irrigation and disease control.",                              img: maizeImg },
-  { name: "Sugarcane (Ganna)", season: "Year-round",   text: "Planting, ratoon management, irrigation and harvest timing.",                          img: sugarcaneImg },
+const CROP_GUIDE: CropGuideItem[] = [
+  {
+    name: "Paddy (Dhaan)",
+    hindiName: "धान",
+    season: "Kharif Season",
+    hindiSeason: "खरीफ फसल",
+    text: "High-yielding varieties, planting time, irrigation and care.",
+    hindiText: "उच्च उपज वाली किस्में, रोपाई का समय, सिंचाई एवं देखभाल।",
+    img: paddyImg,
+    topStates: [
+      { name: "West Bengal", hindiName: "पश्चिम बंगाल", share: "13.6%", percentage: 13.6 },
+      { name: "Uttar Pradesh", hindiName: "उत्तर प्रदेश", share: "12.8%", percentage: 12.8 },
+      { name: "Punjab", hindiName: "पंजाब", share: "11.5%", percentage: 11.5 },
+      { name: "Andhra Pradesh", hindiName: "आंध्र प्रदेश", share: "7.9%", percentage: 7.9 },
+      { name: "Odisha", hindiName: "ओडिशा", share: "7.4%", percentage: 7.4 },
+    ],
+    details: {
+      climate: {
+        temp: "20°C - 37°C",
+        rainfall: "100 - 200 cm",
+        note: "Requires standing water and high humidity during growth.",
+        noteHi: "विकास चरण के दौरान जलभराव और अधिक आर्द्रता आवश्यक है।"
+      },
+      soil: {
+        type: "Clayey Loam / Silt (चिकनी दोमट)",
+        ph: "5.5 - 7.0",
+        note: "High water retention capacity soil is ideal.",
+        noteHi: "अधिक जल धारण क्षमता वाली चिकनी मिट्टी सर्वोत्तम है।"
+      },
+      duration: { season: "Kharif / खरीफ", days: "120 - 150 Days (दिन)", sowingWindow: "June - July (जून - जुलाई)" },
+      yield: { average: "3.5 - 5.5 t/ha (टन/हेक्टेयर)", optimal: "Up to 6.5 t/ha (संकर बीजों से 6.5 टन/हे।)" },
+      fertilizer: {
+        npk: "120:60:40 kg/ha NPK",
+        advice: "Apply Nitrogen in 3 split doses + Zinc Sulphate (25 kg/ha).",
+        adviceHi: "नाइट्रोजन 3 किस्तों में दें और जिंक सल्फेट (25 किग्रा/हे।) डालें।"
+      },
+      pestControl: {
+        commonPests: "Stem Borer, Blast / तना छेदक, झुलसा रोग",
+        prevention: "Use resistant seeds, avoid excess Nitrogen, apply neem oil.",
+        preventionHi: "प्रतिरोधी किस्मों का उपयोग करें, नीम तेल का छिड़काव करें।"
+      },
+    },
+  },
+  {
+    name: "Wheat (Gehu)",
+    hindiName: "गेहूँ",
+    season: "Rabi Season",
+    hindiSeason: "रबी फसल",
+    text: "Best varieties, sowing time, fertilizers and yield management.",
+    hindiText: "उन्नत किस्में, बुवाई का समय, उर्वरक प्रबंधन एवं उपज वृद्धि।",
+    img: wheatImg,
+    topStates: [
+      { name: "Uttar Pradesh", hindiName: "उत्तर प्रदेश", share: "32.4%", percentage: 32.4 },
+      { name: "Madhya Pradesh", hindiName: "मध्य प्रदेश", share: "21.6%", percentage: 21.6 },
+      { name: "Punjab", hindiName: "पंजाब", share: "15.2%", percentage: 15.2 },
+      { name: "Haryana", hindiName: "हरियाणा", share: "11.8%", percentage: 11.8 },
+      { name: "Rajasthan", hindiName: "राजस्थान", share: "9.3%", percentage: 9.3 },
+    ],
+    details: {
+      climate: {
+        temp: "10°C - 25°C",
+        rainfall: "75 - 100 cm",
+        note: "Cool winter growth period and warm dry harvest weather.",
+        noteHi: "ठंडी सर्दियों में विकास तथा पकाई के समय शुष्क धूप आवश्यक है।"
+      },
+      soil: {
+        type: "Fertile Loam / Clay Loam (उपजाऊ दोमट)",
+        ph: "6.0 - 7.5",
+        note: "Well-drained soil with good structure and organic matter.",
+        noteHi: "अच्छे जल निकास वाली उपजाऊ दोमट मिट्टी आदर्श है।"
+      },
+      duration: { season: "Rabi / रबी", days: "110 - 130 Days (दिन)", sowingWindow: "Nov - Dec (नवंबर - दिसंबर)" },
+      yield: { average: "3.2 - 4.8 t/ha (टन/हेक्टेयर)", optimal: "Up to 5.5 t/ha in irrigated plains (5.5 टन/हे।)" },
+      fertilizer: {
+        npk: "120:60:40 kg/ha NPK",
+        advice: "Full P&K at sowing; split Nitrogen at crown root initiation stage.",
+        adviceHi: "बुवाई के समय फास्फोरस व पोटाश दें, ताज जड़ बनते समय नाइट्रोजन दें।"
+      },
+      pestControl: {
+        commonPests: "Yellow Rust, Aphids / पीला रतुआ, माहू (चेपा)",
+        prevention: "Seed treatment with Trichoderma; monitor rust spikes early.",
+        preventionHi: "ट्राइकोडेर्मा से बीज उपचार करें, रतुआ का समय पर नियंत्रण करें।"
+      },
+    },
+  },
+  {
+    name: "Cotton",
+    hindiName: "कपास",
+    season: "Kharif Season",
+    hindiSeason: "खरीफ फसल",
+    text: "Seed selection, pest control, irrigation and harvesting.",
+    hindiText: "बीज चयन, कीट नियंत्रण, सिंचाई एवं कटाई प्रबंधन।",
+    img: cottonImg,
+    topStates: [
+      { name: "Gujarat", hindiName: "गुजरात", share: "28.5%", percentage: 28.5 },
+      { name: "Maharashtra", hindiName: "महाराष्ट्र", share: "22.1%", percentage: 22.1 },
+      { name: "Telangana", hindiName: "तेलंगाना", share: "14.3%", percentage: 14.3 },
+      { name: "Rajasthan", hindiName: "राजस्थान", share: "8.7%", percentage: 8.7 },
+      { name: "Karnataka", hindiName: "कर्नाटक", share: "7.2%", percentage: 7.2 },
+    ],
+    details: {
+      climate: {
+        temp: "21°C - 35°C",
+        rainfall: "50 - 100 cm",
+        note: "Requires at least 200 frost-free days and abundant sunshine.",
+        noteHi: "कम से कम 200 पाला-रहित दिन तथा प्रचुर धूप आवश्यक है।"
+      },
+      soil: {
+        type: "Deep Black Soil / Regur (काली मिट्टी)",
+        ph: "6.0 - 8.0",
+        note: "Deep clay soil with excellent moisture retention capacity.",
+        noteHi: "उत्कृष्ट नमी धारण करने वाली गहरी काली चिकनी मिट्टी।"
+      },
+      duration: { season: "Kharif / खरीफ", days: "160 - 180 Days (दिन)", sowingWindow: "May - June (मई - जून)" },
+      yield: { average: "2.0 - 3.2 t/ha (टन/हेक्टेयर)", optimal: "Up to 3.8 t/ha with Bt Cotton (3.8 टन/हे।)" },
+      fertilizer: {
+        npk: "90:45:45 kg/ha NPK",
+        advice: "Apply Magnesium Sulphate & Boron spray during boll development.",
+        adviceHi: "डोडी (बॉल्स) बनते समय मैग्नीशियम सल्फेट व बोरॉन का छिड़काव करें।"
+      },
+      pestControl: {
+        commonPests: "Pink Bollworm, Whitefly / गुलाबी सूंडी, सफेद मक्खी",
+        prevention: "Pheromone traps, refuge crops, and IPM monitoring.",
+        preventionHi: "फेरोमोन प्रपंच (ट्रैप) लगाएं एवं एकीकृत कीट प्रबंधन (IPM) अपनाएं।"
+      },
+    },
+  },
+  {
+    name: "Mustard (Sarson)",
+    hindiName: "सरसों",
+    season: "Rabi Season",
+    hindiSeason: "रबी फसल",
+    text: "Growing guide, disease management and best practices.",
+    hindiText: "उगाने का मार्गदर्शन, रोग प्रबंधन एवं सर्वश्रेष्ठ तकनीकें।",
+    img: mustardImg,
+    topStates: [
+      { name: "Rajasthan", hindiName: "राजस्थान", share: "46.2%", percentage: 46.2 },
+      { name: "Madhya Pradesh", hindiName: "मध्य प्रदेश", share: "14.8%", percentage: 14.8 },
+      { name: "Haryana", hindiName: "हरियाणा", share: "11.5%", percentage: 11.5 },
+      { name: "Uttar Pradesh", hindiName: "उत्तर प्रदेश", share: "10.9%", percentage: 10.9 },
+      { name: "West Bengal", hindiName: "पश्चिम बंगाल", share: "4.5%", percentage: 4.5 },
+    ],
+    details: {
+      climate: {
+        temp: "10°C - 25°C",
+        rainfall: "25 - 40 cm",
+        note: "Subtropical dry and cool winter climate.",
+        noteHi: "शुष्क और ठंडी सर्दियों का मौसम अत्यंत अनुकूल है।"
+      },
+      soil: {
+        type: "Sandy Loam to Heavy Loam (बलुई दोमट)",
+        ph: "6.0 - 7.5",
+        note: "Tolerates light soil; requires good sub-soil moisture.",
+        noteHi: "हल्की मिट्टी में भी उगाई जा सकती है; नमी आवश्यक है।"
+      },
+      duration: { season: "Rabi / रबी", days: "100 - 120 Days (दिन)", sowingWindow: "Oct - Nov (अक्टूबर - नवंबर)" },
+      yield: { average: "1.5 - 2.5 t/ha (टन/हेक्टेयर)", optimal: "Up to 3.0 t/ha under irrigation (3.0 टन/हे।)" },
+      fertilizer: {
+        npk: "80:40:40 kg/ha NPK",
+        advice: "Essential Sulphur application (40 kg/ha) for oil content boost.",
+        adviceHi: "तेल की मात्रा बढ़ाने के लिए सल्फर (40 किग्रा/हे।) अवश्य दें।"
+      },
+      pestControl: {
+        commonPests: "Mustard Aphids, Alternaria Blight / चेपा (माहू), अल्टरनेरिया",
+        prevention: "Early sowing in October; yellow sticky traps for aphids.",
+        preventionHi: "अक्टूबर में समय पर बुवाई करें; पीले चिपचिपे ट्रैप लगाएं।"
+      },
+    },
+  },
+  {
+    name: "Maize",
+    hindiName: "मक्का",
+    season: "Kharif Season",
+    hindiSeason: "खरीफ फसल",
+    text: "Sowing time, nutrients, irrigation and disease control.",
+    hindiText: "बुवाई का समय, पोषण प्रबंधन, सिंचाई एवं रोग रोकथाम।",
+    img: maizeImg,
+    topStates: [
+      { name: "Karnataka", hindiName: "कर्नाटक", share: "16.5%", percentage: 16.5 },
+      { name: "Madhya Pradesh", hindiName: "मध्य प्रदेश", share: "13.8%", percentage: 13.8 },
+      { name: "Maharashtra", hindiName: "महाराष्ट्र", share: "11.2%", percentage: 11.2 },
+      { name: "Bihar", hindiName: "बिहार", share: "8.9%", percentage: 8.9 },
+      { name: "Uttar Pradesh", hindiName: "उत्तर प्रदेश", share: "8.1%", percentage: 8.1 },
+    ],
+    details: {
+      climate: {
+        temp: "21°C - 30°C",
+        rainfall: "50 - 100 cm",
+        note: "Warm weather crop, highly sensitive to frost and waterlogging.",
+        noteHi: "गर्म मौसम की फसल; पाले और जलभराव के प्रति अत्यंत संवेदनशील।"
+      },
+      soil: {
+        type: "Deep Fertile Loam (उपजाऊ दोमट)",
+        ph: "5.8 - 7.2",
+        note: "Rich in organic matter with effective surface drainage.",
+        noteHi: "जीवांश युक्त उपजाऊ दोमट मिट्टी जिसमें जल निकास अच्छा हो।"
+      },
+      duration: { season: "Kharif/Rabi (खरीफ/रबी)", days: "90 - 110 Days (दिन)", sowingWindow: "June - July (जून - जुलाई)" },
+      yield: { average: "3.0 - 5.0 t/ha (टन/हेक्टेयर)", optimal: "Up to 6.5 t/ha for hybrids (6.5 टन/हे।)" },
+      fertilizer: {
+        npk: "120:60:50 kg/ha NPK",
+        advice: "Zinc Sulphate (25 kg/ha) at planting; top dress N at knee-high stage.",
+        adviceHi: "बुवाई पर जिंक सल्फेट दें; घुटने तक की ऊंचाई पर नाइट्रोजन दें।"
+      },
+      pestControl: {
+        commonPests: "Fall Armyworm, Stem Borer / फॉल आर्मीवर्म, तना छेदक",
+        prevention: "Pheromone traps, Emamectin benzoate at early stage.",
+        preventionHi: "फेरोमोन ट्रैप लगाएं, शुरुआती अवस्था में इमामेक्टिन का प्रयोग करें।"
+      },
+    },
+  },
+  {
+    name: "Sugarcane (Ganna)",
+    hindiName: "गन्ना",
+    season: "Year-round",
+    hindiSeason: "वर्ष भर की फसल",
+    text: "Planting, ratoon management, irrigation and harvest timing.",
+    hindiText: "पेड़ी प्रबंधन, सिंचाई चक्र, उर्वरक एवं कटाई का सही समय।",
+    img: sugarcaneImg,
+    topStates: [
+      { name: "Uttar Pradesh", hindiName: "उत्तर प्रदेश", share: "44.5%", percentage: 44.5 },
+      { name: "Maharashtra", hindiName: "महाराष्ट्र", share: "23.2%", percentage: 23.2 },
+      { name: "Karnataka", hindiName: "कर्नाटक", share: "11.1%", percentage: 11.1 },
+      { name: "Tamil Nadu", hindiName: "तमिलनाडु", share: "5.8%", percentage: 5.8 },
+      { name: "Bihar", hindiName: "बिहार", share: "4.2%", percentage: 4.2 },
+    ],
+    details: {
+      climate: {
+        temp: "20°C - 38°C",
+        rainfall: "75 - 150 cm",
+        note: "Hot tropical to subtropical climate with high sunshine hours.",
+        noteHi: "उष्णकटिबंधीय आर्द्र जलवायु तथा अधिक धूप की आवश्यकता।"
+      },
+      soil: {
+        type: "Deep Alluvial & Black Loam (जलोढ़ व काली दोमट)",
+        ph: "6.5 - 7.5",
+        note: "Deep well-drained soil rich in organic humus.",
+        noteHi: "जीवांश से भरपूर गहरी तथा अच्छे जल निकास वाली मिट्टी।"
+      },
+      duration: { season: "Annual / वार्षिक", days: "300 - 420 Days (दिन)", sowingWindow: "Feb - March / Oct (फरवरी - मार्च / अक्टूबर)" },
+      yield: { average: "65 - 90 t/ha (टन/हेक्टेयर)", optimal: "Up to 110 t/ha with drip fertigation (110 टन/हे।)" },
+      fertilizer: {
+        npk: "250:115:115 kg/ha NPK",
+        advice: "Apply Pressmud compost; split Nitrogen in 4 doses across tillering.",
+        adviceHi: "प्रेसमड खाद का प्रयोग करें; नाइट्रोजन को 4 बराबर किस्तों में बांटकर दें।"
+      },
+      pestControl: {
+        commonPests: "Early Shoot Borer, Red Rot / कंसुआ, लाल सड़न रोग (रेड रॉट)",
+        prevention: "Use disease-free setts, trash mulching, bio-control.",
+        preventionHi: "रोगमुक्त गूलों (टुकड़ों) की बुवाई करें, सूखी पत्तियों की मल्चिंग करें।"
+      },
+    },
+  },
 ];
 
 export function CropGuide() {
+  const [selectedCrop, setSelectedCrop] = useState<CropGuideItem | null>(null);
+
   return (
     <Section id="crop-guide">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -137,9 +386,9 @@ export function CropGuide() {
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {CROP_GUIDE.map((c, i) => (
           <Reveal key={c.name} delay={i * 70} className="h-full">
-            <Link
-              to="/recommendation"
-              className="group relative flex h-80 flex-col justify-end overflow-hidden rounded-2xl shadow-landing-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-landing-lift"
+            <button
+              onClick={() => setSelectedCrop(c)}
+              className="group relative flex h-80 w-full text-left flex-col justify-end overflow-hidden rounded-2xl shadow-landing-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-landing-lift cursor-pointer focus:outline-none focus:ring-2 focus:ring-landing-primary"
             >
               <img
                 src={c.img}
@@ -161,10 +410,15 @@ export function CropGuide() {
                   <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
                 </span>
               </div>
-            </Link>
+            </button>
           </Reveal>
         ))}
       </div>
+
+      <CropDetailModal
+        crop={selectedCrop}
+        onClose={() => setSelectedCrop(null)}
+      />
     </Section>
   );
 }
