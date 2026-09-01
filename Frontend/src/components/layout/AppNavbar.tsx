@@ -8,6 +8,7 @@ import {
 import { Button } from "../ui/Button";
 import { cn } from "../../utils/cn";
 import { ThemeToggleButton } from "./ThemeToggleButton";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useAuth } from "../../context/AuthContext";
 
 // ── Nav items ──────────────────────────────────────────────────────────────
@@ -109,7 +110,8 @@ export function AppNavbar() {
           </nav>
 
           {/* Right */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <LanguageSwitcher className="scale-90 sm:scale-100" />
             <ThemeToggleButton className="hidden sm:inline-flex" />
 
             {/* Farm avatar chip */}

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { useLanguage } from "../../context/LanguageContext";
 
 /* ---------------- Reveal on scroll ---------------- */
 
@@ -150,33 +151,53 @@ export function SectionHead({
   sub,
   align = "left",
   onDark = false,
+  badgeTheme = "emerald",
 }: {
   eyebrow: string;
   hindi?: string;
   title: ReactNode;
-  sub?: string;
+  sub?: ReactNode;
   align?: "left" | "center";
   onDark?: boolean;
+  badgeTheme?: "emerald" | "indigo" | "amber" | "purple" | "teal";
 }) {
+  const { language } = useLanguage();
+
+  const themeClasses = {
+    emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    indigo: "border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
+    amber: "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300",
+    purple: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300",
+    teal: "border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300",
+  }[badgeTheme];
+
+  const showHindiBadge = (language === "both" || language === "hi") && hindi;
+  const showEyebrow = language === "en" || language === "both" || !hindi;
+
   return (
     <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center")}>
       <p
         className={cn(
-          "flex items-center gap-2.5",
+          "flex flex-wrap items-center gap-2.5",
           align === "center" && "justify-center",
           onDark ? "text-landing-accent" : "text-landing-olive",
         )}
       >
-        <span className="landing-eyebrow">{eyebrow}</span>
-        {hindi && (
-          <span className="landing-hindi rounded-full border border-landing-terracotta/30 bg-landing-terracotta/10 px-2.5 py-0.5 text-[0.7rem] font-medium tracking-normal text-landing-terracotta normal-case">
+        {showEyebrow && <span className="landing-eyebrow font-bold uppercase tracking-wider">{eyebrow}</span>}
+        {showHindiBadge && (
+          <span
+            className={cn(
+              "landing-hindi rounded-full border px-3 py-0.5 text-xs font-semibold shadow-xs transition-colors",
+              themeClasses
+            )}
+          >
             {hindi}
           </span>
         )}
       </p>
       <h2
         className={cn(
-          "mt-4 text-3xl leading-[1.1] font-semibold sm:text-4xl md:text-[2.75rem]",
+          "mt-3 text-3xl leading-[1.15] font-extrabold sm:text-4xl md:text-[2.65rem] tracking-tight",
           onDark ? "text-landing-on-dark" : "text-landing-fg",
         )}
       >
@@ -185,7 +206,7 @@ export function SectionHead({
       {sub && (
         <p
           className={cn(
-            "mt-4 text-base leading-relaxed",
+            "mt-3 text-base leading-relaxed font-medium",
             onDark ? "text-landing-on-dark-muted" : "text-landing-fg-muted",
           )}
         >

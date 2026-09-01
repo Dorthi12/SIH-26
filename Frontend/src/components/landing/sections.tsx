@@ -28,32 +28,66 @@ import sugarcaneImg from "../../assets/crop-sugarcane.jpg";
 import adviceImg   from "../../assets/advice-farmer.jpg";
 import fieldWide   from "../../assets/field-wide.jpg";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 /* ---------------- 1. Quick Access Cards ---------------- */
 
-const QUICK = [
+const QUICK_DATA = [
   {
     icon: <Sprout className="size-6" />,
-    title: "Crop Guidance",
-    text: "Get practical crop recommendations for your field and season.",
+    titleEn: "Crop Guidance",
+    titleHi: "फसल मार्गदर्शन",
+    textEn: "Get practical crop recommendations for your field and season.",
+    textHi: "अपने खेत और मौसम के अनुसार सही फसल का सुझाव पाएं।",
     to: "/recommendation",
+    theme: {
+      cardHover: "hover:border-emerald-500/40 hover:shadow-emerald-500/10 hover:shadow-xl",
+      iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+      accentText: "text-emerald-700 dark:text-emerald-400",
+      pillBg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    },
   },
   {
     icon: <Landmark className="size-6" />,
-    title: "Government Schemes",
-    text: "Find useful information about government schemes and farmer benefits.",
+    titleEn: "Government Schemes",
+    titleHi: "सरकारी योजनाएं",
+    textEn: "Find useful information about government schemes and farmer benefits.",
+    textHi: "सरकारी योजनाओं और किसान लाभों की उपयोगी जानकारी प्राप्त करें।",
     href: "#schemes",
+    theme: {
+      cardHover: "hover:border-indigo-500/40 hover:shadow-indigo-500/10 hover:shadow-xl",
+      iconBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20",
+      accentText: "text-indigo-700 dark:text-indigo-400",
+      pillBg: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
+    },
   },
   {
     icon: <CloudSun className="size-6" />,
-    title: "Weather Updates",
-    text: "Get current weather updates and forecasts for your location.",
+    titleEn: "Weather Updates",
+    titleHi: "मौसम अपडेट",
+    textEn: "Get current weather updates and forecasts for your location.",
+    textHi: "अपने क्षेत्र के सटीक मौसम अपडेट और पूर्वानुमान प्राप्त करें।",
     href: "#weather",
+    theme: {
+      cardHover: "hover:border-amber-500/40 hover:shadow-amber-500/10 hover:shadow-xl",
+      iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+      accentText: "text-amber-800 dark:text-amber-400",
+      pillBg: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30",
+    },
   },
   {
     icon: <BookOpen className="size-6" />,
-    title: "Farming Knowledge",
-    text: "Learn practical farming tips, crop practices and useful agricultural information.",
+    titleEn: "Farming Knowledge",
+    titleHi: "खेती का ज्ञान",
+    textEn: "Learn practical farming tips, crop practices and useful agricultural information.",
+    textHi: "व्यावहारिक खेती के टिप्स और उपयोगी कृषि तकनीक सीखें।",
     href: "#knowledge",
+    theme: {
+      cardHover: "hover:border-purple-500/40 hover:shadow-purple-500/10 hover:shadow-xl",
+      iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+      accentText: "text-purple-700 dark:text-purple-400",
+      pillBg: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30",
+    },
   },
 ];
 
@@ -61,13 +95,16 @@ function CardShell({
   children,
   href,
   to,
+  hoverCls,
 }: {
   children: ReactNode;
   href?: string;
   to?: string;
+  hoverCls?: string;
 }) {
-  const cls =
-    "group flex h-full flex-col rounded-2xl border border-landing-border bg-landing-card p-6 shadow-landing-soft transition-all duration-300 hover:-translate-y-1 hover:border-landing-primary/30 hover:shadow-landing-lift";
+  const cls = `group flex h-full flex-col rounded-2xl border border-landing-border bg-landing-card p-6 shadow-landing-soft transition-all duration-300 hover:-translate-y-1.5 ${
+    hoverCls || "hover:border-landing-primary/30 hover:shadow-landing-lift"
+  }`;
   if (to)
     return (
       <Link to={to} className={cls}>
@@ -82,24 +119,47 @@ function CardShell({
 }
 
 export function QuickAccess() {
+  const { t, language } = useLanguage();
+
   return (
     <Section className="pt-8 md:pt-12">
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {QUICK.map((q, i) => (
-          <Reveal key={q.title} delay={i * 80} className="h-full">
-            <CardShell to={"to" in q ? q.to : undefined} href={"href" in q ? q.href : undefined}>
-              <span className="inline-flex size-12 items-center justify-center rounded-xl bg-landing-secondary text-landing-primary">
-                {q.icon}
-              </span>
-              <h3 className="mt-5 text-lg font-semibold text-landing-fg">{q.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted">{q.text}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-landing-primary">
-                Explore
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-              </span>
-            </CardShell>
-          </Reveal>
-        ))}
+        {QUICK_DATA.map((q, i) => {
+          const title = t(q.titleEn, q.titleHi);
+          const text = t(q.textEn, q.textHi);
+
+          return (
+            <Reveal key={q.titleEn} delay={i * 80} className="h-full">
+              <CardShell
+                to={"to" in q ? q.to : undefined}
+                href={"href" in q ? q.href : undefined}
+                hoverCls={q.theme.cardHover}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex size-12 items-center justify-center rounded-2xl shadow-xs transition-transform duration-300 group-hover:scale-110 ${q.theme.iconBg}`}>
+                    {q.icon}
+                  </span>
+                  {language === "both" && (
+                    <span className={`rounded-full border px-2.5 py-0.5 text-[0.7rem] font-bold ${q.theme.pillBg}`}>
+                      {q.titleHi}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="mt-5 text-lg font-bold tracking-tight text-landing-fg group-hover:text-landing-primary transition-colors">
+                  {title}
+                </h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted font-medium">
+                  {text}
+                </p>
+                <span className={`mt-5 inline-flex items-center gap-1.5 text-sm font-bold ${q.theme.accentText}`}>
+                  {t("Explore", "खोजें")}
+                  <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </CardShell>
+            </Reveal>
+          );
+        })}
       </div>
     </Section>
   );
@@ -364,6 +424,7 @@ const CROP_GUIDE: CropGuideItem[] = [
 
 export function CropGuide() {
   const [selectedCrop, setSelectedCrop] = useState<CropGuideItem | null>(null);
+  const { t, language } = useLanguage();
 
   return (
     <Section id="crop-guide">
@@ -371,48 +432,58 @@ export function CropGuide() {
         <SectionHead
           eyebrow="Crop Guide"
           hindi="फसल मार्गदर्शन"
-          title="Explore Crop Guide"
-          sub="Find detailed information about different crops and their best farming practices."
+          title={t("Explore Crop Guide", "फसल मार्गदर्शन खोजें")}
+          sub={t(
+            "Find detailed information about different crops and their best farming practices.",
+            "विभिन्न फसलों और उनकी सर्वोत्तम खेती प्रथाओं के बारे में विस्तृत जानकारी प्राप्त करें।"
+          )}
+          badgeTheme="emerald"
         />
         <Link
           to="/recommendation"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-landing-primary hover:text-landing-forest-deep"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
         >
-          View All Crops
-          <ArrowRight className="size-3.5" />
+          {t("View All Crops", "सभी फसलें देखें")}
+          <ArrowRight className="size-4" />
         </Link>
       </div>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {CROP_GUIDE.map((c, i) => (
-          <Reveal key={c.name} delay={i * 70} className="h-full">
-            <button
-              onClick={() => setSelectedCrop(c)}
-              className="group relative flex h-80 w-full text-left flex-col justify-end overflow-hidden rounded-2xl shadow-landing-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-landing-lift cursor-pointer focus:outline-none focus:ring-2 focus:ring-landing-primary"
-            >
-              <img
-                src={c.img}
-                alt={c.name}
-                loading="lazy"
-                width={900}
-                height={700}
-                className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-landing-forest-deep/95 via-landing-forest-deep/25 to-transparent" />
-              <span className="absolute left-4 top-4 rounded-full bg-landing-ivory/90 px-3 py-1 text-xs font-semibold text-landing-olive backdrop-blur-sm">
-                {c.season}
-              </span>
-              <div className="relative flex flex-col p-5">
-                <h3 className="text-xl font-bold text-landing-ivory drop-shadow-sm">{c.name}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-landing-ivory/85">{c.text}</p>
-                <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-landing-ivory/15 px-3.5 py-1.5 text-sm font-semibold text-landing-ivory backdrop-blur-sm transition-colors group-hover:bg-landing-accent group-hover:text-landing-forest-deep">
-                  Learn More
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+        {CROP_GUIDE.map((c, i) => {
+          const cropTitle = language === "hi" ? c.hindiName : language === "both" ? `${c.name} (${c.hindiName})` : c.name;
+          const cropSeason = language === "hi" ? c.hindiSeason : language === "both" ? `${c.season} (${c.hindiSeason})` : c.season;
+          const cropText = language === "hi" ? c.hindiText : c.text;
+
+          return (
+            <Reveal key={c.name} delay={i * 70} className="h-full">
+              <button
+                onClick={() => setSelectedCrop(c)}
+                className="group relative flex h-80 w-full text-left flex-col justify-end overflow-hidden rounded-2xl shadow-landing-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 border border-emerald-500/10 hover:border-emerald-500/40"
+              >
+                <img
+                  src={c.img}
+                  alt={c.name}
+                  loading="lazy"
+                  width={900}
+                  height={700}
+                  className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/95 via-emerald-950/30 to-transparent" />
+                <span className="absolute left-4 top-4 rounded-full bg-emerald-950/80 px-3 py-1 text-xs font-bold text-emerald-200 border border-emerald-500/30 backdrop-blur-md">
+                  {cropSeason}
                 </span>
-              </div>
-            </button>
-          </Reveal>
-        ))}
+                <div className="relative flex flex-col p-5">
+                  <h3 className="text-xl font-extrabold text-white drop-shadow-md">{cropTitle}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-emerald-100/90 font-medium">{cropText}</p>
+                  <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/20 px-3.5 py-1.5 text-sm font-bold text-white border border-emerald-400/30 backdrop-blur-md transition-colors group-hover:bg-emerald-500 group-hover:text-white">
+                    {t("Learn More", "विवरण देखें")}
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </button>
+            </Reveal>
+          );
+        })}
       </div>
 
       <CropDetailModal
@@ -426,38 +497,138 @@ export function CropGuide() {
 /* ---------------- 3. Government Schemes ---------------- */
 
 const SCHEMES = [
-  { name: "PM Kisan",              text: "Direct income support paid to eligible small and marginal farmer families." },
-  { name: "PM Fasal Bima Yojana",  text: "Crop insurance cover against loss from unseasonal weather and pests." },
-  { name: "Kisan Credit Card",     text: "Short-term credit for seeds, fertilizer and other farming needs." },
-  { name: "Soil Health Card",      text: "Know your soil nutrients and get fertilizer recommendations for your field." },
-  { name: "PM-KUSUM",              text: "Support for solar pumps and solar power for irrigation on your farm." },
+  {
+    nameEn: "PM Kisan",
+    nameHi: "पीएम किसान",
+    textEn: "Direct income support paid to eligible small and marginal farmer families.",
+    textHi: "पात्र छोटे और सीमांत किसान परिवारों को प्रत्यक्ष आय सहायता।",
+  },
+  {
+    nameEn: "PM Fasal Bima Yojana",
+    nameHi: "पीएम फसल बीमा योजना",
+    textEn: "Crop insurance cover against loss from unseasonal weather and pests.",
+    textHi: "बेमौसम मौसम और कीटों से नुकसान के खिलाफ फसल बीमा सुरक्षा।",
+  },
+  {
+    nameEn: "Kisan Credit Card",
+    nameHi: "किसान क्रेडिट कार्ड",
+    textEn: "Short-term credit for seeds, fertilizer and other farming needs.",
+    textHi: "बीज, उर्वरक और अन्य कृषि आवश्यकताओं के लिए अल्पकालिक ऋण।",
+  },
+  {
+    nameEn: "Soil Health Card",
+    nameHi: "मृदा स्वास्थ्य कार्ड",
+    textEn: "Know your soil nutrients and get fertilizer recommendations for your field.",
+    textHi: "अपनी मिट्टी के पोषक तत्वों को जानें और अपने खेत के लिए खाद की सलाह पाएं।",
+  },
+  {
+    nameEn: "PM-KUSUM",
+    nameHi: "पीएम-कुसुम",
+    textEn: "Support for solar pumps and solar power for irrigation on your farm.",
+    textHi: "आपके खेत में सिंचाई के लिए सौर पंप और सौर ऊर्जा सहायता।",
+  },
 ];
 
 export function Schemes() {
+  const { language } = useLanguage();
+
+  const isBoth = language === "both";
+  const isHi = language === "hi";
+
+  const titleContent = isHi ? (
+    "सरकारी योजनाएं"
+  ) : isBoth ? (
+    <div className="flex flex-col">
+      <span>Government Schemes</span>
+      <span className="text-xl sm:text-2xl font-bold text-amber-700 dark:text-amber-400 mt-1">
+        (सरकारी योजनाएं)
+      </span>
+    </div>
+  ) : (
+    "Government Schemes"
+  );
+
+  const subContent = isHi ? (
+    "सरकारी योजनाओं, पात्रता और किसानों के लिए उपलब्ध लाभों को समझें।"
+  ) : isBoth ? (
+    <div className="flex flex-col gap-1 mt-1">
+      <span>Understand government schemes, eligibility and benefits available to farmers.</span>
+      <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+        (सरकारी योजनाओं, पात्रता और किसानों के लिए उपलब्ध लाभों को समझें।)
+      </span>
+    </div>
+  ) : (
+    "Understand government schemes, eligibility and benefits available to farmers."
+  );
+
   return (
-    <Section id="schemes" className="bg-landing-secondary/30">
+    <Section id="schemes" className="bg-indigo-500/5 dark:bg-indigo-950/20">
       <SectionHead
         eyebrow="Schemes"
         hindi="सरकारी योजनाएं"
-        title="Government Schemes"
-        sub="Understand government schemes, eligibility and benefits available to farmers."
+        title={titleContent}
+        sub={subContent}
+        badgeTheme="indigo"
       />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {SCHEMES.map((s, i) => (
-          <Reveal key={s.name} delay={i * 70} className="h-full">
-            <CardShell href="#advice">
-              <span className="inline-flex size-11 items-center justify-center rounded-xl bg-landing-accent/20 text-landing-olive">
-                <Landmark className="size-5" />
+        {SCHEMES.map((s, i) => {
+          const cardName = isHi ? (
+            s.nameHi
+          ) : isBoth ? (
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-landing-fg">{s.nameEn}</span>
+              <span className="text-base font-bold text-emerald-700 dark:text-emerald-400">
+                ({s.nameHi})
               </span>
-              <h3 className="mt-5 text-lg font-semibold text-landing-fg">{s.name}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted">{s.text}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-landing-primary">
-                Learn More
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+            </div>
+          ) : (
+            s.nameEn
+          );
+
+          const cardText = isHi ? (
+            s.textHi
+          ) : isBoth ? (
+            <div className="flex flex-col gap-2 mt-1">
+              <span>{s.textEn}</span>
+              <span className="text-xs font-semibold leading-relaxed text-amber-900 dark:text-amber-300 bg-amber-500/15 dark:bg-amber-950/50 px-2.5 py-1.5 rounded-lg border border-amber-500/30 inline-block w-fit">
+                ({s.textHi})
               </span>
-            </CardShell>
-          </Reveal>
-        ))}
+            </div>
+          ) : (
+            s.textEn
+          );
+
+          const learnMoreText = isHi ? (
+            "अधिक जानें"
+          ) : isBoth ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span>Learn More</span>
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                (अधिक जानें)
+              </span>
+            </span>
+          ) : (
+            "Learn More"
+          );
+
+          return (
+            <Reveal key={s.nameEn} delay={i * 70} className="h-full">
+              <CardShell href="#advice" hoverCls="hover:border-indigo-500/40 hover:shadow-indigo-500/10">
+                <span className="inline-flex size-11 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                  <Landmark className="size-5" />
+                </span>
+                <h3 className="mt-5 text-lg font-bold text-landing-fg">{cardName}</h3>
+                <div className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted font-medium">
+                  {cardText}
+                </div>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 dark:text-indigo-400">
+                  {learnMoreText}
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+                </span>
+              </CardShell>
+            </Reveal>
+          );
+        })}
       </div>
     </Section>
   );
@@ -465,27 +636,33 @@ export function Schemes() {
 
 /* ---------------- 4. Weather ---------------- */
 
-const WEATHER_FORECAST = [
-  { day: "Today",    icon: <CloudRain className="size-6" />, temp: "28°", rain: "20%" },
-  { day: "Tomorrow", icon: <CloudRain className="size-6" />, temp: "27°", rain: "65%" },
-  { day: "Wed",      icon: <Cloud className="size-6" />,     temp: "29°", rain: "30%" },
-  { day: "Thu",      icon: <CloudSun className="size-6" />,  temp: "30°", rain: "10%" },
-  { day: "Fri",      icon: <Sun className="size-6" />,       temp: "31°", rain: "5%"  },
-];
-
 export function Weather() {
+  const { t, language } = useLanguage();
+
+  const weatherForecastData = [
+    { day: t("Today", "आज"), icon: <CloudRain className="size-6" />, temp: "28°", rain: "20%" },
+    { day: t("Tomorrow", "कल"), icon: <CloudRain className="size-6" />, temp: "27°", rain: "65%" },
+    { day: t("Wed", "बुध"), icon: <Cloud className="size-6" />, temp: "29°", rain: "30%" },
+    { day: t("Thu", "गुरु"), icon: <CloudSun className="size-6" />, temp: "30°", rain: "10%" },
+    { day: t("Fri", "शुक्र"), icon: <Sun className="size-6" />, temp: "31°", rain: "5%" },
+  ];
+
   return (
     <Section id="weather">
       <SectionHead
         eyebrow="Weather"
-        hindi="मौसम"
-        title="Weather for Your Location"
-        sub="Stay updated with current conditions and a simple five-day outlook for your area."
+        hindi="मौसम अपडेट"
+        title={t("Weather for Your Location", "आपके स्थान का मौसम")}
+        sub={t(
+          "Stay updated with current conditions and a simple five-day outlook for your area.",
+          "वर्तमान स्थितियों और अपने क्षेत्र के 5-दिवसीय मौसम पूर्वानुमान से अपडेट रहें।"
+        )}
+        badgeTheme="amber"
       />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Reveal className="h-full">
-          <div className="h-full overflow-hidden rounded-2xl border border-landing-border bg-landing-card shadow-landing-soft">
+          <div className="h-full overflow-hidden rounded-2xl border border-amber-500/20 bg-landing-card shadow-landing-soft hover:border-amber-500/40 transition-colors">
             <div className="relative h-40">
               <img
                 src={fieldWide}
@@ -497,23 +674,27 @@ export function Weather() {
               />
             </div>
             <div className="p-6">
-              <p className="text-sm text-landing-fg-muted">Prayagraj, Uttar Pradesh</p>
+              <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                {t("Prayagraj, Uttar Pradesh", "प्रयागराज, उत्तर प्रदेश")}
+              </p>
               <div className="mt-2 flex items-end justify-between">
-                <p className="text-5xl font-semibold tracking-tight text-landing-fg">28°C</p>
-                <p className="pb-2 text-base font-medium text-landing-fg-muted">Partly Cloudy</p>
+                <p className="text-5xl font-extrabold tracking-tight text-landing-fg">28°C</p>
+                <p className="pb-2 text-base font-bold text-landing-fg-muted">
+                  {t("Partly Cloudy", "आंशिक रूप से बादल")}
+                </p>
               </div>
               <dl className="mt-6 grid grid-cols-3 gap-3">
                 {[
-                  { icon: <Droplets className="size-4" />, k: "Humidity", v: "72%" },
-                  { icon: <CloudRain className="size-4" />, k: "Rain", v: "20%" },
-                  { icon: <Wind className="size-4" />, k: "Wind", v: "12 km/h" },
+                  { icon: <Droplets className="size-4" />, k: t("Humidity", "आर्द्रता"), v: "72%" },
+                  { icon: <CloudRain className="size-4" />, k: t("Rain", "बारिश"), v: "20%" },
+                  { icon: <Wind className="size-4" />, k: t("Wind", "हवा"), v: "12 km/h" },
                 ].map((r) => (
-                  <div key={r.k} className="rounded-xl bg-landing-secondary/60 p-3">
-                    <dt className="flex items-center gap-1.5 text-xs text-landing-fg-muted">
-                      <span className="text-landing-olive">{r.icon}</span>
+                  <div key={r.k} className="rounded-xl bg-amber-500/10 p-3 border border-amber-500/15">
+                    <dt className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                      <span className="text-amber-600">{r.icon}</span>
                       {r.k}
                     </dt>
-                    <dd className="mt-1 text-base font-semibold text-landing-fg">{r.v}</dd>
+                    <dd className="mt-1 text-base font-bold text-landing-fg">{r.v}</dd>
                   </div>
                 ))}
               </dl>
@@ -524,27 +705,32 @@ export function Weather() {
         <Reveal delay={120} className="h-full">
           <div className="flex h-full flex-col gap-6">
             <div className="rounded-2xl border border-landing-border bg-landing-card p-6 shadow-landing-soft">
-              <p className="text-sm font-semibold text-landing-fg">Next 5 days</p>
+              <p className="text-sm font-bold text-landing-fg">{t("Next 5 days", "अगले 5 दिन")}</p>
               <div className="mt-5 grid grid-cols-5 gap-2 text-center">
-                {WEATHER_FORECAST.map((f) => (
-                  <div key={f.day} className="rounded-xl bg-landing-secondary/50 px-1 py-4">
-                    <p className="text-xs font-medium text-landing-fg-muted">{f.day}</p>
-                    <span className="mt-2 inline-flex justify-center text-landing-olive">{f.icon}</span>
-                    <p className="mt-2 text-base font-semibold text-landing-fg">{f.temp}</p>
-                    <p className="text-xs text-landing-fg-muted">{f.rain}</p>
+                {weatherForecastData.map((f) => (
+                  <div key={f.day} className="rounded-xl bg-amber-500/10 px-1 py-4 border border-amber-500/10">
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">{f.day}</p>
+                    <span className="mt-2 inline-flex justify-center text-amber-600">{f.icon}</span>
+                    <p className="mt-2 text-base font-bold text-landing-fg">{f.temp}</p>
+                    <p className="text-xs font-semibold text-landing-fg-muted">{f.rain}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-landing-accent/40 bg-landing-accent/12 p-6">
-              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-landing-accent/30 text-landing-olive">
+            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6">
+              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
                 <CloudRain className="size-5" />
               </span>
               <div>
-                <p className="text-base font-semibold text-landing-fg">Rain expected tomorrow</p>
-                <p className="mt-1 text-sm leading-relaxed text-landing-fg-muted">
-                  Consider planning irrigation accordingly and delay spraying until the field dries.
+                <p className="text-base font-bold text-landing-fg">
+                  {t("Rain expected tomorrow", "कल बारिश की संभावना")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-landing-fg-muted font-medium">
+                  {t(
+                    "Consider planning irrigation accordingly and delay spraying until the field dries.",
+                    "तदनुसार सिंचाई की योजना बनाएं और खेत सूखने तक छिड़काव टालें।"
+                  )}
                 </p>
               </div>
             </div>
@@ -558,32 +744,60 @@ export function Weather() {
 /* ---------------- 5. Farming Knowledge ---------------- */
 
 const KNOWLEDGE = [
-  { title: "Sowing at the right time", text: "Simple season-wise guidance on when to sow each crop for better results." },
-  { title: "Water and irrigation",     text: "Practical ways to plan irrigation and save water through the growing season." },
-  { title: "Soil and fertilizer care", text: "Keep your soil healthy with balanced nutrients and simple field practices." },
-  { title: "Pest and disease control", text: "Spot common crop problems early and know the safe steps to take." },
+  {
+    titleEn: "Sowing at the right time",
+    titleHi: "सही समय पर बुवाई",
+    textEn: "Simple season-wise guidance on when to sow each crop for better results.",
+    textHi: "बेहतर परिणाम के लिए प्रत्येक फसल की बुवाई कब करें, इसका मौसम-वार मार्गदर्शन।",
+  },
+  {
+    titleEn: "Water and irrigation",
+    titleHi: "जल और सिंचाई",
+    textEn: "Practical ways to plan irrigation and save water through the growing season.",
+    textHi: "बढ़ते मौसम के दौरान सिंचाई की योजना बनाने और पानी बचाने के व्यावहारिक तरीके।",
+  },
+  {
+    titleEn: "Soil and fertilizer care",
+    titleHi: "मिट्टी और उर्वरक देखभाल",
+    textEn: "Keep your soil healthy with balanced nutrients and simple field practices.",
+    textHi: "संतुलित पोषक तत्वों और सरल कृषि तकनीकों से अपनी मिट्टी को स्वस्थ रखें।",
+  },
+  {
+    titleEn: "Pest and disease control",
+    titleHi: "कीट और रोग नियंत्रण",
+    textEn: "Spot common crop problems early and know the safe steps to take.",
+    textHi: "फसल की आम समस्याओं को जल्द पहचानें और सुरक्षात्मक उपाय अपनाएं।",
+  },
 ];
 
 export function Knowledge() {
+  const { t } = useLanguage();
+
   return (
-    <Section id="knowledge" className="bg-landing-secondary/30">
+    <Section id="knowledge" className="bg-purple-500/5 dark:bg-purple-950/20">
       <SectionHead
         eyebrow="Knowledge"
         hindi="खेती का ज्ञान"
-        title="Farming Knowledge"
-        sub="Learn practical information that helps you make better farming decisions."
+        title={t("Farming Knowledge", "खेती का ज्ञान")}
+        sub={t(
+          "Learn practical information that helps you make better farming decisions.",
+          "व्यावहारिक जानकारी सीखें जो आपको बेहतर खेती के निर्णय लेने में मदद करती है।"
+        )}
+        badgeTheme="purple"
       />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {KNOWLEDGE.map((k, i) => (
-          <Reveal key={k.title} delay={i * 70} className="h-full">
-            <CardShell href="#advice">
-              <span className="inline-flex size-11 items-center justify-center rounded-xl bg-landing-secondary text-landing-primary">
+          <Reveal key={k.titleEn} delay={i * 70} className="h-full">
+            <CardShell href="#advice" hoverCls="hover:border-purple-500/40 hover:shadow-purple-500/10">
+              <span className="inline-flex size-11 items-center justify-center rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                 <BookOpen className="size-5" />
               </span>
-              <h3 className="mt-5 text-base font-semibold text-landing-fg">{k.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted">{k.text}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-landing-primary">
-                Read More
+              <h3 className="mt-5 text-base font-bold text-landing-fg">{t(k.titleEn, k.titleHi)}</h3>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-landing-fg-muted font-medium">
+                {t(k.textEn, k.textHi)}
+              </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-purple-700 dark:text-purple-400">
+                {t("Read More", "और पढ़ें")}
                 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
               </span>
             </CardShell>
@@ -597,32 +811,38 @@ export function Knowledge() {
 /* ---------------- 6. Personalized advice CTA ---------------- */
 
 export function PersonalizedAdvice() {
+  const { t, language } = useLanguage();
+
   return (
     <Section id="advice">
       <Reveal>
-        <div className="grid overflow-hidden rounded-3xl border border-landing-border bg-landing-card shadow-landing-lift lg:grid-cols-2">
+        <div className="grid overflow-hidden rounded-3xl border border-emerald-500/20 bg-landing-card shadow-landing-lift lg:grid-cols-2">
           <div className="order-2 flex flex-col justify-center p-8 sm:p-12 lg:order-1">
-            <p className="flex items-center gap-2.5 text-landing-olive">
-              <span className="text-sm font-semibold tracking-wide uppercase">
-                Personalized Advice
+            <p className="flex items-center gap-2.5">
+              <span className="text-sm font-bold tracking-wide uppercase text-emerald-700 dark:text-emerald-400">
+                {t("Personalized Advice", "व्यक्तिगत सलाह")}
               </span>
-              <span className="landing-hindi rounded-full border border-landing-terracotta/30 bg-landing-terracotta/10 px-2.5 py-0.5 text-[0.7rem] font-medium text-landing-terracotta normal-case">
-                आपके लिए सलाह
-              </span>
+              {(language === "both" || language === "hi") && (
+                <span className="landing-hindi rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[0.75rem] font-bold text-emerald-700 dark:text-emerald-300">
+                  आपके लिए सलाह
+                </span>
+              )}
             </p>
-            <h2 className="mt-4 text-3xl leading-tight font-semibold text-landing-fg sm:text-4xl">
-              Get Personalized Crop Advice
+            <h2 className="mt-4 text-3xl leading-tight font-extrabold text-landing-fg sm:text-4xl">
+              {t("Get Personalized Crop Advice", "व्यक्तिगत फसल सलाह प्राप्त करें")}
             </h2>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-landing-fg-muted">
-              Ask your questions and get farming guidance based on your location, season and crop
-              needs.
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-landing-fg-muted font-medium">
+              {t(
+                "Ask your questions and get farming guidance based on your location, season and crop needs.",
+                "अपने प्रश्न पूछें और अपने स्थान, मौसम और फसल की जरूरतों के आधार पर खेती का मार्गदर्शन प्राप्त करें।"
+              )}
             </p>
             <div className="mt-8">
               <Link
                 to="/recommendation"
-                className="group inline-flex items-center gap-2 rounded-full bg-landing-primary px-7 py-3.5 text-base font-semibold text-landing-primary-fg shadow-landing-soft transition-all duration-300 hover:-translate-y-0.5 hover:bg-landing-forest-deep"
+                className="group inline-flex items-center gap-2 rounded-full bg-emerald-600 px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-emerald-600/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-700"
               >
-                Get Crop Advice
+                {t("Get Crop Advice", "फसल सलाह लें")}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
@@ -645,27 +865,29 @@ export function PersonalizedAdvice() {
 
 /* ---------------- 7. Impact Stats ---------------- */
 
-const STATS = [
-  { v: "25+",    k: "Crop Guides" },
-  { v: "100+",   k: "Government Schemes" },
-  { v: "50,000+", k: "Questions Answered" },
-  { v: "500+",   k: "Districts Covered" },
-];
-
 export function ImpactStats() {
+  const { t } = useLanguage();
+
+  const STATS = [
+    { v: "25+", k: t("Crop Guides", "फसल गाइड") },
+    { v: "100+", k: t("Government Schemes", "सरकारी योजनाएं") },
+    { v: "50,000+", k: t("Questions Answered", "उत्तर दिए गए प्रश्न") },
+    { v: "500+", k: t("Districts Covered", "कवर किए गए जिले") },
+  ];
+
   return (
     <Section className="pb-8">
       <Reveal>
-        <div className="grid gap-8 rounded-3xl border border-landing-border bg-landing-secondary/50 px-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 px-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.k} className="text-center sm:text-left">
-              <p className="text-4xl font-semibold tracking-tight text-landing-primary">{s.v}</p>
-              <p className="mt-2 text-sm text-landing-fg-muted">{s.k}</p>
+              <p className="text-4xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400">{s.v}</p>
+              <p className="mt-2 text-sm font-bold text-landing-fg-muted">{s.k}</p>
             </div>
           ))}
         </div>
-        <p className="mt-4 text-center text-xs text-landing-fg-muted sm:text-left">
-          Figures shown are indicative platform coverage values.
+        <p className="mt-4 text-center text-xs font-medium text-landing-fg-muted sm:text-left">
+          {t("Figures shown are indicative platform coverage values.", "दिखाए गए आंकड़े केवल मंच कवरेज के सूचक हैं।")}
         </p>
       </Reveal>
     </Section>

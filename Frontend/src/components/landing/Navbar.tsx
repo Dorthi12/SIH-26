@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { CTAButton } from "./primitives";
+import { LanguageSwitcher } from "../layout/LanguageSwitcher";
 
 export function Logo({ tone = "light", tagline = false }: { tone?: "light" | "dark"; tagline?: boolean }) {
   const dark = tone === "dark";
@@ -93,26 +94,29 @@ export function LandingNavbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            to="/login"
-            className="rounded-full border border-landing-border px-5 py-2.5 text-sm font-semibold text-landing-fg transition-colors hover:border-landing-primary/40 hover:bg-landing-secondary/60"
-          >
-            Log In
-          </Link>
-          <CTAButton to="/signup" withArrow>
-            Get Started
-          </CTAButton>
-        </div>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              to="/login"
+              className="rounded-full border border-landing-border px-5 py-2.5 text-sm font-semibold text-landing-fg transition-colors hover:border-landing-primary/40 hover:bg-landing-secondary/60"
+            >
+              Log In
+            </Link>
+            <CTAButton to="/signup" withArrow>
+              Get Started
+            </CTAButton>
+          </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle navigation"
-          className="rounded-full border border-landing-border p-2 md:hidden"
-        >
-          {open ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle navigation"
+            className="rounded-full border border-landing-border p-2 md:hidden"
+          >
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (

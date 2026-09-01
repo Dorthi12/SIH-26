@@ -13,6 +13,7 @@ import {
   Award,
   FlaskConical,
 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext";
 
 export interface TopProducerState {
   name: string;
@@ -46,6 +47,8 @@ interface CropDetailModalProps {
 }
 
 export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
+  const { t, language } = useLanguage();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -63,6 +66,10 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
   }, [crop, onClose]);
 
   if (!crop) return null;
+
+  const cropName = language === "hi" ? crop.hindiName || crop.name : language === "both" && crop.hindiName ? `${crop.name} (${crop.hindiName})` : crop.name;
+  const cropSeason = language === "hi" ? crop.hindiSeason || crop.season : language === "both" && crop.hindiSeason ? `${crop.season} (${crop.hindiSeason})` : crop.season;
+  const cropDesc = language === "hi" ? crop.hindiText || crop.text : language === "both" && crop.hindiText ? `${crop.text} • ${crop.hindiText}` : crop.text;
 
   return (
     <div
@@ -91,23 +98,18 @@ export function CropDetailModal({ crop, onClose }: CropDetailModalProps) {
             alt={crop.name}
             className="size-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-landing-forest-deep via-landing-forest-deep/65 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/65 to-transparent" />
           <div className="absolute bottom-4 left-5 right-5 text-landing-ivory">
             <div className="flex flex-wrap items-center gap-2 mb-1.5">
-              <span className="rounded-full bg-landing-accent px-3 py-0.5 text-xs font-bold text-landing-forest-deep shadow-sm">
-                {crop.season} {crop.hindiSeason ? `(${crop.hindiSeason})` : ""}
+              <span className="rounded-full bg-emerald-500 px-3 py-0.5 text-xs font-bold text-white shadow-sm">
+                {cropSeason}
               </span>
             </div>
-            <h2 className="text-2xl font-extrabold drop-shadow-md sm:text-3xl flex items-baseline gap-2 flex-wrap">
-              <span>{crop.name}</span>
-              {crop.hindiName && (
-                <span className="text-lg font-medium opacity-90 sm:text-xl">
-                  ({crop.hindiName})
-                </span>
-              )}
+            <h2 className="text-2xl font-extrabold drop-shadow-md sm:text-3xl flex items-baseline gap-2 flex-wrap text-white">
+              <span>{cropName}</span>
             </h2>
-            <p className="mt-1 max-w-2xl text-xs text-landing-ivory/90 sm:text-sm leading-relaxed">
-              {crop.text} {crop.hindiText ? `• ${crop.hindiText}` : ""}
+            <p className="mt-1 max-w-2xl text-xs text-emerald-100/90 sm:text-sm leading-relaxed font-medium">
+              {cropDesc}
             </p>
           </div>
         </div>
