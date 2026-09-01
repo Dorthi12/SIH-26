@@ -23,13 +23,6 @@ import { About } from "./pages/About";
 import { Assistant } from "./pages/Assistant";
 import { ScenarioSimulator } from "./pages/ScenarioSimulator";
 import { DistrictIntelligencePage } from "./pages/DistrictIntelligence";
-<<<<<<< HEAD
-import { DiseaseDetection }       from "./pages/DiseaseDetection";
-import { YieldForecast }          from "./pages/YieldForecast";
-import { ZeroProductionRisk }     from "./pages/ZeroProductionRisk";
-import { Community }              from "./pages/Community";
-import { Profile }                from "./pages/Profile";
-=======
 import { DiseaseDetection } from "./pages/DiseaseDetection";
 import { YieldForecast } from "./pages/YieldForecast";
 import { ZeroProductionRisk } from "./pages/ZeroProductionRisk";
@@ -41,7 +34,6 @@ import CreateComplaint from "./pages/CreateComplaints";
 import ViewComplaints from "./pages/ViewComplaints";
 import MyComplaints from "./pages/myComplaints";
 import Complaints from "./pages/Complaints";
->>>>>>> 037e558 (add complaints functionality)
 
 export default function App() {
   return (
@@ -61,25 +53,6 @@ export default function App() {
                 {/* Protected app routes */}
                 <Route element={<ProtectedRoute />}>
                   <Route element={<AppLayout />}>
-<<<<<<< HEAD
-                    <Route path="/dashboard"             element={<Dashboard />} />
-                    <Route path="/recommendation"        element={<Recommendation />} />
-                    <Route path="/analyzing"             element={<Analyzing />} />
-                    <Route path="/results"               element={<Results />} />
-                    <Route path="/comparison"            element={<Comparison />} />
-                    <Route path="/explain"               element={<Explain />} />
-                    <Route path="/weather"               element={<Weather />} />
-                    <Route path="/history"               element={<History />} />
-                    <Route path="/about"                 element={<About />} />
-                    <Route path="/assistant"             element={<Assistant />} />
-                    <Route path="/scenarios"             element={<ScenarioSimulator />} />
-                     <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
-                    <Route path="/disease-detection"     element={<DiseaseDetection />} />
-                    <Route path="/yield-forecast"        element={<YieldForecast />} />
-                    <Route path="/zero-production-risk"  element={<ZeroProductionRisk />} />
-                    <Route path="/community"             element={<Community />} />
-                    <Route path="/profile"               element={<Profile />} />
-=======
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/mandi" element={<MandiPage />} />
                     <Route
@@ -116,7 +89,6 @@ export default function App() {
                     />
                     <Route path="/community" element={<Community />} />
                     <Route path="/profile" element={<Profile />} />
->>>>>>> 037e558 (add complaints functionality)
 
                     {/* Complaint routes */}
                     <Route path="/complaints" element={<Complaints />} />

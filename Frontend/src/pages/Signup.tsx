@@ -159,7 +159,7 @@ export function Signup() {
       setSuccess(true);
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode — create local session
-      setSession({ name, email, provider: "email" });
+      setSession({ name, email, provider: "email", role: "farmer" });
       setSuccess(true);
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -175,7 +175,7 @@ export function Signup() {
       navigate("/dashboard", { replace: true });
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode
-      setSession({ name: "Google User", email: "user@gmail.com", provider: "google" });
+      setSession({ name: "Google User", email: "user@gmail.com", provider: "google", role: "farmer" });
       navigate("/dashboard", { replace: true });
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -538,7 +538,7 @@ export function Signup() {
         <button
           type="button"
           onClick={() => {
-            setSession({ name: name || "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" });
+            setSession({ name: name || "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest", role: "farmer" });
             navigate("/dashboard", { replace: true });
           }}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-forest hover:text-forest-600 hover:underline focus-visible:outline-none py-1 px-2.5 rounded-lg hover:bg-forest/5 transition-colors"

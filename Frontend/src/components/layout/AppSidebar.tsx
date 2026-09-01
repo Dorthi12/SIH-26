@@ -2,15 +2,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-<<<<<<< HEAD
-  Leaf, Sparkles, Menu, X, ChevronRight,
-  LayoutDashboard, Sprout, CloudSun, History,
-  GitCompare, HelpCircle, UserCircle,
-  ChevronLeft, ChevronRight as ChevronRightIcon,
-  Settings, MessageSquareText, FlaskConical, Map,
-  MoonStar, SunMedium, LogOut, TrendingUp, ShieldAlert,
-  Users, User,
-=======
   Leaf,
   Sparkles,
   Menu,
@@ -38,7 +29,6 @@ import {
   User,
   ShoppingBag,
   FileText,
->>>>>>> 037e558 (add complaints functionality)
 } from "lucide-react";
 
 import { cn } from "../../utils/cn";
@@ -48,22 +38,6 @@ import { useAuth } from "../../context/AuthContext";
 // ── Route definitions ─────────────────────────────────────────────────────
 
 export const NAV_ITEMS = [
-<<<<<<< HEAD
-  { to: "/dashboard",             label: "Dashboard",             icon: LayoutDashboard },
-  { to: "/assistant",             label: "AI Assistant",           icon: MessageSquareText },
-  { to: "/recommendation",        label: "Recommendation",        icon: Sprout },
-  { to: "/disease-detection",     label: "Disease Detection",     icon: Leaf },
-  { to: "/yield-forecast",        label: "Yield Forecast",        icon: TrendingUp },
-  { to: "/zero-production-risk",  label: "Zero-Production Risk",  icon: ShieldAlert },
-  { to: "/scenarios",             label: "Scenario Simulator",    icon: FlaskConical },
-  { to: "/district-intelligence", label: "District Intelligence", icon: Map },
-  { to: "/comparison",            label: "Compare Crops",         icon: GitCompare },
-  { to: "/weather",               label: "Weather",               icon: CloudSun },
-  { to: "/history",               label: "History",               icon: History },
-  { to: "/explain",               label: "Why This Crop?",        icon: HelpCircle },
-  { to: "/community",             label: "Community",             icon: Users },
-  { to: "/profile",               label: "Profile",               icon: User },
-=======
   {
     to: "/dashboard",
     label: "Dashboard",
@@ -144,7 +118,6 @@ export const NAV_ITEMS = [
     label: "Profile",
     icon: User,
   },
->>>>>>> 037e558 (add complaints functionality)
 ] as const;
 
 // Routes where /results and /analyzing count as "Recommendation" active
