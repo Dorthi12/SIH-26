@@ -92,7 +92,8 @@ interface Post {
 const DEMO_POSTS: Post[] = [
   {
     id: "demo-post-1",
-    caption: "Noticeable yellowing and dark spots appearing on my wheat crop leaves after recent rainfall in Bhatinda. Ran AgriSense AI Leaf Diagnostic. Has anyone experienced similar Septoria leaf blotch issues this season?",
+    caption:
+      "Noticeable yellowing and dark spots appearing on my wheat crop leaves after recent rainfall in Bhatinda. Ran AgriSense AI Leaf Diagnostic. Has anyone experienced similar Septoria leaf blotch issues this season?",
     locationName: "Bhatinda, Punjab",
     latitude: 30.211,
     longitude: 74.9455,
@@ -132,7 +133,7 @@ const DEMO_POSTS: Post[] = [
     createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
     _count: {
       votes: 24,
-      comments: 3,
+      comments: 2,
     },
     upvotesCount: 24,
     downvotesCount: 1,
@@ -141,7 +142,8 @@ const DEMO_POSTS: Post[] = [
   },
   {
     id: "demo-post-2",
-    caption: "Successfully controlled cotton bollworm using Neem oil extract (10,000 PPM) mixed with liquid soap solution. Zero chemical residue and saved nearly ₹4,000 per acre compared to synthetic sprays! 🌾 #SustainableFarming",
+    caption:
+      "Successfully controlled cotton bollworm using Neem oil extract (10,000 PPM) mixed with liquid soap solution. Zero chemical residue and saved nearly ₹4,000 per acre compared to synthetic sprays! 🌾 #SustainableFarming",
     locationName: "Rajkot, Gujarat",
     authorId: "user-priya",
     author: {
@@ -152,16 +154,16 @@ const DEMO_POSTS: Post[] = [
     media: [
       {
         id: "media-2",
-        url: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=1000",
+        url: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=1000",
         awsS3ObjectKey: "demo/cotton_field.jpg",
         type: "IMAGE",
       },
     ],
     aianalyses: [],
-    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
     _count: {
       votes: 42,
-      comments: 2,
+      comments: 1,
     },
     upvotesCount: 42,
     downvotesCount: 0,
@@ -170,19 +172,20 @@ const DEMO_POSTS: Post[] = [
   },
   {
     id: "demo-post-3",
-    caption: "Concentric rings found on lower tomato leaves. AgriSense AI detected Early Blight with 91% confidence score. Recommending Mancozeb spray and drip irrigation adjustment to avoid excess leaf wetness.",
-    locationName: "Solan, Himachal Pradesh",
-    authorId: "user-vikrant",
+    caption:
+      "High humidity in Varanasi region causing early blight symptoms on hybrid tomato leaves. Uploaded high-res crop photo to AI engine for treatment advisory.",
+    locationName: "Varanasi, Uttar Pradesh",
+    authorId: "user-amit",
     author: {
-      id: "user-vikrant",
-      name: "Vikrant Singh",
+      id: "user-amit",
+      name: "Amit Kumar",
       role: "HORTICULTURIST",
     },
     media: [
       {
         id: "media-3",
-        url: "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&q=80&w=1000",
-        awsS3ObjectKey: "demo/tomato_blight.jpg",
+        url: "https://images.unsplash.com/photo-1592417817098-8f3d6eb19657?auto=format&fit=crop&q=80&w=1000",
+        awsS3ObjectKey: "demo/tomato_early_blight.jpg",
         type: "IMAGE",
       },
     ],
@@ -190,7 +193,7 @@ const DEMO_POSTS: Post[] = [
       {
         id: "analysis-3",
         modelType: "DISEASE_DETECTION",
-        summary: "Early Blight detected on Tomato crop.",
+        summary: "Tomato Early Blight detected with 91% confidence.",
         confidence: 0.91,
         diseaseResult: {
           crop: "Tomato",
@@ -199,16 +202,16 @@ const DEMO_POSTS: Post[] = [
           top_predictions: [
             { rank: 1, crop: "Tomato", disease: "Early Blight", confidence: 0.91 },
             { rank: 2, crop: "Tomato", disease: "Late Blight", confidence: 0.06 },
-            { rank: 3, crop: "Tomato", disease: "Target Spot", confidence: 0.03 },
+            { rank: 3, crop: "Tomato", disease: "Healthy Tomato Leaf", confidence: 0.03 },
           ],
         },
-        createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+        createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
       },
     ],
-    createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
     _count: {
       votes: 18,
-      comments: 2,
+      comments: 0,
     },
     upvotesCount: 18,
     downvotesCount: 0,
@@ -217,137 +220,93 @@ const DEMO_POSTS: Post[] = [
   },
   {
     id: "demo-post-4",
-    caption: "Harvested 45 quintals of Mustard (Raya) today. Local Mandi price hovering around ₹5,450/quintal. Yield prediction from AgriSense was spot on (+- 2% accuracy)! Looking forward to next crop season.",
-    locationName: "Karnal, Haryana",
-    authorId: "user-lakhwinder",
+    caption:
+      "Mustard harvest in full swing across Bharatpur mandi circle! Current local rate is ₹5,450/quintal. Yield estimates look strong at 18-20 quintals per hectare due to favorable cold winter spell.",
+    locationName: "Bharatpur, Rajasthan",
+    authorId: "user-vikram",
     author: {
-      id: "user-lakhwinder",
-      name: "Lakhwinder Singh",
-      role: "GRAIN PRODUCER",
+      id: "user-vikram",
+      name: "Vikram Singh",
+      role: "MUSTARD GROWER",
     },
-    media: [
-      {
-        id: "media-4",
-        url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1000",
-        awsS3ObjectKey: "demo/mustard_field.jpg",
-        type: "IMAGE",
-      },
-    ],
+    media: [],
     aianalyses: [],
     createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
     _count: {
-      votes: 31,
-      comments: 1,
+      votes: 35,
+      comments: 0,
     },
-    upvotesCount: 31,
-    downvotesCount: 0,
+    upvotesCount: 35,
+    downvotesCount: 2,
     hasVoted: null,
-    isFollowing: false,
+    isFollowing: true,
   },
 ];
 
 const INITIAL_DEMO_COMMENTS: Record<string, PostComment[]> = {
   "demo-post-1": [
     {
-      id: "c1",
-      content: "Try applying copper-based fungicide or Azoxystrobin before high humidity sets in. Worked very well for my field last month.",
+      id: "c-1",
+      content:
+        "Yes Rajesh! We had the exact same Septoria spot pattern in neighboring Ludhiana plots. Applying Copper Oxychloride @ 2.5g/L water controlled the spread effectively.",
       createdAt: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
-      author: { id: "u2", name: "Anita Verma (Agronomist)" },
+      author: { id: "u-101", name: "Sukhwinder Gill" },
     },
     {
-      id: "c2",
-      content: "Yes, heavy rainfall creates ideal conditions for Septoria. Make sure field drainage is clean to reduce moisture accumulation.",
-      createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
-      author: { id: "u3", name: "Suresh Kumar" },
-    },
-    {
-      id: "c3",
-      content: "AgriSense AI accurately spotted it! I also used bio-fungicide Trichoderma harzianum for soil treatment with great results.",
-      createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      author: { id: "u4", name: "Harpreet Gill" },
+      id: "c-2",
+      content:
+        "The AI confidence (94%) is spot on. Make sure to avoid overhead sprinkler irrigation for the next 5 days to reduce moisture on leaves.",
+      createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      author: { id: "u-102", name: "Dr. K.V. Rao (Agronomist)" },
     },
   ],
   "demo-post-2": [
     {
-      id: "c4",
-      content: "What ratio of neem oil to liquid soap did you use per 15-liter spray pump?",
+      id: "c-3",
+      content:
+        "Excellent advice Priya! What spray pressure did you use for uniform leaf coverage?",
       createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-      author: { id: "u5", name: "Ramesh Patel" },
-    },
-    {
-      id: "c5",
-      content: "5ml Neem Oil + 1ml liquid soap per liter of water works best. Spray in early morning or late evening for maximum absorption!",
-      createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-      author: { id: "user-priya", name: "Priya Patel" },
-    },
-  ],
-  "demo-post-3": [
-    {
-      id: "c6",
-      content: "Pruning infected lower leaves immediately helps prevent spores from splashing onto top leaves during watering.",
-      createdAt: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
-      author: { id: "u6", name: "Dr. Manoj Negi" },
-    },
-    {
-      id: "c7",
-      content: "Thanks for sharing! AgriSense AI disease scanner saved my crop last week too.",
-      createdAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-      author: { id: "u7", name: "Rakesh Sharma" },
-    },
-  ],
-  "demo-post-4": [
-    {
-      id: "c8",
-      content: "Great price for Raya! Prices in Punjab mandi touched ₹5,500 today. Good timing for harvest.",
-      createdAt: new Date(Date.now() - 18 * 3600 * 1000).toISOString(),
-      author: { id: "u8", name: "Gurdeep Singh" },
+      author: { id: "u-103", name: "Ramesh Bhai" },
     },
   ],
 };
 
 export function Community() {
   const { user: currentUser } = useAuth();
+
   const [posts, setPosts] = useState<Post[]>(DEMO_POSTS);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // New Post Form State
-  const [createOpen, setCreateOpen] = useState(false);
-  const [caption, setCaption] = useState("");
-  const [locationName, setLocationName] = useState("");
+  const [createOpen, setCreateOpen] = useState<boolean>(false);
+  const [caption, setCaption] = useState<string>("");
+  const [locationName, setLocationName] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Active comments mapping (postId -> comments list)
+  // Expanded comments per post
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [commentsMap, setCommentsMap] = useState<Record<string, PostComment[]>>(INITIAL_DEMO_COMMENTS);
   const [commentsLoading, setCommentsLoading] = useState<Record<string, boolean>>({});
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
 
-  // ── Fetch Feed ──────────────────────────────────────────────────────────
+  // ── Fetch Community Feed ──────────────────────────────────────────────────
   const fetchFeed = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const res = await apiRequest("/community/feed?limit=20");
+      const res = await apiRequest("/community/feed?page=1&limit=20");
       if (res && res.success && Array.isArray(res.posts) && res.posts.length > 0) {
-        const formattedPosts = res.posts.map((post: any) => ({
-          ...post,
-          upvotesCount: post._count?.votes || 0,
-          downvotesCount: 0,
-          hasVoted: null,
-          isFollowing: false,
-        }));
-        setPosts(formattedPosts);
+        setPosts(res.posts);
       } else {
         setPosts(DEMO_POSTS);
       }
     } catch (err: any) {
-      console.warn("Backend unavailable, using demo community feed:", err);
+      console.warn("Community feed API unavailable, falling back to rich demo posts:", err);
       setPosts(DEMO_POSTS);
-      setCommentsMap(INITIAL_DEMO_COMMENTS);
     } finally {
       setLoading(false);
     }
@@ -357,10 +316,14 @@ export function Community() {
     fetchFeed();
   }, [fetchFeed]);
 
-  // ── Image Handling ───────────────────────────────────────────────────────
+  // ── File Selection & Image Preview ────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        setSubmitError("Please select a valid image file (JPG, PNG, WebP).");
+        return;
+      }
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
       setSubmitError(null);
@@ -369,68 +332,49 @@ export function Community() {
 
   const clearImage = () => {
     setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
   };
 
-  // ── Create Post ──────────────────────────────────────────────────────────
+  // ── Create Post Handler ──────────────────────────────────────────────────
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!caption.trim()) {
-      setSubmitError("Please enter a caption.");
+    if (!caption.trim() && !selectedFile) {
+      setSubmitError("Please provide a caption or upload an image.");
       return;
     }
 
     setSubmitting(true);
     setSubmitError(null);
 
-    let mediaKeys: string[] = [];
-    const localPreview = previewUrl;
+    let createdPost: Post | null = null;
+    let localPreview = previewUrl;
 
     try {
-      if (selectedFile) {
-        const uploadSig = await apiRequest("/community/uploads", {
-          method: "POST",
-          body: JSON.stringify({
-            files: [{ fileName: selectedFile.name, fileType: selectedFile.type }],
-          }),
-        });
+      const formData = new FormData();
+      formData.append("caption", caption);
+      if (locationName) formData.append("locationName", locationName);
+      if (selectedFile) formData.append("media", selectedFile);
 
-        if (uploadSig.success && uploadSig.files?.[0]) {
-          const { key, uploadUrl } = uploadSig.files[0];
-          await fetch(uploadUrl, {
-            method: "PUT",
-            body: selectedFile,
-            headers: { "Content-Type": selectedFile.type },
-          });
-          mediaKeys.push(key);
-        }
-      }
+      const token = localStorage.getItem("agrisense_token");
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const postRes = await apiRequest("/community/posts", {
+      const res = await fetch("/api/community/posts", {
         method: "POST",
-        body: JSON.stringify({
-          caption,
-          locationName: locationName || undefined,
-          mediaKeys,
-        }),
+        headers,
+        body: formData,
       });
-
-      if (postRes.success) {
-        setCaption("");
-        setLocationName("");
-        clearImage();
-        setCreateOpen(false);
-        fetchFeed();
-        setSubmitting(false);
-        return;
+      const data = await res.json();
+      if (res.ok && data.success && data.post) {
+        createdPost = data.post;
       }
-    } catch (err: any) {
-      console.warn("API post creation failed, adding post locally in demo mode:", err);
+    } catch (err) {
+      console.warn("Post creation API offline, creating post locally in demo mode.");
     }
 
-    // Fallback local post creation for demo mode
-    const newDemoPost: Post = {
-      id: `demo-user-post-${Date.now()}`,
+    const newDemoPost: Post = createdPost || {
+      id: `post-${Date.now()}`,
       caption,
       locationName: locationName || "Local Farm",
       authorId: currentUser?.id || "user-current",
@@ -444,7 +388,7 @@ export function Community() {
             {
               id: `media-${Date.now()}`,
               url: localPreview,
-              awsS3ObjectKey: "local",
+              awsS3ObjectKey: "local/upload.jpg",
               type: "IMAGE",
             },
           ]
@@ -536,6 +480,71 @@ export function Community() {
   };
 
   // ── Comments Handling ────────────────────────────────────────────────────
+  const fetchComments = async (postId: string) => {
+    setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
+    try {
+      const res = await apiRequest(`/community/posts/${postId}/comments?limit=20`);
+      if (res && res.success && Array.isArray(res.comments)) {
+        setCommentsMap((prev) => ({ ...prev, [postId]: res.comments }));
+      } else if (INITIAL_DEMO_COMMENTS[postId]) {
+        setCommentsMap((prev) => ({ ...prev, [postId]: INITIAL_DEMO_COMMENTS[postId] }));
+      }
+    } catch (err) {
+      console.warn("Comments API failed, using demo comments:", err);
+      if (INITIAL_DEMO_COMMENTS[postId]) {
+        setCommentsMap((prev) => ({ ...prev, [postId]: INITIAL_DEMO_COMMENTS[postId] }));
+      }
+    } finally {
+      setCommentsLoading((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  const handleAddComment = async (postId: string) => {
+    const text = newCommentText[postId]?.trim();
+    if (!text) return;
+
+    const newCommentObj: PostComment = {
+      id: `comment-${Date.now()}`,
+      content: text,
+      createdAt: new Date().toISOString(),
+      author: {
+        id: currentUser?.id || "user-current",
+        name: currentUser?.name || "You (Farmer)",
+      },
+    };
+
+    try {
+      const res = await apiRequest(`/community/posts/${postId}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ content: text }),
+      });
+      if (res && res.success && res.comment) {
+        newCommentObj.id = res.comment.id;
+      }
+    } catch (err) {
+      console.warn("Comment API failed, adding comment locally in demo mode");
+    }
+
+    setNewCommentText((prev) => ({ ...prev, [postId]: "" }));
+    setCommentsMap((prev) => ({
+      ...prev,
+      [postId]: [newCommentObj, ...(prev[postId] || [])],
+    }));
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              _count: {
+                votes: p._count?.votes || p.upvotesCount || 0,
+                comments: (p._count?.comments || (commentsMap[postId]?.length || 0)) + 1,
+              },
+            }
+          : p
+      )
+    );
+  };
+
   const toggleComments = async (postId: string) => {
     const isExpanded = !!expandedComments[postId];
     setExpandedComments((prev) => ({ ...prev, [postId]: !isExpanded }));
@@ -545,7 +554,26 @@ export function Community() {
     }
   };
 
-
+  return (
+    <PageContainer title="Community & Farm Updates">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* ── Page Header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ivory-300 pb-5">
+          <div>
+            <h1 className="text-3xl font-bold text-charcoal tracking-tight flex items-center gap-2">
+              Farmer Community <Sparkles className="h-6 w-6 text-forest/70" />
+            </h1>
+            <p className="text-sm text-charcoal-muted mt-1">
+              Connect with fellow farmers, share crop updates, and get AI leaf disease diagnostics.
+            </p>
+          </div>
+          <button
+            onClick={() => setCreateOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-forest px-5 py-3 text-white text-sm font-bold shadow-sm hover:bg-forest-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/30"
+          >
+            Create Update
+          </button>
+        </div>
 
         {/* ── Create Post Overlay ── */}
         {createOpen && (
@@ -919,13 +947,11 @@ export function Community() {
                       )}
                     </div>
                   )}
-
                 </article>
               );
             })}
           </div>
         )}
-
       </div>
     </PageContainer>
   );

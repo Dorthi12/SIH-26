@@ -383,7 +383,7 @@ export function FarmerProfileCard({
 
             <div className="p-3 rounded-xl bg-white dark:bg-charcoal-dark border border-ivory-200 dark:border-charcoal-light">
               <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
-                Aadhaar Mock Reference
+                Aadhaar Reference
               </span>
               <span className="font-semibold text-charcoal dark:text-ivory-100 text-xs mt-0.5 block">
                 {farmerAuth.aadhaarMock}
@@ -403,7 +403,9 @@ export function FarmerProfileCard({
               <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
                 Verification Officer & Date
               </span>
-
+              <span className="font-semibold text-charcoal dark:text-ivory-100 text-xs mt-0.5 block">
+                {farmerAuth.verifiedByOfficer} ({farmerAuth.verificationDate})
+              </span>
             </div>
           </div>
 
@@ -428,8 +430,6 @@ interface BuyerProfileCardProps {
 }
 
 export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
-  const { t } = useLanguage();
-
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-charcoal-dark border border-ivory-300 dark:border-charcoal-light shadow-md space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ivory-200 dark:border-charcoal-light pb-4">
@@ -460,24 +460,42 @@ export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
 
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-        <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
-          <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Verified Trades", "सत्यापित व्यापार")}
-
-
-        <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
-          <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Escrow Deposit Record", "एस्क्रौ जमा रिकॉर्ड")}
+        <div className="p-3.5 rounded-2xl bg-ivory-100 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light space-y-1">
+          <span className="text-3xs font-extrabold uppercase text-charcoal-muted dark:text-ivory-400 block">
+            Payment Reliability
           </span>
-          <span className="text-xs font-black text-blue-600 dark:text-blue-400 mt-2 block">
-            100% On-Time
+          <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 block">
+            {profile.paymentReliabilityPercentage}%
+          </span>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-ivory-100 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light space-y-1">
+          <span className="text-3xs font-extrabold uppercase text-charcoal-muted dark:text-ivory-400 block">
+            Farmer Rating
+          </span>
+          <span className="text-xl font-black text-amber-600 dark:text-amber-400 block">
+            ⭐ {profile.farmerRating} / 5
+          </span>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-ivory-100 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light space-y-1">
+          <span className="text-3xs font-extrabold uppercase text-charcoal-muted dark:text-ivory-400 block">
+            Completed Deals
+          </span>
+          <span className="text-xl font-black text-charcoal dark:text-ivory-100 block">
+            {profile.completedTransactionsCount}
+          </span>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-ivory-100 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light space-y-1">
+          <span className="text-3xs font-extrabold uppercase text-charcoal-muted dark:text-ivory-400 block">
+            Avg Payment Time
+          </span>
+          <span className="text-xl font-black text-blue-600 dark:text-blue-400 block">
+            {profile.averagePaymentDays} Days
           </span>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-

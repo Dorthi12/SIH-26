@@ -29,7 +29,8 @@ export interface BuyerAuthDetails {
   email: string;
   phone: string;
   gstinMock: string;
-  buyerType: "Food Processor" | "Exporter" | "Wholesaler" | "Retail Chain" | "Agri Cooperative" | "Individual Buyer";
+  buyerType: "Food Processor" | "Exporter" | "Wholesaler" | "Retail Chain" | "Agri Cooperative" | "Institutional Buyer" | "Private Agribusiness" | "Corporate Buyer" | "Individual Buyer";
+  isPrivateEntity?: boolean;
   state: string;
   district: string;
   isVerified: boolean;
@@ -268,10 +269,26 @@ export interface YearlyVolumeGrowth {
   volumeQuintals: number;
 }
 
+export interface PrivateBuyerCompliance {
+  isPrivateEntity: boolean;
+  contractedCashCropLandPercentage?: number; // e.g. 32
+  landControlLimitPercentage: number; // 40
+  consecutiveCropCycles?: number; // e.g. 1 or 2
+  cropRotationLimit: number; // 2
+  landControlStatus: "COMPLIANT" | "NEAR_LIMIT" | "VIOLATION";
+  cropRotationStatus: "COMPLIANT" | "REVIEW_REQUIRED" | "VIOLATION";
+  stockTransparencyStatus: "TRANSPARENT" | "REVIEW_REQUIRED" | "REGULATORY_ALERT";
+  overallStatus: "COMPLIANT" | "REVIEW_REQUIRED" | "BLOCKED";
+  unresolvedComplaintsCount?: number;
+  lastAuditDate?: string;
+  notes?: string;
+}
+
 export interface BuyerProfile {
   id: string;
   businessName: string;
-  buyerType: "Food Processor" | "Exporter" | "Wholesaler" | "Retail Chain" | "Agri Cooperative" | "Institutional Buyer" | "Restaurant / Food Service" | "Aggregator" | "Other";
+  buyerType: "Food Processor" | "Exporter" | "Wholesaler" | "Retail Chain" | "Agri Cooperative" | "Institutional Buyer" | "Private Agribusiness" | "Corporate Buyer" | "Restaurant / Food Service" | "Aggregator" | "Individual Buyer" | "Other";
+  isPrivateEntity?: boolean;
   industry: string;
   state: string;
   district: string;
@@ -312,6 +329,7 @@ export interface BuyerProfile {
     positiveTraits: string[];
     areaToWatch: string;
   };
+  compliance?: PrivateBuyerCompliance;
 }
 
 export interface ChatMessageAttachment {
