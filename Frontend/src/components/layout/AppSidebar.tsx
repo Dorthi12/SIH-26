@@ -8,7 +8,7 @@ import {
   Settings, MessageSquareText, FlaskConical, Map,
   MoonStar, SunMedium, LogOut, TrendingUp, ShieldAlert,
   Users, User,
-  FileText,
+  FileText, Store,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
@@ -18,7 +18,8 @@ import { useAuth } from "../../context/AuthContext";
 
 export const NAV_ITEMS = [
   { to: "/dashboard",             label: "Dashboard",             icon: LayoutDashboard },
-  {to:"/complaints",              label:"Complaints",              icon:FileText  },         
+  { to: "/mandi",                 label: "Agrisense Mandi",        icon: Store },
+  { to: "/complaints",            label: "Complaints",            icon: FileText },         
   { to: "/assistant",             label: "AI Assistant",           icon: MessageSquareText },
   { to: "/recommendation",        label: "Recommendation",        icon: Sprout },
   { to: "/disease-detection",     label: "Disease Detection",     icon: Leaf },
@@ -493,6 +494,7 @@ export function DesktopPageHeader({ title }: { title: string }) {
 const ROUTE_TITLES: Record<string, string> = {
   "/":               "Home",
   "/dashboard":      "Dashboard",
+  "/mandi":          "🌾 Agrisense Mandi",
   "/recommendation": "Crop Recommendation",
   "/analyzing":      "Analyzing...",
   "/results":        "Recommendation Results",

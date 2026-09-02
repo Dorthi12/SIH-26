@@ -28,7 +28,7 @@ import { YieldForecast } from "./pages/YieldForecast";
 import { ZeroProductionRisk } from "./pages/ZeroProductionRisk";
 import { Community } from "./pages/Community";
 import { Profile } from "./pages/Profile";
-// import { MandiPage } from "./pages/MandiPage";
+import { Mandi } from "./pages/Mandi";
 
 import CreateComplaint from "./pages/CreateComplaints";
 import ViewComplaints from "./pages/ViewComplaints";
@@ -38,87 +38,59 @@ import Complaints from "./pages/Complaints";
 export default function App() {
   return (
     <>
-    <BrowserRouter>
-      <ScrollToTop />
+      <BrowserRouter>
+        <ScrollToTop />
 
-      <LanguageProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <RecommendationProvider>
-              <Routes>
-                {/* Public standalone pages */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+        <LanguageProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <RecommendationProvider>
+                <Routes>
+                  {/* Public standalone pages */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
 
-                {/* Protected app routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route element={<AppLayout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route
-                      path="/recommendation"
-                      element={<Recommendation />}
-                    />
-                    <Route path="/analyzing" element={<Analyzing />} />
-                    <Route path="/results" element={<Results />} />
-                    <Route path="/comparison" element={<Comparison />} />
-                    <Route path="/explain" element={<Explain />} />
-                    <Route path="/weather" element={<Weather />} />
-                    <Route path="/history" element={<History />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/assistant" element={<Assistant />} />
-                    <Route
-                      path="/scenarios"
-                      element={<ScenarioSimulator />}
-                    />
-                    <Route
-                      path="/district-intelligence"
-                      element={<DistrictIntelligencePage />}
-                    />
-                    <Route
-                      path="/disease-detection"
-                      element={<DiseaseDetection />}
-                    />
-                    <Route
-                      path="/yield-forecast"
-                      element={<YieldForecast />}
-                    />
-                    <Route
-                      path="/zero-production-risk"
-                      element={<ZeroProductionRisk />}
-                    />
-                    <Route path="/community" element={<Community />} />
-                    <Route path="/profile" element={<Profile />} />
+                  {/* Protected app routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<AppLayout />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/mandi" element={<Mandi />} />
+                      <Route path="/recommendation" element={<Recommendation />} />
+                      <Route path="/analyzing" element={<Analyzing />} />
+                      <Route path="/results" element={<Results />} />
+                      <Route path="/comparison" element={<Comparison />} />
+                      <Route path="/explain" element={<Explain />} />
+                      <Route path="/weather" element={<Weather />} />
+                      <Route path="/history" element={<History />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/assistant" element={<Assistant />} />
+                      <Route path="/scenarios" element={<ScenarioSimulator />} />
+                      <Route path="/district-intelligence" element={<DistrictIntelligencePage />} />
+                      <Route path="/disease-detection" element={<DiseaseDetection />} />
+                      <Route path="/yield-forecast" element={<YieldForecast />} />
+                      <Route path="/zero-production-risk" element={<ZeroProductionRisk />} />
+                      <Route path="/community" element={<Community />} />
+                      <Route path="/profile" element={<Profile />} />
 
-                    {/* Complaint routes */}
-                    <Route path="/complaints" element={<Complaints />} />
-                    <Route
-                      path="/createcomplaints"
-                      element={<CreateComplaint />}
-                    />
-                    <Route
-                      path="/viewcomplaints"
-                      element={<ViewComplaints />}
-                    />
-                    <Route
-                      path="/viewmycomplaints"
-                      element={<MyComplaints />}
-                    />
+                      {/* Complaint routes */}
+                      <Route path="/complaints" element={<Complaints />} />
+                      <Route path="/createcomplaints" element={<CreateComplaint />} />
+                      <Route path="/viewcomplaints" element={<ViewComplaints />} />
+                      <Route path="/viewmycomplaints" element={<MyComplaints />} />
+                      <Route path="/mycomplaints" element={<MyComplaints />} />
 
-                    {/* Catch-all */}
-                    <Route
-                      path="*"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
+                      {/* Catch-all */}
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Route>
                   </Route>
-                </Route>
-              </Routes>
-            </RecommendationProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </LanguageProvider>
-    </BrowserRouter>
-    <Analytics/>
+                </Routes>
+              </RecommendationProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+      <Analytics />
     </>
   );
 }
