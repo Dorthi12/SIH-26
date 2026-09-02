@@ -14,14 +14,28 @@
 
 import { useState, useId } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Check, X, ArrowRight, CheckCircle2, Sprout } from "lucide-react";
 import {
-  AuthLayout, AuthLogo, AuthInput, GoogleButton,
-  AuthDivider, AuthErrorBanner, AuthInfoBanner,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  ArrowRight,
+  CheckCircle2,
+  Sprout,
+} from "lucide-react";
+import {
+  AuthLayout,
+  AuthLogo,
+  AuthInput,
+  GoogleButton,
+  AuthDivider,
+  AuthErrorBanner,
+  AuthInfoBanner,
 } from "../components/auth/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 import {
-  signupWithEmail, loginWithGoogle,
+  signupWithEmail,
+  loginWithGoogle,
   type AuthErrorCode,
 } from "../services/authService";
 
@@ -29,14 +43,22 @@ import {
 
 function friendlyMessage(code: AuthErrorCode): string {
   switch (code) {
-    case "EMAIL_TAKEN": return "An account with that email already exists. Try signing in instead.";
-    case "WEAK_PASSWORD": return "Your password is too weak. Please use at least 8 characters.";
-    case "NETWORK_ERROR": return "Network error. Please check your connection and try again.";
-    case "GOOGLE_CANCELLED": return "Google sign-in was cancelled.";
-    case "GOOGLE_ERROR": return "Google sign-in couldn't be completed. Please try again.";
-    case "SERVER_ERROR": return "Something went wrong on our end. Please try again in a moment.";
-    case "NOT_IMPLEMENTED": return "Authentication backend is not yet connected. This is a UI preview.";
-    default: return "Something went wrong. Please try again.";
+    case "EMAIL_TAKEN":
+      return "An account with that email already exists. Try signing in instead.";
+    case "WEAK_PASSWORD":
+      return "Your password is too weak. Please use at least 8 characters.";
+    case "NETWORK_ERROR":
+      return "Network error. Please check your connection and try again.";
+    case "GOOGLE_CANCELLED":
+      return "Google sign-in was cancelled.";
+    case "GOOGLE_ERROR":
+      return "Google sign-in couldn't be completed. Please try again.";
+    case "SERVER_ERROR":
+      return "Something went wrong on our end. Please try again in a moment.";
+    case "NOT_IMPLEMENTED":
+      return "Authentication backend is not yet connected. This is a UI preview.";
+    default:
+      return "Something went wrong. Please try again.";
   }
 }
 
@@ -44,11 +66,14 @@ function friendlyMessage(code: AuthErrorCode): string {
 
 function Req({ met, label }: { met: boolean; label: string }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${met ? "text-forest" : "text-charcoal-muted/60"}`}>
-      {met
-        ? <Check className="h-3 w-3 shrink-0" />
-        : <X className="h-3 w-3 shrink-0 text-charcoal-muted/40" />
-      }
+    <span
+      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${met ? "text-forest" : "text-charcoal-muted/60"}`}
+    >
+      {met ? (
+        <Check className="h-3 w-3 shrink-0" />
+      ) : (
+        <X className="h-3 w-3 shrink-0 text-charcoal-muted/40" />
+      )}
       {label}
     </span>
   );
@@ -56,10 +81,13 @@ function Req({ met, label }: { met: boolean; label: string }) {
 
 /* ── Validation ──────────────────────────────────────────────────────────── */
 
-function validateName(v: string) { return v.trim() ? "" : "Please enter your full name."; }
+function validateName(v: string) {
+  return v.trim() ? "" : "Please enter your full name.";
+}
 function validateEmail(v: string) {
   if (!v.trim()) return "Please enter your email.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "Please enter a valid email address.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
+    return "Please enter a valid email address.";
   return "";
 }
 function validateRole(v: string) {
@@ -138,8 +166,10 @@ export function Signup() {
       : !pwStrong
         ? "Password doesn't meet all requirements."
         : "";
-    const cErr = !confirmPw ? "Please confirm your password."
-      : !pwMatch ? "Passwords do not match."
+    const cErr = !confirmPw
+      ? "Please confirm your password."
+      : !pwMatch
+        ? "Passwords do not match."
         : "";
     setNameErr(nErr);
     setEmailErr(eErr);
@@ -150,8 +180,17 @@ export function Signup() {
     setConfirmErr(cErr);
 
     if (nErr || eErr || rErr || gErr || dErr || pErr || cErr) return;
-    setError(""); setInfoMsg(""); setLoading(true);
-    const result = await signupWithEmail(name, email, password, role, dob, gender);
+    setError("");
+    setInfoMsg("");
+    setLoading(true);
+    const result = await signupWithEmail(
+      name,
+      email,
+      password,
+      role,
+      dob,
+      gender,
+    );
     setLoading(false);
 
     if (result.ok) {
@@ -159,7 +198,7 @@ export function Signup() {
       setSuccess(true);
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode — create local session
-      setSession({ name, email, provider: "email" });
+      setSession({ name, email, provider: "email", role: role || "Farmer" });
       setSuccess(true);
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -167,7 +206,9 @@ export function Signup() {
   }
 
   async function handleGoogle() {
-    setError(""); setInfoMsg(""); setGLoading(true);
+    setError("");
+    setInfoMsg("");
+    setGLoading(true);
     const result = await loginWithGoogle();
     setGLoading(false);
     if (result.ok) {
@@ -175,7 +216,12 @@ export function Signup() {
       navigate("/dashboard", { replace: true });
     } else if (result.code === "NOT_IMPLEMENTED") {
       // Demo mode
-      setSession({ name: "Google User", email: "user@gmail.com", provider: "google" });
+      setSession({
+        name: "Google User",
+        email: "user@gmail.com",
+        provider: "google",
+        role: "Farmer",
+      });
       navigate("/dashboard", { replace: true });
     } else {
       setError(result.message || friendlyMessage(result.code));
@@ -192,14 +238,23 @@ export function Signup() {
         <div className="flex flex-col items-center text-center gap-5 py-4">
           <div className="relative">
             <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-forest to-olive shadow-card-glow">
-              <CheckCircle2 className="h-10 w-10 text-white" strokeWidth={1.5} />
+              <CheckCircle2
+                className="h-10 w-10 text-white"
+                strokeWidth={1.5}
+              />
             </div>
-            <div className="absolute -inset-3 rounded-full border-2 border-forest/15 animate-ping" style={{ animationDuration: "2s" }} />
+            <div
+              className="absolute -inset-3 rounded-full border-2 border-forest/15 animate-ping"
+              style={{ animationDuration: "2s" }}
+            />
           </div>
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-charcoal">Account created!</h1>
+            <h1 className="text-2xl font-bold text-charcoal">
+              Account created!
+            </h1>
             <p className="text-sm text-charcoal-muted leading-relaxed max-w-xs">
-              Welcome to AgriSense, {name.split(" ")[0]}. Continue to your dashboard to get started.
+              Welcome to AgriSense, {name.split(" ")[0]}. Continue to your
+              dashboard to get started.
             </p>
           </div>
           <button
@@ -226,14 +281,18 @@ export function Signup() {
 
       {/* Heading */}
       <div className="text-center space-y-1">
-        <h1 className="text-2xl font-bold text-charcoal tracking-tight">Create your account</h1>
+        <h1 className="text-2xl font-bold text-charcoal tracking-tight">
+          Create your account
+        </h1>
         <p className="text-sm text-charcoal-muted leading-relaxed">
           Start making smarter agricultural decisions.
         </p>
       </div>
 
       {/* Error / Info banners */}
-      {error && <AuthErrorBanner message={error} onDismiss={() => setError("")} />}
+      {error && (
+        <AuthErrorBanner message={error} onDismiss={() => setError("")} />
+      )}
       {infoMsg && <AuthInfoBanner message={infoMsg} />}
 
       {/* Google button */}
@@ -249,7 +308,6 @@ export function Signup() {
 
       {/* Form */}
       <form onSubmit={handleSignup} noValidate className="space-y-4">
-
         {/* Full Name */}
         <AuthInput
           id={`${uid}-name`}
@@ -258,7 +316,10 @@ export function Signup() {
           autoComplete="name"
           placeholder="Ramesh Kumar"
           value={name}
-          onChange={(e) => { setName(e.target.value); if (nameErr) setNameErr(""); }}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (nameErr) setNameErr("");
+          }}
           error={nameErr}
           disabled={busy}
           required
@@ -272,7 +333,10 @@ export function Signup() {
           autoComplete="email"
           placeholder="you@example.com"
           value={email}
-          onChange={(e) => { setEmail(e.target.value); if (emailErr) setEmailErr(""); }}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (emailErr) setEmailErr("");
+          }}
           error={emailErr}
           disabled={busy}
           required
@@ -297,10 +361,11 @@ export function Signup() {
             className={`
       w-full rounded-xl border px-4 py-3 text-sm text-charcoal
       bg-ivory/60 transition-all duration-150 outline-none
-      ${roleErr
-                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
-                : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
-              }
+      ${
+        roleErr
+          ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
+          : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
+      }
     `}
           >
             <option value="">Select your role</option>
@@ -311,15 +376,12 @@ export function Signup() {
           </select>
 
           {roleErr && (
-            <p className="text-xs font-medium text-red-500">
-              {roleErr}
-            </p>
+            <p className="text-xs font-medium text-red-500">{roleErr}</p>
           )}
         </div>
 
         {/* Gender and Date of Birth */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
           {/* Gender */}
           <div className="space-y-1.5">
             <label
@@ -340,25 +402,22 @@ export function Signup() {
               className={`
         w-full rounded-xl border px-4 py-3 text-sm text-charcoal
         bg-ivory/60 transition-all duration-150 outline-none
-        ${genderErr
-                  ? "border-red-400"
-                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
-                }
+        ${
+          genderErr
+            ? "border-red-400"
+            : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+        }
       `}
             >
               <option value="">Select gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Others">Others</option>
-              <option value="Prefer not to say">
-                Prefer not to say
-              </option>
+              <option value="Prefer not to say">Prefer not to say</option>
             </select>
 
             {genderErr && (
-              <p className="text-xs font-medium text-red-500">
-                {genderErr}
-              </p>
+              <p className="text-xs font-medium text-red-500">{genderErr}</p>
             )}
           </div>
 
@@ -384,25 +443,26 @@ export function Signup() {
               className={`
         w-full rounded-xl border px-4 py-3 text-sm text-charcoal
         bg-ivory/60 transition-all duration-150 outline-none
-        ${dobErr
-                  ? "border-red-400"
-                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
-                }
+        ${
+          dobErr
+            ? "border-red-400"
+            : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+        }
       `}
             />
 
             {dobErr && (
-              <p className="text-xs font-medium text-red-500">
-                {dobErr}
-              </p>
+              <p className="text-xs font-medium text-red-500">{dobErr}</p>
             )}
           </div>
-
         </div>
 
         {/* Password */}
         <div className="space-y-1.5">
-          <label htmlFor={`${uid}-password`} className="block text-sm font-semibold text-charcoal">
+          <label
+            htmlFor={`${uid}-password`}
+            className="block text-sm font-semibold text-charcoal"
+          >
             Password
           </label>
           <div className="relative">
@@ -412,32 +472,55 @@ export function Signup() {
               autoComplete="new-password"
               placeholder="Create a strong password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); if (passErr) setPassErr(""); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passErr) setPassErr("");
+              }}
               disabled={busy}
               required
               aria-invalid={!!passErr}
-              aria-describedby={passErr ? `${uid}-password-error` : `${uid}-password-req`}
+              aria-describedby={
+                passErr ? `${uid}-password-error` : `${uid}-password-req`
+              }
               className={`
                 w-full rounded-xl border px-4 py-3 pr-11 text-sm text-charcoal placeholder:text-charcoal-muted/50
                 bg-ivory/60 transition-all duration-150 outline-none
-                ${passErr
-                  ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
-                  : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
+                ${
+                  passErr
+                    ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
+                    : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
                 }
               `}
             />
-            <button type="button" onClick={() => setShowPw((v) => !v)}
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
               aria-label={showPw ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-charcoal transition-colors focus-visible:outline-none">
-              {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-charcoal transition-colors focus-visible:outline-none"
+            >
+              {showPw ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {passErr && (
-            <p id={`${uid}-password-error`} role="alert" className="text-xs font-medium text-red-500">{passErr}</p>
+            <p
+              id={`${uid}-password-error`}
+              role="alert"
+              className="text-xs font-medium text-red-500"
+            >
+              {passErr}
+            </p>
           )}
           {/* Live requirements */}
           {password.length > 0 && (
-            <div id={`${uid}-password-req`} className="flex flex-wrap gap-x-4 gap-y-1 pt-1" aria-live="polite">
+            <div
+              id={`${uid}-password-req`}
+              className="flex flex-wrap gap-x-4 gap-y-1 pt-1"
+              aria-live="polite"
+            >
               <Req met={pwReqs.length} label="8+ characters" />
               <Req met={pwReqs.upper} label="Uppercase letter" />
               <Req met={pwReqs.number} label="Number" />
@@ -447,7 +530,10 @@ export function Signup() {
 
         {/* Confirm Password */}
         <div className="space-y-1.5">
-          <label htmlFor={`${uid}-confirm`} className="block text-sm font-semibold text-charcoal">
+          <label
+            htmlFor={`${uid}-confirm`}
+            className="block text-sm font-semibold text-charcoal"
+          >
             Confirm Password
           </label>
           <div className="relative">
@@ -457,36 +543,67 @@ export function Signup() {
               autoComplete="new-password"
               placeholder="Repeat your password"
               value={confirmPw}
-              onChange={(e) => { setConfirmPw(e.target.value); if (confirmErr) setConfirmErr(""); }}
+              onChange={(e) => {
+                setConfirmPw(e.target.value);
+                if (confirmErr) setConfirmErr("");
+              }}
               disabled={busy}
               required
               aria-invalid={!!confirmErr || pwNoMatch}
-              aria-describedby={confirmErr ? `${uid}-confirm-error` : pwMatch ? `${uid}-confirm-ok` : undefined}
+              aria-describedby={
+                confirmErr
+                  ? `${uid}-confirm-error`
+                  : pwMatch
+                    ? `${uid}-confirm-ok`
+                    : undefined
+              }
               className={`
                 w-full rounded-xl border px-4 py-3 pr-11 text-sm text-charcoal placeholder:text-charcoal-muted/50
                 bg-ivory/60 transition-all duration-150 outline-none
-                ${confirmErr || pwNoMatch
-                  ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
-                  : pwMatch
-                    ? "border-forest/50 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
-                    : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
+                ${
+                  confirmErr || pwNoMatch
+                    ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
+                    : pwMatch
+                      ? "border-forest/50 focus:border-forest/60 focus:ring-2 focus:ring-forest/15"
+                      : "border-ivory-300 focus:border-forest/60 focus:ring-2 focus:ring-forest/15 hover:border-forest/30"
                 }
               `}
             />
-            <button type="button" onClick={() => setShowCPw((v) => !v)}
-              aria-label={showCPw ? "Hide confirm password" : "Show confirm password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-charcoal transition-colors focus-visible:outline-none">
-              {showCPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <button
+              type="button"
+              onClick={() => setShowCPw((v) => !v)}
+              aria-label={
+                showCPw ? "Hide confirm password" : "Show confirm password"
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal-muted hover:text-charcoal transition-colors focus-visible:outline-none"
+            >
+              {showCPw ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {confirmErr && (
-            <p id={`${uid}-confirm-error`} role="alert" className="text-xs font-medium text-red-500">{confirmErr}</p>
+            <p
+              id={`${uid}-confirm-error`}
+              role="alert"
+              className="text-xs font-medium text-red-500"
+            >
+              {confirmErr}
+            </p>
           )}
           {!confirmErr && pwNoMatch && (
-            <p role="alert" className="text-xs font-medium text-red-500">Passwords do not match.</p>
+            <p role="alert" className="text-xs font-medium text-red-500">
+              Passwords do not match.
+            </p>
           )}
           {!confirmErr && pwMatch && (
-            <p id={`${uid}-confirm-ok`} aria-live="polite" className="flex items-center gap-1 text-xs font-medium text-forest">
+            <p
+              id={`${uid}-confirm-ok`}
+              aria-live="polite"
+              className="flex items-center gap-1 text-xs font-medium text-forest"
+            >
               <Check className="h-3 w-3" /> Passwords match
             </p>
           )}
@@ -507,9 +624,25 @@ export function Signup() {
         >
           {loading ? (
             <>
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <svg
+                className="h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Creating account…
             </>
@@ -538,7 +671,12 @@ export function Signup() {
         <button
           type="button"
           onClick={() => {
-            setSession({ name: name || "Demo Farmer", email: email || "farmer@agrisense.io", provider: "guest" });
+            setSession({
+              name: name || "Demo Farmer",
+              email: email || "farmer@agrisense.io",
+              provider: "guest",
+              role: role || "Farmer",
+            });
             navigate("/dashboard", { replace: true });
           }}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-forest hover:text-forest-600 hover:underline focus-visible:outline-none py-1 px-2.5 rounded-lg hover:bg-forest/5 transition-colors"

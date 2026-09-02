@@ -89,6 +89,70 @@ interface Post {
   isFollowing?: boolean;
 }
 
+interface LocationPreset {
+  name: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+}
+
+type SelectedLocation = {
+  name: string;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+const locationPresets: LocationPreset[] = [
+  {
+    name: "Nagpur, Maharashtra",
+    region: "Central India",
+    latitude: 21.1458,
+    longitude: 79.0882,
+  },
+  {
+    name: "Pune, Maharashtra",
+    region: "Western India",
+    latitude: 18.5204,
+    longitude: 73.8567,
+  },
+  {
+    name: "Nashik, Maharashtra",
+    region: "Western India",
+    latitude: 20.011,
+    longitude: 73.7907,
+  },
+  {
+    name: "Guntur, Andhra Pradesh",
+    region: "South India",
+    latitude: 16.3067,
+    longitude: 80.4365,
+  },
+  {
+    name: "Coimbatore, Tamil Nadu",
+    region: "South India",
+    latitude: 11.0168,
+    longitude: 76.9558,
+  },
+  {
+    name: "Lucknow, Uttar Pradesh",
+    region: "North India",
+    latitude: 26.8467,
+    longitude: 80.9462,
+  },
+  {
+    name: "Jaipur, Rajasthan",
+    region: "Northwest India",
+    latitude: 26.9124,
+    longitude: 75.7873,
+  },
+  {
+    name: "Bhubaneswar, Odisha",
+    region: "Eastern India",
+    latitude: 20.2961,
+    longitude: 85.8245,
+  },
+];
+
 export function Community() {
   const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -99,16 +163,26 @@ export function Community() {
   const [createOpen, setCreateOpen] = useState(false);
   const [caption, setCaption] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [selectedLocation, setSelectedLocation] =
+    useState<SelectedLocation | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Active comments mapping (postId -> comments list)
-  const [commentsMap, setCommentsMap] = useState<Record<string, PostComment[]>>({});
-  const [commentsLoading, setCommentsLoading] = useState<Record<string, boolean>>({});
-  const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
+  const [commentsMap, setCommentsMap] = useState<Record<string, PostComment[]>>(
+    {},
+  );
+  const [commentsLoading, setCommentsLoading] = useState<
+    Record<string, boolean>
+  >({});
+  const [newCommentText, setNewCommentText] = useState<Record<string, string>>(
+    {},
+  );
+  const [expandedComments, setExpandedComments] = useState<
+    Record<string, boolean>
+  >({});
 
   // ── Fetch Feed ──────────────────────────────────────────────────────────
   const fetchFeed = useCallback(async () => {
@@ -165,6 +239,12 @@ export function Community() {
       return;
     }
 
+    const resolvedLocation =
+      selectedLocation ??
+      (locationName.trim()
+        ? { name: locationName.trim(), latitude: null, longitude: null }
+        : null);
+
     setSubmitting(true);
     setSubmitError(null);
 
@@ -191,7 +271,6 @@ export function Community() {
 
         const { key, uploadUrl } = uploadSig.files[0];
 
-        // PUT request to AWS S3 directly
         const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
           body: selectedFile,
@@ -207,12 +286,13 @@ export function Community() {
         mediaKeys.push(key);
       }
 
-      // 2. Submit post creation
       const postRes = await apiRequest("/community/posts", {
         method: "POST",
         body: JSON.stringify({
-          caption,
-          locationName: locationName || undefined,
+          caption: caption.trim(),
+          locationName: resolvedLocation?.name || undefined,
+          latitude: resolvedLocation?.latitude ?? null,
+          longitude: resolvedLocation?.longitude ?? null,
           mediaKeys,
         }),
       });
@@ -220,9 +300,9 @@ export function Community() {
       if (postRes.success) {
         setCaption("");
         setLocationName("");
+        setSelectedLocation(null);
         clearImage();
         setCreateOpen(false);
-        // Refresh feed to show new post
         fetchFeed();
       }
     } catch (err: any) {
@@ -247,9 +327,11 @@ export function Community() {
             if (post.id === postId) {
               const prevVote = post.hasVoted;
               let up = post.upvotesCount;
-              if (prevVote === "UPVOTE" && type === "DOWNVOTE") up = Math.max(0, up - 1);
+              if (prevVote === "UPVOTE" && type === "DOWNVOTE")
+                up = Math.max(0, up - 1);
               else if (prevVote !== "UPVOTE" && type === "UPVOTE") up += 1;
-              else if (prevVote === "UPVOTE" && type === "UPVOTE") up = Math.max(0, up - 1); // remove vote
+              else if (prevVote === "UPVOTE" && type === "UPVOTE")
+                up = Math.max(0, up - 1); // remove vote
 
               return {
                 ...post,
@@ -258,7 +340,7 @@ export function Community() {
               };
             }
             return post;
-          })
+          }),
         );
       }
     } catch (err) {
@@ -279,8 +361,8 @@ export function Community() {
           prev.map((p) =>
             p.author.id === post.author.id
               ? { ...p, isFollowing: !isFollowing }
-              : p
-          )
+              : p,
+          ),
         );
       }
     } catch (err) {
@@ -301,7 +383,9 @@ export function Community() {
   const fetchComments = async (postId: string) => {
     setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
     try {
-      const res = await apiRequest(`/community/posts/${postId}/comments?limit=20`);
+      const res = await apiRequest(
+        `/community/posts/${postId}/comments?limit=20`,
+      );
       if (res.success && res.comments) {
         setCommentsMap((prev) => ({ ...prev, [postId]: res.comments }));
       }
@@ -336,8 +420,8 @@ export function Community() {
                     ? { ...p._count, comments: p._count.comments + 1 }
                     : { votes: 0, comments: 1 },
                 }
-              : p
-          )
+              : p,
+          ),
         );
       }
     } catch (err) {
@@ -348,7 +432,6 @@ export function Community() {
   return (
     <PageContainer maxWidth="xl" className="py-8 md:py-12 bg-ivory">
       <div className="max-w-4xl mx-auto space-y-8">
-        
         {/* ── Page Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ivory-300 pb-5">
           <div>
@@ -356,7 +439,8 @@ export function Community() {
               Farmer Community <Sparkles className="h-6 w-6 text-forest/70" />
             </h1>
             <p className="text-sm text-charcoal-muted mt-1">
-              Connect with fellow farmers, share crop updates, and get AI leaf disease diagnostics.
+              Connect with fellow farmers, share crop updates, and get AI leaf
+              disease diagnostics.
             </p>
           </div>
           <button
@@ -381,53 +465,142 @@ export function Community() {
                 </button>
               </div>
 
-              <form onSubmit={handleCreatePost} className="p-6 space-y-4">
-                <div className="space-y-1">
-                  <label htmlFor="caption" className="text-xs font-bold text-charcoal-muted uppercase">Caption</label>
+              <form
+                onSubmit={handleCreatePost}
+                className="p-5 sm:p-6 space-y-4"
+              >
+                <div className="flex items-center gap-3 rounded-2xl border border-ivory-200 bg-ivory-50 px-3 py-2.5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-forest to-forest-700 text-sm font-bold text-white shadow-sm">
+                    {currentUser?.name?.charAt(0)?.toUpperCase() || "F"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-charcoal">
+                      {currentUser?.name || "Farmer"}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-charcoal-muted">
+                      Community update
+                    </p>
+                  </div>
+                  <div className="rounded-full border border-forest/20 bg-forest/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-forest">
+                    Public
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="caption"
+                    className="text-[11px] font-bold uppercase tracking-[0.18em] text-charcoal-muted"
+                  >
+                    Caption
+                  </label>
                   <textarea
                     id="caption"
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
-                    placeholder="Tell the community about your crops, weather, or ask for diagnostic help..."
+                    placeholder="Share a field update, a crop concern, or ask the community for advice..."
                     rows={4}
-                    className="w-full rounded-xl border border-ivory-300 px-3.5 py-2.5 text-sm bg-ivory-50 text-charcoal placeholder-charcoal-muted/50 focus:border-forest focus:ring-1 focus:ring-forest outline-none transition-all"
+                    className="w-full rounded-2xl border border-ivory-300 bg-ivory-50 px-3.5 py-3 text-sm leading-6 text-charcoal placeholder-charcoal-muted/60 focus:border-forest focus:ring-2 focus:ring-forest/15 outline-none transition-all resize-none"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label htmlFor="location" className="text-xs font-bold text-charcoal-muted uppercase">Location</label>
-                    <input
-                      id="location"
-                      type="text"
-                      value={locationName}
-                      onChange={(e) => setLocationName(e.target.value)}
-                      placeholder="e.g. Prayagraj, UP"
-                      className="w-full rounded-xl border border-ivory-300 px-3.5 py-2 text-sm bg-ivory-50 text-charcoal placeholder-charcoal-muted/50 focus:border-forest focus:ring-1 focus:ring-forest outline-none transition-all"
-                    />
+                <div className="rounded-2xl border border-ivory-200 bg-ivory-50 p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-charcoal">
+                      <MapPin className="h-4 w-4 text-forest" />
+                      Location
+                    </div>
+                    {selectedLocation && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLocation(null);
+                          setLocationName("");
+                        }}
+                        className="text-[11px] font-bold uppercase tracking-[0.18em] text-charcoal-muted hover:text-forest"
+                      >
+                        Clear
+                      </button>
+                    )}
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-xs font-bold text-charcoal-muted uppercase block">Attach Leaf Image</span>
-                    <label className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-ivory-300 bg-ivory-50 px-3 py-2 text-sm text-charcoal-muted hover:text-forest hover:border-forest/40 cursor-pointer transition-all">
-                      <Camera className="h-4 w-4" />
-                      <span>{selectedFile ? "Change Image" : "Upload leaf"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                    </label>
+
+                  <input
+                    type="text"
+                    value={locationName}
+                    onChange={(e) => {
+                      setLocationName(e.target.value);
+                      if (
+                        selectedLocation &&
+                        e.target.value !== selectedLocation.name
+                      ) {
+                        setSelectedLocation(null);
+                      }
+                    }}
+                    placeholder="Search village, district, or city"
+                    className="w-full rounded-xl border border-ivory-300 bg-white px-3 py-2.5 text-sm text-charcoal placeholder-charcoal-muted/60 focus:border-forest focus:ring-2 focus:ring-forest/15 outline-none transition-all"
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {locationPresets.map((location) => {
+                      const active = selectedLocation?.name === location.name;
+                      return (
+                        <button
+                          key={location.name}
+                          type="button"
+                          onClick={() => {
+                            setSelectedLocation({
+                              name: location.name,
+                              latitude: location.latitude,
+                              longitude: location.longitude,
+                            });
+                            setLocationName(location.name);
+                          }}
+                          className={cn(
+                            "flex flex-col items-start rounded-xl border px-3 py-2 text-left transition-all",
+                            active
+                              ? "border-forest bg-forest/5 text-forest shadow-sm"
+                              : "border-ivory-300 bg-white text-charcoal hover:border-forest/40 hover:bg-forest/5",
+                          )}
+                        >
+                          <span className="text-sm font-semibold">
+                            {location.name}
+                          </span>
+                          <span className="text-[11px] uppercase tracking-[0.14em] text-charcoal-muted">
+                            {location.region}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-ivory-300 bg-ivory-50 px-4 py-3 text-sm font-semibold text-charcoal-muted transition-all hover:border-forest/40 hover:text-forest">
+                    <Camera className="h-4 w-4" />
+                    <span>{selectedFile ? "Change image" : "Add photo"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <div className="flex items-center justify-center rounded-2xl border border-ivory-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal-muted">
+                    {selectedFile ? "1 file ready" : "No file"}
                   </div>
                 </div>
 
                 {previewUrl && (
-                  <div className="relative rounded-xl overflow-hidden border border-ivory-300 max-h-48 flex justify-center bg-black">
-                    <img src={previewUrl} alt="Upload preview" className="object-contain max-h-48 w-full" />
+                  <div className="relative overflow-hidden rounded-2xl border border-ivory-200 bg-black">
+                    <img
+                      src={previewUrl}
+                      alt="Upload preview"
+                      className="h-56 w-full object-cover"
+                    />
                     <button
                       type="button"
                       onClick={clearImage}
-                      className="absolute top-2 right-2 p-1 rounded-full bg-charcoal/70 text-white hover:bg-charcoal transition-colors"
+                      className="absolute right-3 top-3 rounded-full bg-charcoal/70 p-2 text-white hover:bg-charcoal transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -435,24 +608,24 @@ export function Community() {
                 )}
 
                 {submitError && (
-                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>{submitError}</span>
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="flex justify-end gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => setCreateOpen(false)}
-                    className="rounded-xl border border-ivory-300 px-4 py-2.5 text-sm font-semibold text-charcoal-muted hover:bg-ivory-50 transition-colors"
+                    className="rounded-xl border border-ivory-300 bg-white px-4 py-2.5 text-sm font-semibold text-charcoal-muted hover:bg-ivory-50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-forest px-5 py-2.5 text-white text-sm font-bold hover:bg-forest-600 disabled:opacity-50 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-forest px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-forest-600 transition-colors disabled:opacity-50"
                   >
                     {submitting ? (
                       <>
@@ -473,7 +646,9 @@ export function Community() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Loader2 className="h-8 w-8 text-forest animate-spin" />
-            <p className="text-sm text-charcoal-muted">Loading farm updates...</p>
+            <p className="text-sm text-charcoal-muted">
+              Loading farm updates...
+            </p>
           </div>
         ) : error ? (
           <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center space-y-3">
@@ -493,7 +668,8 @@ export function Community() {
             </div>
             <h3 className="font-bold text-charcoal">No updates yet</h3>
             <p className="text-sm text-charcoal-muted max-w-sm mx-auto">
-              Be the first to share a farm status, update, or ask for crop diagnostic help!
+              Be the first to share a farm status, update, or ask for crop
+              diagnostic help!
             </p>
             <button
               onClick={() => setCreateOpen(true)}
@@ -506,7 +682,7 @@ export function Community() {
           <div className="space-y-6">
             {posts.map((post) => {
               const diseaseAnalysis = post.aianalyses?.find(
-                (a) => a.modelType === "DISEASE_DETECTION"
+                (a) => a.modelType === "DISEASE_DETECTION",
               );
               const hasMedia = post.media && post.media.length > 0;
 
@@ -523,15 +699,20 @@ export function Community() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-charcoal text-sm">{post.author?.name || "Farmer"}</span>
+                          <span className="font-bold text-charcoal text-sm">
+                            {post.author?.name || "Farmer"}
+                          </span>
                           <Badge variant="default" size="sm">
                             {post.author?.role || "FARMER"}
                           </Badge>
                         </div>
                         <span className="text-2xs text-charcoal-muted block">
-                          {new Date(post.createdAt).toLocaleDateString(undefined, {
-                            dateStyle: "medium",
-                          })}
+                          {new Date(post.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              dateStyle: "medium",
+                            },
+                          )}
                         </span>
                       </div>
                     </div>
@@ -544,7 +725,7 @@ export function Community() {
                           "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none",
                           post.isFollowing
                             ? "bg-forest/[0.08] text-forest hover:bg-forest/[0.12]"
-                            : "border border-ivory-300 text-charcoal-muted hover:text-forest hover:border-forest/20"
+                            : "border border-ivory-300 text-charcoal-muted hover:text-forest hover:border-forest/20",
                         )}
                       >
                         {post.isFollowing ? (
@@ -602,12 +783,20 @@ export function Community() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <span className="text-2xs text-charcoal-muted uppercase font-bold tracking-wider">Crop Type</span>
-                          <p className="text-sm font-bold text-charcoal">{diseaseAnalysis.diseaseResult.crop}</p>
+                          <span className="text-2xs text-charcoal-muted uppercase font-bold tracking-wider">
+                            Crop Type
+                          </span>
+                          <p className="text-sm font-bold text-charcoal">
+                            {diseaseAnalysis.diseaseResult.crop}
+                          </p>
                         </div>
                         <div className="space-y-1">
-                          <span className="text-2xs text-charcoal-muted uppercase font-bold tracking-wider">Condition</span>
-                          <p className="text-sm font-bold text-red-700">{diseaseAnalysis.diseaseResult.disease}</p>
+                          <span className="text-2xs text-charcoal-muted uppercase font-bold tracking-wider">
+                            Condition
+                          </span>
+                          <p className="text-sm font-bold text-red-700">
+                            {diseaseAnalysis.diseaseResult.disease}
+                          </p>
                         </div>
                       </div>
 
@@ -616,7 +805,11 @@ export function Community() {
                         <div className="flex items-center justify-between text-2xs text-charcoal-muted">
                           <span>Confidence Score</span>
                           <span className="font-bold tabular-nums">
-                            {Math.round((diseaseAnalysis.diseaseResult.confidence || 0) * 100)}%
+                            {Math.round(
+                              (diseaseAnalysis.diseaseResult.confidence || 0) *
+                                100,
+                            )}
+                            %
                           </span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-ivory-200/80 overflow-hidden">
@@ -632,14 +825,25 @@ export function Community() {
                       {/* Alternative predictions detail */}
                       {diseaseAnalysis.diseaseResult.top_predictions && (
                         <div className="pt-1.5 border-t border-forest/10 space-y-1.5">
-                          <span className="text-2xs font-bold text-charcoal-muted uppercase">Top Probabilities:</span>
+                          <span className="text-2xs font-bold text-charcoal-muted uppercase">
+                            Top Probabilities:
+                          </span>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            {diseaseAnalysis.diseaseResult.top_predictions.slice(0, 3).map((pred) => (
-                              <div key={pred.rank} className="rounded-lg bg-white/70 border border-forest/5 px-2 py-1 flex items-center justify-between gap-2 text-2xs">
-                                <span className="font-semibold text-charcoal-light truncate">{pred.disease}</span>
-                                <span className="font-bold text-forest tabular-nums">{Math.round(pred.confidence * 100)}%</span>
-                              </div>
-                            ))}
+                            {diseaseAnalysis.diseaseResult.top_predictions
+                              .slice(0, 3)
+                              .map((pred) => (
+                                <div
+                                  key={pred.rank}
+                                  className="rounded-lg bg-white/70 border border-forest/5 px-2 py-1 flex items-center justify-between gap-2 text-2xs"
+                                >
+                                  <span className="font-semibold text-charcoal-light truncate">
+                                    {pred.disease}
+                                  </span>
+                                  <span className="font-bold text-forest tabular-nums">
+                                    {Math.round(pred.confidence * 100)}%
+                                  </span>
+                                </div>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -654,12 +858,14 @@ export function Community() {
                         onClick={() => handleVote(post.id, "UPVOTE")}
                         className={cn(
                           "flex items-center gap-1.5 hover:text-forest transition-colors text-xs font-semibold focus-visible:outline-none",
-                          post.hasVoted === "UPVOTE" && "text-forest"
+                          post.hasVoted === "UPVOTE" && "text-forest",
                         )}
                         aria-label="Upvote post"
                       >
                         <ThumbsUp className="h-4 w-4" />
-                        <span className="tabular-nums">{post.upvotesCount}</span>
+                        <span className="tabular-nums">
+                          {post.upvotesCount}
+                        </span>
                       </button>
 
                       {/* Downvote Button */}
@@ -667,7 +873,7 @@ export function Community() {
                         onClick={() => handleVote(post.id, "DOWNVOTE")}
                         className={cn(
                           "flex items-center gap-1.5 hover:text-red-500 transition-colors text-xs font-semibold focus-visible:outline-none",
-                          post.hasVoted === "DOWNVOTE" && "text-red-500"
+                          post.hasVoted === "DOWNVOTE" && "text-red-500",
                         )}
                         aria-label="Downvote post"
                       >
@@ -694,7 +900,10 @@ export function Community() {
                           type="text"
                           value={newCommentText[post.id] || ""}
                           onChange={(e) =>
-                            setNewCommentText((prev) => ({ ...prev, [post.id]: e.target.value }))
+                            setNewCommentText((prev) => ({
+                              ...prev,
+                              [post.id]: e.target.value,
+                            }))
                           }
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleAddComment(post.id);
@@ -716,36 +925,45 @@ export function Community() {
                           <Loader2 className="h-4 w-4 text-forest animate-spin" />
                           <span>Loading comments...</span>
                         </div>
-                      ) : !commentsMap[post.id] || commentsMap[post.id].length === 0 ? (
+                      ) : !commentsMap[post.id] ||
+                        commentsMap[post.id].length === 0 ? (
                         <p className="text-xs text-charcoal-muted text-center py-2">
-                          No comments yet. Write a comment to share your opinion!
+                          No comments yet. Write a comment to share your
+                          opinion!
                         </p>
                       ) : (
                         <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                           {commentsMap[post.id].map((comment) => (
-                            <div key={comment.id} className="rounded-xl bg-ivory-50 border border-ivory-200 p-3 space-y-1">
+                            <div
+                              key={comment.id}
+                              className="rounded-xl bg-ivory-50 border border-ivory-200 p-3 space-y-1"
+                            >
                               <div className="flex items-center justify-between text-2xs">
-                                <span className="font-bold text-charcoal">{comment.author?.name || "Farmer"}</span>
+                                <span className="font-bold text-charcoal">
+                                  {comment.author?.name || "Farmer"}
+                                </span>
                                 <span className="text-charcoal-muted">
-                                  {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                                  {new Date(
+                                    comment.createdAt,
+                                  ).toLocaleDateString(undefined, {
                                     dateStyle: "short",
                                   })}
                                 </span>
                               </div>
-                              <p className="text-xs text-charcoal-light whitespace-pre-wrap">{comment.content}</p>
+                              <p className="text-xs text-charcoal-light whitespace-pre-wrap">
+                                {comment.content}
+                              </p>
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
                   )}
-
                 </article>
               );
             })}
           </div>
         )}
-
       </div>
     </PageContainer>
   );
