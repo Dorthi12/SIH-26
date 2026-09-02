@@ -39,7 +39,7 @@
 - **Weighted Suitability Scoring**: Evaluates historical yield potential (50%), yield stability/variance over time (30%), and regional cultivation experience (20%).
 - **Explainable Breakdown**: Provides suitability scores (0–100) alongside individual component metrics for full transparency.
 
-### 2. 📈 Future Yield Forecaster (Model 1)
+### 2. 📈 Future Yield Forecaster 
 
 - **CatBoost Regression Engine**: Predicts next-season crop yields (tonnes/ha) using 16 historical, environmental, and temporal lag features.
 - **High Predictive Precision**: Achieves a temporal test **R² score of 0.9019**.
