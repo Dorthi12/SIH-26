@@ -80,6 +80,7 @@ export const register = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImageUrl: user.preSignedUrl,
         provider: user.authProvider === "GOOGLE" ? "google" : "email",
       },
     });
@@ -138,6 +139,7 @@ export const login = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImageUrl: user.preSignedUrl,
         provider: user.authProvider === "GOOGLE" ? "google" : "email",
       },
     });
