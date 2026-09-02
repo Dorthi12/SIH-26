@@ -1,6 +1,6 @@
 # 🌾 AgriSense — Smart Agriculture Decision-Support System
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisense--ruby.vercel.app-2ea44f?style=for-the-badge&logo=vercel)](https://agrisense-ruby.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisense--ruby.vercel.app-2ea44f?style=for-the-badge&logo=vercel)](https://agrisensefarm.tech)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Dorthi12%2FSIH--26-181717?style=for-the-badge&logo=github)](https://github.com/Dorthi12/SIH-26)
 [![FastAPI](https://img.shields.io/badge/ML%20Server-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
