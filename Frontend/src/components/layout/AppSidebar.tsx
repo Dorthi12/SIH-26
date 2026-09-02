@@ -13,6 +13,7 @@ import {
 import { cn } from "../../utils/cn";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
+import { UserAvatar } from "../ui/UserAvatar";
 
 // ── Route definitions ─────────────────────────────────────────────────────
 
@@ -250,8 +251,13 @@ export function AppSidebar({ collapsed, onToggleCollapse }: SidebarProps) {
         {!collapsed ? (
           <div className="flex items-center justify-between gap-2 rounded-xl bg-ivory-100/70 dark:bg-charcoal/30 px-3 py-2 mt-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase">
-                {user?.name ? user.name[0] : <UserCircle className="h-4 w-4 text-forest" />}
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase overflow-hidden">
+                <UserAvatar
+                  src={user?.profileImageUrl || user?.preSignedUrl}
+                  name={user?.name}
+                  className="h-full w-full object-cover"
+                  iconClassName="h-4 w-4 text-forest"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-charcoal truncate">{user?.name || "Farmer"}</p>
@@ -424,8 +430,13 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
           {/* Mobile Profile & Logout */}
           <div className="flex items-center justify-between gap-2 rounded-xl bg-ivory-100/70 dark:bg-charcoal/30 px-3 py-2.5">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase">
-                {user?.name ? user.name[0] : <UserCircle className="h-5 w-5 text-forest" />}
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-xs uppercase overflow-hidden">
+                <UserAvatar
+                  src={user?.profileImageUrl || user?.preSignedUrl}
+                  name={user?.name}
+                  className="h-full w-full object-cover"
+                  iconClassName="h-5 w-5 text-forest"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-charcoal truncate">{user?.name || "Farmer"}</p>
@@ -459,8 +470,13 @@ export function DesktopPageHeader({ title }: { title: string }) {
       <div className="flex items-center gap-3">
         <ThemeToggleIconButton />
         <div className="flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase">
-            {user?.name ? user.name[0] : <UserCircle className="h-3.5 w-3.5 text-charcoal-muted" />}
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase overflow-hidden">
+            <UserAvatar
+              src={user?.profileImageUrl || user?.preSignedUrl}
+              name={user?.name}
+              className="h-full w-full object-cover"
+              iconClassName="h-3.5 w-3.5 text-charcoal-muted"
+            />
           </div>
           <span className="text-xs font-semibold text-charcoal-light">{user?.name || "Farmer"}</span>
         </div>

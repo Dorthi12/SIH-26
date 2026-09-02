@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   User,
   Mail,
@@ -14,12 +14,14 @@ import {
   CheckCircle2,
   BookOpen,
   Image,
+  Pencil,
 } from "lucide-react";
 import { apiRequest } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { PageContainer } from "../components/ui/PageContainer";
 import { Badge } from "../components/ui/Badge";
 import { cn } from "../utils/cn";
+import { UserAvatar } from "../components/ui/UserAvatar";
 
 interface UserProfile {
   id: string;
@@ -30,6 +32,8 @@ interface UserProfile {
   role: string;
   dateOfBirth?: string;
   awsS3ObjectKey?: string;
+  profileImageUrl?: string;
+  preSignedUrl?: string;
   department?: string;
   city?: string;
   state?: string;
@@ -51,7 +55,7 @@ interface UserPost {
 }
 
 export function Profile() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, setSession } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [myPosts, setMyPosts] = useState<UserPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +77,86 @@ export function Profile() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Profile Picture Upload State
+  const [uploadingPic, setUploadingPic] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      alert("Please select a valid image (JPEG or PNG).");
+      return;
+    }
+
+    try {
+      setUploadingPic(true);
+
+      // 1. Get presigned upload URL from backend
+      const uploadRes = await apiRequest<{ success: boolean; key: string; uploadUrl: string }>(
+        "/users/uploads",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: file.type,
+          }),
+        }
+      );
+
+      if (!uploadRes || !uploadRes.uploadUrl || !uploadRes.key) {
+        throw new Error("Failed to generate upload URL from server.");
+      }
+
+      // 2. Upload image file directly to S3
+      const s3Res = await fetch(uploadRes.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      if (!s3Res.ok) {
+        throw new Error("Failed to upload image file to storage.");
+      }
+
+      // 3. Update user profile with S3 key
+      const updateRes = await apiRequest<{ success: boolean; data: any }>("/users", {
+        method: "PUT",
+        body: JSON.stringify({
+          key: uploadRes.key,
+        }),
+      });
+
+      if (updateRes && updateRes.data) {
+        const updatedUser = updateRes.data;
+        setProfile(updatedUser);
+        if (authUser) {
+          setSession({
+            ...authUser,
+            name: updatedUser.name || authUser.name,
+            profileImageUrl: updatedUser.profileImageUrl || updatedUser.preSignedUrl,
+            preSignedUrl: updatedUser.preSignedUrl || updatedUser.profileImageUrl,
+          });
+        }
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      console.error("Failed to upload profile picture:", err);
+      alert(err.message || "Failed to update profile picture.");
+    } finally {
+      setUploadingPic(false);
+      if (e.target) e.target.value = "";
+    }
+  };
+
   // ── Fetch Profile ────────────────────────────────────────────────────────
   useEffect(() => {
     async function loadProfile() {
@@ -83,6 +167,15 @@ export function Profile() {
         if (res && res.user) {
           const userData = res.user;
           setProfile(userData);
+          // Sync with AuthContext
+          if (authUser) {
+            setSession({
+              ...authUser,
+              name: userData.name || authUser.name,
+              profileImageUrl: userData.profileImageUrl || userData.preSignedUrl,
+              preSignedUrl: userData.preSignedUrl || userData.profileImageUrl,
+            });
+          }
           // Initialize edit form values
           setEditName(userData.name || "");
           setEditPhone(userData.phoneNumber || "");
@@ -146,6 +239,14 @@ export function Profile() {
 
       if (res && res.data) {
         setProfile(res.data);
+        if (authUser) {
+          setSession({
+            ...authUser,
+            name: res.data.name || authUser.name,
+            profileImageUrl: res.data.profileImageUrl || res.data.preSignedUrl,
+            preSignedUrl: res.data.preSignedUrl || res.data.profileImageUrl,
+          });
+        }
         setSaveSuccess(true);
         setIsEditing(false);
         setTimeout(() => setSaveSuccess(false), 3000);
@@ -179,6 +280,8 @@ export function Profile() {
     );
   }
 
+  const avatarUrl = profile.profileImageUrl || profile.preSignedUrl;
+
   return (
     <PageContainer maxWidth="xl" className="py-8 md:py-12 bg-ivory">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -187,11 +290,37 @@ export function Profile() {
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl border border-ivory-300 shadow-card p-6 text-center space-y-4">
             
-            {/* Avatar */}
-            <div className="inline-block">
-              <div className="h-24 w-24 rounded-full bg-forest/10 border-2 border-forest/30 flex items-center justify-center text-forest font-bold text-3xl uppercase mx-auto">
-                {profile.name[0]}
+            {/* Avatar with Pencil Edit Badge */}
+            <div className="relative inline-block group">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg, image/jpg"
+                className="hidden"
+              />
+              <div className="h-24 w-24 rounded-full bg-forest/10 border-2 border-forest/30 flex items-center justify-center text-forest font-bold text-3xl uppercase mx-auto overflow-hidden relative shadow-md">
+                {uploadingPic ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-forest" />
+                ) : (
+                  <UserAvatar
+                    src={avatarUrl}
+                    name={profile.name}
+                    className="h-full w-full object-cover"
+                    iconClassName="h-12 w-12 text-forest"
+                  />
+                )}
               </div>
+              <button
+                type="button"
+                onClick={handleAvatarClick}
+                disabled={uploadingPic}
+                title="Edit profile picture"
+                aria-label="Edit profile picture"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-forest text-white border-2 border-white shadow-md hover:bg-forest-600 hover:scale-105 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
             </div>
 
             {/* User Title */}

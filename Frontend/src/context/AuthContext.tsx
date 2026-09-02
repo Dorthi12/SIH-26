@@ -7,24 +7,27 @@
  * the login/logout implementations here; all consuming components stay unchanged.
  */
 
-import { createContext, useContext, useState, useCallback,useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { logoutUser } from "../services/authService";
+import { apiRequest } from "../utils/api";
 
 export interface SessionUser {
-  id?:      string;
-  name:     string;
-  email:    string;
+  id?: string;
+  name: string;
+  email: string;
   provider: "email" | "google" | "guest";
-  role:string,
+  role: string;
+  profileImageUrl?: string;
+  preSignedUrl?: string;
 }
 
 interface AuthState {
   isAuthenticated: boolean;
-  user:            SessionUser | null;
+  user: SessionUser | null;
   /** Call on successful login/signup. Persists session to localStorage. */
-  setSession:      (user: SessionUser) => void;
+  setSession: (user: SessionUser) => void;
   /** Clear the session (logout). */
-  clearSession:    () => void;
+  clearSession: () => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -54,7 +57,7 @@ function parseOAuthTokenFromUrl(): { user: SessionUser; token: string } | null {
       id: decoded.id,
       name: decoded.name || decoded.email?.split("@")[0] || "Google User",
       email: decoded.email || "user@gmail.com",
-      role:decoded.role,
+      role: decoded.role,
       provider: "google",
     };
 
@@ -100,6 +103,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("agrisense_token");
     setUser(null);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("agrisense_token");
+    if (token) {
+      apiRequest("/users")
+        .then((res) => {
+          if (res && res.user) {
+            const fetched = res.user;
+            setUser((prev) => {
+              const updated: SessionUser = {
+                ...(prev || {}),
+                id: fetched.id,
+                name: fetched.name || prev?.name || "Farmer",
+                email: fetched.email || prev?.email || "",
+                role: fetched.role || prev?.role || "USER",
+                provider: prev?.provider || "email",
+                profileImageUrl: fetched.profileImageUrl || fetched.preSignedUrl,
+                preSignedUrl: fetched.preSignedUrl || fetched.profileImageUrl,
+              };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+              return updated;
+            });
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   // Automatic token refresh is now handled on-demand by apiRequest() in api.ts when a 401 JWT expired occurs.

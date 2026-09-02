@@ -10,6 +10,7 @@ import { cn } from "../../utils/cn";
 import { ThemeToggleButton } from "./ThemeToggleButton";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useAuth } from "../../context/AuthContext";
+import { UserAvatar } from "../ui/UserAvatar";
 
 // ── Nav items ──────────────────────────────────────────────────────────────
 
@@ -116,8 +117,13 @@ export function AppNavbar() {
 
             {/* Farm avatar chip */}
             <div className="hidden md:flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-3 py-1.5 shadow-sm">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase">
-                {user?.name ? user.name[0] : <UserCircle className="h-3.5 w-3.5 text-charcoal-muted" />}
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest font-bold text-[10px] uppercase overflow-hidden">
+                <UserAvatar
+                  src={user?.profileImageUrl || user?.preSignedUrl}
+                  name={user?.name}
+                  className="h-full w-full object-cover"
+                  iconClassName="h-3.5 w-3.5 text-charcoal-muted"
+                />
               </div>
               <span className="text-xs font-semibold text-charcoal-light">{user?.name || "Farmer"}</span>
             </div>
