@@ -1009,7 +1009,7 @@ export function CreateListingWizard({ onSuccess, onCancel }: CreateListingWizard
                 <Sparkles className="w-6 h-6 text-amber-600 shrink-0" />
                 <div>
                   <h4 className="font-extrabold text-xs text-amber-900 dark:text-amber-200">
-                    {t("Run Demo Document OCR Verification Window", "डेमो दस्तावेज़ OCR सत्यापन खिड़की चलाएं")}
+                    {t("Run Document OCR Verification Window", "दस्तावेज़ OCR सत्यापन खिड़की चलाएं")}
                   </h4>
                   <p className="text-3xs text-amber-800 dark:text-amber-300">
                     Scans uploaded documents, retrieves verified values, and calculates price separately for this crop.

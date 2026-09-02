@@ -14,6 +14,8 @@ import {
 import type { BuyerOffer, UserRole } from "../../types/mandi";
 import { mandiService } from "../../services/mandiService";
 import { useLanguage } from "../../context/LanguageContext";
+import { isPrivateBuyerEntity, getPrivateBuyerCompliance } from "../../utils/privateBuyerCompliance";
+import { PrivateBuyerBadge } from "./PrivateBuyerBadge";
 
 interface NegotiationPanelProps {
   userRole: UserRole;
@@ -73,6 +75,8 @@ export function NegotiationPanel({ userRole, offers, onOfferUpdated }: Negotiati
   }
 
   const active = selectedOffer || offers[0];
+  const isPrivate = isPrivateBuyerEntity(active.buyerProfile);
+  const comp = getPrivateBuyerCompliance(active.buyerProfile);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-200">
@@ -86,6 +90,7 @@ export function NegotiationPanel({ userRole, offers, onOfferUpdated }: Negotiati
         <div className="space-y-2.5">
           {offers.map((off) => {
             const isSelected = active.id === off.id;
+            const offIsPrivate = isPrivateBuyerEntity(off.buyerProfile);
             return (
               <div
                 key={off.id}
@@ -100,9 +105,12 @@ export function NegotiationPanel({ userRole, offers, onOfferUpdated }: Negotiati
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-sm text-charcoal dark:text-ivory-100">
-                    {off.cropListing.cropName} ({off.cropListing.variety})
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-sm text-charcoal dark:text-ivory-100">
+                      {off.cropListing.cropName} ({off.cropListing.variety})
+                    </span>
+                    {offIsPrivate && <PrivateBuyerBadge compact />}
+                  </div>
                   <span
                     className={`text-3xs font-bold px-2 py-0.5 rounded-full ${
                       off.status === "ACCEPTED"
@@ -145,10 +153,13 @@ export function NegotiationPanel({ userRole, offers, onOfferUpdated }: Negotiati
           {/* Header */}
           <div className="pb-4 border-b border-ivory-200 dark:border-charcoal-light flex flex-wrap items-center justify-between gap-4">
             <div>
-              <span className="text-2xs font-mono font-bold text-forest dark:text-emerald-400">
-                Offer Ref: {active.id}
-              </span>
-              <h2 className="text-xl font-extrabold text-charcoal dark:text-ivory-100">
+              <div className="flex items-center gap-2">
+                <span className="text-2xs font-mono font-bold text-forest dark:text-emerald-400">
+                  Offer Ref: {active.id}
+                </span>
+                {isPrivate && <PrivateBuyerBadge compact />}
+              </div>
+              <h2 className="text-xl font-extrabold text-charcoal dark:text-ivory-100 mt-0.5">
                 {active.cropListing.cropName} — {active.quantityQuintals} Quintals
               </h2>
               <p className="text-xs text-charcoal-muted dark:text-ivory-400">
@@ -166,6 +177,21 @@ export function NegotiationPanel({ userRole, offers, onOfferUpdated }: Negotiati
               </span>
             </div>
           </div>
+
+          {/* Private Buyer Protection Summary Strip */}
+          {isPrivate && (
+            <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-xs font-bold text-amber-950 dark:text-amber-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span>🛡️ <strong>Private Buyer Safeguards Active:</strong></span>
+                <span className="text-3xs text-amber-800 dark:text-amber-300">
+                  Land Control: {comp.contractedCashCropLandPercentage}% / 40% ({comp.landControlStatus})
+                </span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-3xs">
+                ✓ Protection Verified
+              </span>
+            </div>
+          )}
 
           {/* Terms Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light text-xs">

@@ -49,7 +49,7 @@ export function ScoreDerivedCard({ scoreExplanation }: ScoreDerivedCardProps) {
           <strong className="text-charcoal">Note:</strong> The formula above produces a computed score
           of <strong>{Math.round(((topYield - minYield) / (maxYield - minYield)) * 100)}/100</strong>.
           The displayed score of <strong>{score}/100</strong> is an illustrative MVP value defined in
-          the demo data. The backend scoring formula will provide the production value when connected.
+          the dataset. The backend scoring formula will provide the production value when connected.
           The UI never presents contradictory mathematics.
         </div>
       )}

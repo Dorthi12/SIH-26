@@ -746,7 +746,7 @@ export function DiseaseDetection() {
               Leaf Disease Detection & Advisory
             </h1>
             <p className="text-sm text-charcoal-muted max-w-2xl">
-              Upload leaf images for real-time CNN pathology diagnostics, explore live demo disease scans, ask agricultural pathology questions, and read verified farmer reviews.
+              Upload leaf images for real-time CNN pathology diagnostics, explore sample disease scans, ask agricultural pathology questions, and read verified farmer reviews.
             </p>
           </div>
 
@@ -771,7 +771,7 @@ export function DiseaseDetection() {
               className="px-4 py-2 rounded-xl bg-forest text-white text-xs font-bold shadow-sm hover:bg-forest-600 transition-all flex items-center gap-2"
             >
               <Stethoscope className="h-4 w-4" />
-              Leaf Scanner & Demos
+              Leaf Scanner & Sample Scans
             </a>
             <a
               href="#qa-section"
@@ -810,7 +810,7 @@ export function DiseaseDetection() {
                   </h2>
                   {selectedDemoScan && (
                     <Badge variant="default" size="sm">
-                      Loaded from Demo Scan
+                      Loaded from Sample Scan
                     </Badge>
                   )}
                 </div>
@@ -1129,7 +1129,7 @@ export function DiseaseDetection() {
                 <div className="py-8 text-center text-xs text-charcoal-muted space-y-1">
                   <p>No past scans recorded yet.</p>
                   <p className="text-2xs text-charcoal-muted/60">
-                    Try uploading a leaf or click a demo scan below!
+                    Try uploading a leaf or click a sample scan below!
                   </p>
                 </div>
               )}
@@ -1185,10 +1185,10 @@ export function DiseaseDetection() {
               <div>
                 <h3 className="text-base font-bold text-charcoal flex items-center gap-2">
                   <Award className="h-5 w-5 text-forest" />
-                  Interactive Demo Leaf Scans
+                  Interactive Sample Leaf Scans
                 </h3>
                 <p className="text-xs text-charcoal-muted">
-                  No leaf image handy? Click any demo scan below to simulate immediate ML model detection results.
+                  No leaf image handy? Click any sample scan below to simulate immediate ML model detection results.
                 </p>
               </div>
 

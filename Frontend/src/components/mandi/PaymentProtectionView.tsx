@@ -78,7 +78,7 @@ export function PaymentProtectionView() {
         {/* Prototype Demo Badge */}
         <div className="px-3.5 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 flex items-center gap-2 text-2xs font-extrabold text-amber-900 dark:text-amber-200">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-          <span>Demo Payment Protection</span>
+          <span>Payment Protection</span>
         </div>
       </div>
 

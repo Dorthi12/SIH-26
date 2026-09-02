@@ -8,7 +8,7 @@ interface RecommendationSummaryProps {
 const REASONS = [
   "Highest predicted yield among evaluated candidates.",
   "Strong historical performance.",
-  "Favorable weather compatibility in the demo context.",
+  "Favorable weather compatibility in the current context.",
   "Positive historical yield trend.",
 ] as const;
 

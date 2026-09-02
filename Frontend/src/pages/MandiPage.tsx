@@ -184,6 +184,9 @@ function MandiContent() {
         userRole={userRole}
         onRoleChange={(role) => {
           setUserRole(role);
+          if (role === "SELLER" && (activeTab === "my-deals" || activeTab === "smart-deal")) {
+            setActiveTab("marketplace");
+          }
           setShowRoleLanding(false);
         }}
         activeTab={activeTab}

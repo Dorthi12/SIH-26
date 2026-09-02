@@ -103,7 +103,7 @@ export function SellSmarterView({
 
           <div className="px-3 py-1.5 rounded-xl bg-blue-500/20 border border-blue-400/40 text-blue-200 flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-blue-300" />
-            <span>Demo Market Data • Decision Support Engine Active</span>
+            <span>Market Data • Decision Support Engine Active</span>
           </div>
         </div>
       </div>

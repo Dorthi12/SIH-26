@@ -307,7 +307,7 @@ export function DistrictSelect({
             {/* Footer hint */}
             <div className="px-3 py-1.5 border-t border-ivory-200">
               <p className="text-2xs text-charcoal-muted/50">
-                Showing demonstration districts. Full list available when connected to backend.
+                Showing supported districts. Full list available when connected to backend.
               </p>
             </div>
           </div>

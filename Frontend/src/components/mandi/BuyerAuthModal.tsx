@@ -144,7 +144,7 @@ export function BuyerAuthModal({
               onClick={handleQuickDemoLogin}
               className="px-3 py-1.5 rounded-xl font-black text-xs bg-amber text-charcoal hover:bg-amber-dark transition-all shadow-xs shrink-0"
             >
-              Demo Login
+              Quick Login
             </button>
           </div>
 

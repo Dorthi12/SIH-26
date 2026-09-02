@@ -63,7 +63,7 @@ export function CropWeatherRelevance({ data }: CropWeatherRelevanceProps) {
         </div>
 
         <p className="text-2xs text-charcoal-muted/50 border-t border-ivory-200 pt-3 leading-relaxed">
-          These are illustrative demo values for the prototype. The backend model will provide actual crop-weather compatibility signals when connected.
+          These are illustrative values for the prototype. The backend model will provide actual crop-weather compatibility signals when connected.
         </p>
       </div>
     </div>

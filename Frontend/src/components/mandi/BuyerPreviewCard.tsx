@@ -1,5 +1,7 @@
 import { Building2, ShieldCheck, MapPin, Star, MessageSquare, ChevronRight } from "lucide-react";
 import type { BuyerProfile } from "../../types/mandi";
+import { PrivateBuyerBadge } from "./PrivateBuyerBadge";
+import { isPrivateBuyerEntity } from "../../utils/privateBuyerCompliance";
 
 interface BuyerPreviewCardProps {
   buyer: BuyerProfile;
@@ -8,6 +10,7 @@ interface BuyerPreviewCardProps {
 }
 
 export function BuyerPreviewCard({ buyer, onViewBuyer, onContactBuyer }: BuyerPreviewCardProps) {
+  const isPrivate = isPrivateBuyerEntity(buyer);
   const req = buyer.detailedRequirements[0] || {
     cropName: "Wheat",
     minQuantityQuintals: 500,
@@ -24,10 +27,13 @@ export function BuyerPreviewCard({ buyer, onViewBuyer, onContactBuyer }: BuyerPr
             <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-extrabold text-base text-charcoal dark:text-ivory-100 flex items-center gap-1.5">
-              🏢 {buyer.businessName}
-            </h4>
-            <p className="text-xs text-charcoal-muted dark:text-ivory-400 flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <h4 className="font-extrabold text-base text-charcoal dark:text-ivory-100 flex items-center gap-1.5">
+                🏢 {buyer.businessName}
+              </h4>
+              {isPrivate && <PrivateBuyerBadge compact />}
+            </div>
+            <p className="text-xs text-charcoal-muted dark:text-ivory-400 flex items-center gap-1 mt-0.5">
               <span>{buyer.buyerType}</span>
               <span>•</span>
               <MapPin className="w-3.5 h-3.5 text-blue-500" />

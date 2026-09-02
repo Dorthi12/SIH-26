@@ -1,6 +1,9 @@
 import { ShieldCheck, MapPin, Award, Building2, CheckCircle2, DollarSign, Star, Calendar, Lock, LogOut, KeyRound, Phone, FileText, TrendingUp, BarChart3, Tag } from "lucide-react";
 import type { FarmerPublicProfile, BuyerProfile, FarmerAuthDetails } from "../../types/mandi";
 import { useLanguage } from "../../context/LanguageContext";
+import { PrivateBuyerBadge } from "./PrivateBuyerBadge";
+import { PrivateBuyerComplianceCard } from "./PrivateBuyerComplianceCard";
+import { isPrivateBuyerEntity } from "../../utils/privateBuyerCompliance";
 
 interface FarmerProfileCardProps {
   profile: FarmerPublicProfile;
@@ -430,6 +433,8 @@ interface BuyerProfileCardProps {
 }
 
 export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
+  const isPrivate = isPrivateBuyerEntity(profile);
+
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-charcoal-dark border border-ivory-300 dark:border-charcoal-light shadow-md space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ivory-200 dark:border-charcoal-light pb-4">
@@ -438,10 +443,13 @@ export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
             <Building2 className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-extrabold text-xl text-charcoal dark:text-ivory-100">
-              {profile.businessName}
-            </h3>
-            <p className="text-xs text-charcoal-muted dark:text-ivory-400 flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold text-xl text-charcoal dark:text-ivory-100">
+                {profile.businessName}
+              </h3>
+              {isPrivate && <PrivateBuyerBadge compact />}
+            </div>
+            <p className="text-xs text-charcoal-muted dark:text-ivory-400 flex items-center gap-2 mt-0.5">
               <span>{profile.buyerType}</span>
               <span>•</span>
               <MapPin className="w-3.5 h-3.5 text-blue-500" />
@@ -457,6 +465,8 @@ export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
           <span>🔵 Business Verified</span>
         </div>
       </div>
+
+      {isPrivate && <PrivateBuyerComplianceCard buyer={profile} />}
 
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">

@@ -101,7 +101,7 @@ export function WeatherSignalCard({ data }: { data: WeatherDataset }) {
       title="Weather Compatibility"
       level={data.weather_compatibility}
       levelVariant="success"
-      description="Current and forecast conditions are broadly favorable in the demo context."
+      description="Current and forecast conditions are broadly favorable in the current context."
     >
       <div className="grid grid-cols-3 gap-2">
         {aspects.map((a) => (

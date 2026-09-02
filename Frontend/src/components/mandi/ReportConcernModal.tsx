@@ -45,7 +45,7 @@ export function ReportConcernModal({ buyerName, onClose, onSubmitReport }: Repor
           <div className="p-6 text-center space-y-3">
             <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto animate-bounce" />
             <h4 className="font-black text-base text-charcoal dark:text-ivory-100">
-              Demo Report Submitted
+              Report Submitted
             </h4>
             <p className="text-xs text-charcoal-muted dark:text-ivory-400">
               Thank you. Your concern regarding <strong>{buyerName}</strong> has been logged for Agrisense Trust Desk review.
@@ -66,10 +66,16 @@ export function ReportConcernModal({ buyerName, onClose, onSubmitReport }: Repor
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-ivory-300 dark:border-charcoal-light bg-white dark:bg-charcoal font-bold text-charcoal dark:text-ivory-100"
               >
+                <option value="Excessive Land Control">Excessive Land Control (&gt;40% Land Control Violation)</option>
+                <option value="Forced Crop Requirement">Forced Crop Requirement</option>
+                <option value="Crop Rotation Violation">Crop Rotation Safeguard Violation</option>
+                <option value="Contract Violation">Contract Violation</option>
+                <option value="Stock/Hoarding Concern">Stock / Hoarding Concern</option>
+                <option value="Market Manipulation">Market Manipulation</option>
+                <option value="Buyer Misconduct">Buyer Misconduct</option>
+                <option value="Payment issue">Payment issue / delay</option>
                 <option value="Incorrect business information">Incorrect business information</option>
                 <option value="Suspicious behaviour">Suspicious behaviour</option>
-                <option value="Misleading requirement">Misleading requirement</option>
-                <option value="Payment issue">Payment issue</option>
                 <option value="Other">Other</option>
               </select>
             </div>

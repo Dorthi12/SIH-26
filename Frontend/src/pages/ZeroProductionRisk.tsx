@@ -663,10 +663,10 @@ export function ZeroProductionRisk() {
               type="button"
               onClick={() => setHistoryItems(DEMO_HISTORY_ITEMS)}
               className="px-3.5 py-2 rounded-xl border border-ivory-300 bg-white hover:bg-ivory/20 text-charcoal-light text-xs font-semibold transition-all flex items-center gap-1.5"
-              title="Reset and reload default demo simulation history dataset"
+              title="Reset and reload default simulation history dataset"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              <span>Reset Demo Values</span>
+              <span>Reset Default Values</span>
             </button>
           </div>
         </header>
@@ -679,7 +679,7 @@ export function ZeroProductionRisk() {
                 <SlidersHorizontal className="h-4 w-4 text-forest" />
                 <h3 className="text-sm font-bold text-charcoal">Simulation Query & Filter Window</h3>
                 <span className="text-2xs bg-forest/10 text-forest font-bold px-2 py-0.5 rounded-md">
-                  Demo Query Engine
+                  Query Engine
                 </span>
               </div>
               <button
@@ -772,7 +772,7 @@ export function ZeroProductionRisk() {
             {/* Quick Demo Query Preset Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-ivory-200">
               <span className="text-[11px] font-bold text-charcoal-muted flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-amber-500" /> Demo Query Shortcuts:
+                <Sparkles className="h-3 w-3 text-amber-500" /> Query Shortcuts:
               </span>
               <button
                 type="button"
@@ -1151,11 +1151,6 @@ export function ZeroProductionRisk() {
                           <h4 className="text-xs font-bold text-charcoal truncate group-hover:text-forest transition-colors">
                             {item.crop}
                           </h4>
-                          {item.isDemo && (
-                            <span className="text-[9px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded">
-                              DEMO
-                            </span>
-                          )}
                         </div>
                         <p className="text-[10px] text-charcoal-muted truncate">
                           {item.district}, {item.state} • {item.season} ({item.area} Ha)
@@ -1214,11 +1209,6 @@ export function ZeroProductionRisk() {
                   <span className="text-[10px] font-extrabold uppercase tracking-widest text-forest bg-forest/10 px-2.5 py-0.5 rounded-full">
                     Simulation Review & Diagnostic Window
                   </span>
-                  {selectedReviewItem.isDemo && (
-                    <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">
-                      Demo Dataset Run
-                    </span>
-                  )}
                 </div>
                 <h2 className="text-xl font-bold text-charcoal flex items-center gap-2">
                   {selectedReviewItem.crop} — {selectedReviewItem.district}, {selectedReviewItem.state}

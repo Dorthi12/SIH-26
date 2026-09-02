@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import type { BuyerProfile } from "../../types/mandi";
 import { useLanguage } from "../../context/LanguageContext";
+import { PrivateBuyerBadge } from "./PrivateBuyerBadge";
+import { isPrivateBuyerEntity } from "../../utils/privateBuyerCompliance";
 
 interface BuyerProfileHeroProps {
   buyer: BuyerProfile;
@@ -37,6 +39,7 @@ export function BuyerProfileHero({
 }: BuyerProfileHeroProps) {
   const { t } = useLanguage();
   const [showMoreMenu, setShowMoreMenu] = useState<boolean>(false);
+  const isPrivate = isPrivateBuyerEntity(buyer);
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -59,18 +62,19 @@ export function BuyerProfileHero({
               <h1 className="text-2xl sm:text-3xl font-black text-charcoal dark:text-ivory-100 tracking-tight">
                 🏢 {buyer.businessName}
               </h1>
+              {isPrivate && <PrivateBuyerBadge compact={false} showSubtitle={true} />}
+            </div>
 
               {/* HIGHLY VISIBLE BUSINESS VERIFIED BADGE */}
               <button
                 onClick={onOpenVerificationModal}
                 className="px-3 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 text-xs font-extrabold flex items-center gap-1.5 hover:bg-emerald-200 transition-colors shadow-2xs"
-                title="Click to inspect Demo Verification details"
+                title="Click to inspect Verification details"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>✓ Business Verified</span>
                 <HelpCircle className="w-3.5 h-3.5 text-emerald-600 opacity-75" />
               </button>
-            </div>
 
             <p className="text-xs sm:text-sm font-semibold text-charcoal-muted dark:text-ivory-400 flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 text-2xs font-extrabold">

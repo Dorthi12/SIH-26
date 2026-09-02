@@ -115,7 +115,7 @@ export function FarmerAuthModal({ isOpen, onClose, onAuthenticate }: FarmerAuthM
             onClick={handleQuickDemoFill}
             className="px-3 py-1 rounded-lg text-3xs font-extrabold bg-amber text-charcoal shadow-sm hover:bg-amber-dark transition-all"
           >
-            ⚡ {t("Instant Demo Verification", "त्वरित डेमो सत्यापन")}
+            ⚡ {t("Instant Verification", "त्वरित सत्यापन")}
           </button>
         </div>
 
@@ -183,7 +183,7 @@ export function FarmerAuthModal({ isOpen, onClose, onAuthenticate }: FarmerAuthM
               ) : (
                 <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-300 space-y-2">
                   <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 block">
-                    ✓ Demo OTP sent to {mobileNumber} (Enter 1234)
+                    ✓ Verification OTP sent to {mobileNumber} (Enter 1234)
                   </span>
                   <input
                     type="text"
@@ -328,7 +328,7 @@ export function FarmerAuthModal({ isOpen, onClose, onAuthenticate }: FarmerAuthM
               onClick={handleQuickDemoFill}
               className="text-xs font-semibold text-charcoal-muted hover:underline"
             >
-              {t("Skip & Use Verified Demo Profile", "डेमो प्रोफाइल का उपयोग करें")}
+              {t("Skip & Use Verified Profile", "सत्यापित प्रोफाइल का उपयोग करें")}
             </button>
 
             <button

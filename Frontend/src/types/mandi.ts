@@ -386,6 +386,7 @@ export interface BuyerOffer {
   
   status: "AWAITING_RESPONSE" | "ACCEPTED" | "COUNTER_OFFERED" | "REJECTED";
   counterPricePerQuintal?: number;
+  compliance?: PrivateBuyerCompliance;
   messages: OfferMessage[];
   negotiationTimeline: NegotiationTimelineItem[];
   createdAt: string;

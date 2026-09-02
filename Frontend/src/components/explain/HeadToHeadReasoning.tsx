@@ -112,7 +112,7 @@ export function HeadToHeadReasoning({ left, right }: HeadToHeadReasoningProps) {
 
       {/* Explanation */}
       <div className="rounded-xl border border-ivory-200 bg-ivory-100 px-4 py-3 text-sm text-charcoal-muted leading-relaxed">
-        Both crops show favorable supporting indicators in this demo.{" "}
+        Both crops show favorable supporting indicators in this analysis.{" "}
         <strong className="text-charcoal">{left.crop}</strong> ranks higher primarily because
         its predicted yield ({ly} t/ha) is higher than {right.crop} ({ry} t/ha).
       </div>

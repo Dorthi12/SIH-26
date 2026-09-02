@@ -2,6 +2,7 @@ import { MapPin, Calendar, Award, ShieldCheck, Scale, ArrowRight, Eye } from "lu
 import type { CropListing } from "../../types/mandi";
 import { VerificationBadge } from "./VerificationBadge";
 import { useLanguage } from "../../context/LanguageContext";
+import { PrivateBuyerBadge } from "./PrivateBuyerBadge";
 
 interface CropListingCardProps {
   listing: CropListing;
@@ -41,6 +42,7 @@ export function CropListingCard({ listing, onOpenReport, onMakeOffer }: CropList
               size="sm"
             />
           )}
+          {listing.offersCount > 0 && <PrivateBuyerBadge compact />}
         </div>
 
         {/* Location Badge */}

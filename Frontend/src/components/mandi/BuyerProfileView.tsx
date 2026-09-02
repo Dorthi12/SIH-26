@@ -34,6 +34,8 @@ import { TransactionPerformanceSection } from "./TransactionPerformanceSection";
 import { PaymentReliabilityCard } from "./PaymentReliabilityCard";
 import { BuyerReputationSection } from "./BuyerReputationSection";
 import { VerifiedFarmerReviewsSection } from "./VerifiedFarmerReviewsSection";
+import { PrivateBuyerComplianceCard } from "./PrivateBuyerComplianceCard";
+import { isPrivateBuyerEntity } from "../../utils/privateBuyerCompliance";
 import { DisputeHistorySection } from "./DisputeHistorySection";
 import { BuyerBehaviourSummary } from "./BuyerBehaviourSummary";
 import { BuyerTransparencyScoreCard } from "./BuyerTransparencyScoreCard";
@@ -59,7 +61,8 @@ export function BuyerProfileView({
   onCreateBuyerProfile,
 }: BuyerProfileViewProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<"overview" | "requirements" | "reputation" | "transactions" | "verification">("overview");
+  const isPrivate = isPrivateBuyerEntity(buyer);
+  const [activeTab, setActiveTab] = useState<"overview" | "protection" | "requirements" | "reputation" | "transactions" | "verification">("overview");
 
   // Modals & Drawers state
   const [showDemoVerifyModal, setShowDemoVerifyModal] = useState<boolean>(false);
@@ -125,6 +128,7 @@ export function BuyerProfileView({
       <div className="flex items-center gap-2 border-b border-ivory-300 dark:border-charcoal-light pb-2 overflow-x-auto no-scrollbar">
         {[
           { key: "overview", label: "Overview", icon: "📊" },
+          ...(isPrivate ? [{ key: "protection", label: "Protection", icon: "🛡️" }] : []),
           { key: "requirements", label: "Requirements", icon: "📦" },
           { key: "reputation", label: "Reputation", icon: "⭐" },
           { key: "transactions", label: "Transactions", icon: "💳" },
@@ -148,11 +152,21 @@ export function BuyerProfileView({
       {/* TAB 1: OVERVIEW */}
       {activeTab === "overview" && (
         <div className="space-y-8 animate-in fade-in duration-200">
+          {isPrivate && <PrivateBuyerComplianceCard buyer={buyer} onOpenReportModal={() => setShowReportConcernModal(true)} />}
           <BusinessInformation buyer={buyer} />
           <BuyerTransparencyScoreCard buyer={buyer} />
           <TransactionPerformanceSection buyer={buyer} />
           <BuyerBehaviourSummary buyer={buyer} />
           <WhatBuyerPurchases buyer={buyer} />
+        </div>
+      )}
+
+      {/* TAB: PROTECTION (PRIVATE) */}
+      {activeTab === "protection" && isPrivate && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          <PrivateBuyerComplianceCard buyer={buyer} onOpenReportModal={() => setShowReportConcernModal(true)} />
+          <BuyerTransparencyScoreCard buyer={buyer} />
+          <BuyerBehaviourSummary buyer={buyer} />
         </div>
       )}
 
@@ -309,7 +323,7 @@ export function BuyerProfileView({
                 Prototype Notice
               </span>
               <p className="text-amber-800 dark:text-amber-300 text-2xs font-semibold">
-                This verification status is currently labeled as <strong>Demo Verification</strong> for prototype demonstration purposes, rather than implying real government agency verification.
+                This verification status is currently labeled as <strong>Verified Status</strong> for prototype evaluation purposes, rather than implying real government agency verification.
               </p>
             </div>
 

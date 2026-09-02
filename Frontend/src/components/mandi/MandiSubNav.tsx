@@ -59,7 +59,6 @@ export function MandiSubNav({
     { tab: "aggregation", label: t("Produce Aggregation", "समूह बिक्री"), icon: Package, isProtected: true },
     { tab: "logistics", label: t("Logistics Matching", "परिवहन मिलान"), icon: Truck, isProtected: true },
     { tab: "payment-protection", label: t("Payment Protection", "भुगतान सुरक्षा"), icon: Lock, isProtected: true },
-    { tab: "my-deals", label: t("Smart Deals", "स्मार्ट सौदे"), icon: FileCheck, isProtected: true },
     { tab: "my-listings", label: t("My Listings", "मेरी लिस्टिंग"), icon: Sprout, isProtected: true },
     { tab: "create-listing", label: t("Create Listing", "लिस्टिंग बनाएं"), icon: PlusCircle, isProtected: true },
     { tab: "profile", label: t("Farmer Profile", "किसान प्रोफ़ाइल"), icon: User, isProtected: true },

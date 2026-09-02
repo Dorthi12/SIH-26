@@ -35,7 +35,7 @@ export function RecentAnalysis() {
           <Clock className="h-4 w-4 text-charcoal-muted/60" />
           <p className="text-sm font-bold text-charcoal">Recent Analysis</p>
         </div>
-        <p className="text-2xs text-charcoal-muted/50 italic">Demo data</p>
+        <p className="text-2xs text-charcoal-muted/50 italic">Recent data</p>
       </div>
       <ul className="divide-y divide-ivory-200">
         {RECENT_ITEMS.map((item, i) => (
