@@ -10,7 +10,8 @@ AlertCircle,
 CheckCircle2,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000";
+// const API_URL = "http://localhost:5000";
+import { apiRequest } from "../utils/api";
 
 const categories = [
 {
@@ -105,187 +106,110 @@ if (fileInputRef.current) {
 // UPLOAD IMAGE TO S3
 // --------------------------------------------------
 
-const uploadImage = async (): Promise<string | null> => {
-if (!image) {
-return null;
-}
+  // --------------------------------------------------
+  // UPLOAD IMAGE TO S3
+  // --------------------------------------------------
+  const uploadImage = async (): Promise<string | null> => {
+    if (!image) return null;
 
+    // Step 1: Ask backend for a presigned S3 URL using centralized apiRequest
+    const urlData = await apiRequest<{ uploadUrl: string; key: string }>(
+      "/complaints/upload-url",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          fileName: image.name,
+          fileType: image.type,
+        }),
+      }
+    );
 
-// Step 1:
-// Ask backend for a presigned S3 URL
-const token = localStorage.getItem("agrisense_token")
-const urlResponse = await fetch(
-  `${API_URL}/complaints/upload-url`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-       Authorization: `Bearer ${token}`,
-        
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      fileName: image.name,
-      fileType: image.type,
-    }),
-  }
-);
-
-const urlData = await urlResponse.json();
-
-if (!urlResponse.ok) {
-  throw new Error(
-    urlData.message || "Failed to generate upload URL."
-  );
-}
-
-if (!urlData.uploadUrl || !urlData.key) {
-  throw new Error("Invalid upload URL response from server.");
-}
-
-// Step 2:
-// Upload image directly to S3
-
-console.log(token);
-const uploadResponse = await fetch(urlData.uploadUrl, {
-  method: "PUT",
-  headers: {
-    "Content-Type": image.type,
-      
-  },
-  body: image,
-});
-
-if (!uploadResponse.ok) {
-  const errorText = await uploadResponse.text();
-
-  console.error("S3 upload failed");
-  console.error("Status:", uploadResponse.status);
-  console.error("Response:", errorText);
-
-  throw new Error(
-    `S3 upload failed: ${uploadResponse.status}`
-  );
-}
-
-// Step 3:
-// Return S3 key
-return urlData.key;
-
-
-};
-
-// --------------------------------------------------
-// SUBMIT COMPLAINT
-// --------------------------------------------------
-
-const handleSubmit = async (e: React.FormEvent) => {
-e.preventDefault();
-
-setError("");
-setSuccess("");
-
-// Frontend validation
-if (title.trim().length < 3) {
-  setError("Title must be at least 3 characters long.");
-  return;
-}
-
-if (title.trim().length > 100) {
-  setError("Title cannot exceed 100 characters.");
-  return;
-}
-
-if (description.trim().length < 10) {
-  setError(
-    "Description must be at least 10 characters long."
-  );
-  return;
-}
-
-if (description.trim().length > 1000) {
-  setError(
-    "Description cannot exceed 1000 characters."
-  );
-  return;
-}
-
-if (!category) {
-  setError("Please select a category.");
-  return;
-}
-
-setLoading(true);
-
-try {
-  // -----------------------------------------------
-  // Upload image first
-  // -----------------------------------------------
-
-  const imageKey = await uploadImage();
-
-  // -----------------------------------------------
-  // Create complaint
-  // -----------------------------------------------
-const token = localStorage.getItem("agrisense_token")
-  const response = await fetch(
-    `${API_URL}/complaints`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        title: title.trim(),
-        description: description.trim(),
-        category,
-        imageKey,
-      }),
+    if (!urlData?.uploadUrl || !urlData?.key) {
+      throw new Error("Invalid upload URL response from server.");
     }
-  );
 
-  const data = await response.json();
+    // Step 2: Upload image directly to S3
+    const uploadResponse = await fetch(urlData.uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": image.type,
+      },
+      body: image,
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-        data.message ||
-        "Failed to file complaint."
-    );
-  }
+    if (!uploadResponse.ok) {
+      throw new Error(`S3 upload failed: ${uploadResponse.status}`);
+    }
 
-  setSuccess("Complaint filed successfully.");
+    // Step 3: Return S3 key
+    return urlData.key;
+  };
 
-  // Clear form
-  setTitle("");
-  setDescription("");
-  setCategory("");
-  removeImage();
+  // --------------------------------------------------
+  // SUBMIT COMPLAINT
+  // --------------------------------------------------
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-  // Redirect after successful submission
-  setTimeout(() => {
-    navigate("/complaints");
-  }, 1200);
-} catch (err) {
-  console.error("Create complaint error:", err);
+    if (title.trim().length < 3) {
+      setError("Title must be at least 3 characters long.");
+      return;
+    }
+    if (title.trim().length > 100) {
+      setError("Title cannot exceed 100 characters.");
+      return;
+    }
+    if (description.trim().length < 10) {
+      setError("Description must be at least 10 characters long.");
+      return;
+    }
+    if (description.trim().length > 1000) {
+      setError("Description cannot exceed 1000 characters.");
+      return;
+    }
+    if (!category) {
+      setError("Please select a category.");
+      return;
+    }
 
-  if (err instanceof Error) {
-    setError(err.message);
-  } else {
-    setError(
-      "Something went wrong. Please try again."
-    );
-  }
-} finally {
-  setLoading(false);
-}
+    setLoading(true);
 
+    try {
+      const imageKey = await uploadImage();
 
-};
+      // Submit complaint record
+      await apiRequest("/complaints", {
+        method: "POST",
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim(),
+          category,
+          imageKey,
+        }),
+      });
 
-return ( <div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8"> <div className="mx-auto max-w-3xl">
+      setSuccess("Complaint filed successfully.");
+      setTitle("");
+      setDescription("");
+      setCategory("");
+      removeImage();
+
+      setTimeout(() => {
+        navigate("/mycomplaints");
+      }, 1200);
+    } catch (err) {
+      console.error("Create complaint error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
 
 
     {/* --------------------------------------------- */}
@@ -559,5 +483,6 @@ return ( <div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8"> <
   </div>
 </div>
 
-);
+  );
 }
+

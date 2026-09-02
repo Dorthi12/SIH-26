@@ -11,8 +11,9 @@ import {
     RefreshCw,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000";
-const ENDPOINT = "/complaints/me";
+// const API_URL = "http://localhost:5000";
+// const ENDPOINT = "/complaints/me";
+import { apiRequest } from "../utils/api";
 
 interface Complaint {
     id: string;
@@ -153,81 +154,34 @@ export default function MyComplaints() {
     // FETCH MY COMPLAINTS
     // --------------------------------------------------
 
-    const fetchMyComplaints = async () => {
-        setLoading(true);
-        setError("");
+  // --------------------------------------------------
+  // FETCH MY COMPLAINTS
+  // --------------------------------------------------
+  const fetchMyComplaints = async () => {
+    setLoading(true);
+    setError("");
 
+    try {
+      const params = new URLSearchParams();
+      params.append("page", String(page));
+      params.append("limit", String(limit));
+      if (status) params.append("status", status);
+      if (category) params.append("category", category);
 
-        try {
-            const token =
-                localStorage.getItem("agrisense_token");
+      const data = await apiRequest<{
+        complaints: Complaint[];
+        pagination: Pagination;
+      }>(`/complaints/me?${params.toString()}`);
 
-            if (!token) {
-                navigate("/login");
-                return;
-            }
-
-            const params = new URLSearchParams();
-
-            params.append("page", String(page));
-            params.append("limit", String(limit));
-
-            if (status) {
-                params.append("status", status);
-            }
-
-            if (category) {
-                params.append("category", category);
-            }
-
-            const response = await fetch(
-                `${API_URL}${ENDPOINT}?${params.toString()}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    credentials: "include",
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.status === 401) {
-                localStorage.removeItem("agrisense_token");
-                navigate("/login");
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    "Failed to fetch your complaints."
-                );
-            }
-
-            setComplaints(data.complaints || []);
-            setPagination(data.pagination || null);
-        } catch (err) {
-            console.error(
-                "Fetch my complaints error:",
-                err
-            );
-
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError(
-                    "Unable to load your complaints. Please try again."
-                );
-            }
-        } finally {
-            setLoading(false);
-        }
-
-
-    };
+      setComplaints(data.complaints || []);
+      setPagination(data.pagination || null);
+    } catch (err) {
+      console.error("Fetch my complaints error:", err);
+      setError(err instanceof Error ? err.message : "Unable to load your complaints. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
     useEffect(() => {
         fetchMyComplaints();

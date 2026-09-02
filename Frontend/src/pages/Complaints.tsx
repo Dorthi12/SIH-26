@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
     ArrowLeft,
     ArrowRight,
@@ -15,35 +16,37 @@ interface ComplaintOption {
     buttonText: string;
 }
 
-const complaintOptions: ComplaintOption[] = [
-    {
-        title: "Create Complaint",
-        description:
-            "Report a new issue or complaint and provide all the necessary details.",
-        icon: FilePlus2,
-        path: "/createcomplaints",
-        buttonText: "Create Complaint",
-    },
-    {
-        title: "See All Complaints",
-        description:
-            "View complaints submitted across the platform and track their status.",
-        icon: Files,
-        path: "/viewcomplaints",
-        buttonText: "View All Complaints",
-    },
-    {
-        title: "My Complaints",
-        description:
-            "View and track the complaints that you have submitted.",
-        icon: FileText,
-        path: "/mycomplaints",
-        buttonText: "View My Complaints",
-    },
-];
 
 export default function ComplaintsDashboard() {
     const navigate = useNavigate();
+    const {user} = useAuth();
+    const isUser = user?.role=="USER";
+    const complaintOptions: ComplaintOption[] = [
+        {
+            title: "Create Complaint",
+            description:
+                "Report a new issue or complaint and provide all the necessary details.",
+            icon: FilePlus2,
+            path: "/createcomplaints",
+            buttonText: "Create Complaint",
+        },
+        {
+            title: "See All Complaints",
+            description:
+                "View complaints submitted across the platform and track their status.",
+            icon: Files,
+            path:isUser?"/mycomplaints":"/viewcomplaints",
+            buttonText: "View All Complaints",
+        },
+        {
+            title: "My Complaints",
+            description:
+                "View and track the complaints that you have submitted.",
+            icon: FileText,
+            path: "/mycomplaints",
+            buttonText: "View My Complaints",
+        },
+    ];
 
     return (<div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8"> <div className="mx-auto max-w-6xl">
 

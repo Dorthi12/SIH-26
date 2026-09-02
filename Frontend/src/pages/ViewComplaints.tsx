@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://localhost:5000";
+// const API_URL = "http://localhost:5000";
+import { apiRequest } from "../utils/api";
 
 interface ComplaintUser {
     id: string;
@@ -214,254 +215,89 @@ export default function Complaints() {
     // FETCH COMPLAINTS
     // --------------------------------------------------
 
-    const fetchComplaints = async () => {
-        setLoading(true);
-        setError("");
-
-        try {
-            const token =
-                localStorage.getItem("agrisense_token");
-
-            if (!token) {
-                navigate("/login");
-                return;
-            }
-
-            const params = new URLSearchParams();
-
-            params.append("page", String(page));
-            params.append("limit", String(limit));
-
-            if (status) {
-                params.append("status", status);
-            }
-
-            if (category) {
-                params.append("category", category);
-            }
-
-            const response = await fetch(
-                `${API_URL}/complaints?${params.toString()}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    credentials: "include",
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.status === 401) {
-                localStorage.removeItem("agrisense_token");
-                navigate("/login");
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    "Failed to fetch complaints."
-                );
-            }
-
-            setComplaints(data.complaints || []);
-            setPagination(data.pagination || null);
-        } catch (err) {
-            console.error(
-                "Fetch complaints error:",
-                err
-            );
-
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError(
-                    "Unable to load complaints. Please try again."
-                );
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // --------------------------------------------------
-    // UPDATE COMPLAINT STATUS
-    // --------------------------------------------------
-
-    const handleComplaintStatusChange = async (
-        complaintId: string,
-        newStatus: string
-    ) => {
-        const token =
-            localStorage.getItem("agrisense_token");
-
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
-        try {
-            setUpdatingComplaintId(complaintId);
-            setError("");
-
-            const response = await fetch(
-                `${API_URL}/complaints/${complaintId}/status`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        status: newStatus,
-                    }),
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.status === 401) {
-                localStorage.removeItem("agrisense_token");
-                navigate("/login");
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    "Failed to update complaint status."
-                );
-            }
-
-            setComplaints((prev) =>
-                prev.map((complaint) =>
-                    complaint.id === complaintId
-                        ? {
-                            ...complaint,
-                            status: newStatus,
-                        }
-                        : complaint
-                )
-            );
-        } catch (err) {
-            console.error(
-                "Update complaint status error:",
-                err
-            );
-
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError(
-                    "Failed to update complaint status."
-                );
-            }
-        } finally {
-            setUpdatingComplaintId(null);
-        }
-    };
-
-    // --------------------------------------------------
-    // DELETE COMPLAINT
-    // --------------------------------------------------
-
-    const handleDeleteComplaint = async (
-        complaintId: string
-    ) => {
-        const token =
-            localStorage.getItem("agrisense_token");
-
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
-        const confirmed = window.confirm(
-            "Are you sure you want to delete this complaint?"
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            setDeletingComplaintId(complaintId);
-            setError("");
-
-            const response = await fetch(
-                `${API_URL}/complaints/${complaintId}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    credentials: "include",
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.status === 401) {
-                localStorage.removeItem("agrisense_token");
-                navigate("/login");
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                    data.error ||
-                    "Failed to delete complaint."
-                );
-            }
-
-            // Remove complaint from current page
-            setComplaints((prev) =>
-                prev.filter(
-                    (complaint) =>
-                        complaint.id !== complaintId
-                )
-            );
-
-            // Update pagination count
-            setPagination((prev) => {
-                if (!prev) return prev;
-
-                const newTotal = Math.max(
-                    0,
-                    prev.total - 1
-                );
-
-                return {
-                    ...prev,
-                    total: newTotal,
-                    totalPages: Math.ceil(
-                        newTotal / prev.limit
-                    ),
-                };
-            });
-        } catch (err) {
-            console.error(
-                "Delete complaint error:",
-                err
-            );
-
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError(
-                    "Failed to delete complaint. Please try again."
-                );
-            }
-        } finally {
-            setDeletingComplaintId(null);
-        }
-    };
+   const fetchComplaints = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const params = new URLSearchParams();
+      params.append("page", String(page));
+      params.append("limit", String(limit));
+      if (status) params.append("status", status);
+      if (category) params.append("category", category);
+      const data = await apiRequest<{
+        complaints: Complaint[];
+        pagination: Pagination;
+      }>(`/complaints?${params.toString()}`);
+      setComplaints(data.complaints || []);
+      setPagination(data.pagination || null);
+    } catch (err) {
+      console.error("Fetch complaints error:", err);
+      setError(err instanceof Error ? err.message : "Unable to load complaints. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  // --------------------------------------------------
+  // UPDATE COMPLAINT STATUS
+  // --------------------------------------------------
+  const handleComplaintStatusChange = async (
+    complaintId: string,
+    newStatus: string
+  ) => {
+    try {
+      setUpdatingComplaintId(complaintId);
+      setError("");
+      await apiRequest(`/complaints/${complaintId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setComplaints((prev) =>
+        prev.map((complaint) =>
+          complaint.id === complaintId
+            ? { ...complaint, status: newStatus }
+            : complaint
+        )
+      );
+    } catch (err) {
+      console.error("Update complaint status error:", err);
+      setError(err instanceof Error ? err.message : "Failed to update complaint status.");
+    } finally {
+      setUpdatingComplaintId(null);
+    }
+  };
+  // --------------------------------------------------
+  // DELETE COMPLAINT
+  // --------------------------------------------------
+  const handleDeleteComplaint = async (complaintId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this complaint?"
+    );
+    if (!confirmed) return;
+    try {
+      setDeletingComplaintId(complaintId);
+      setError("");
+      await apiRequest(`/complaints/${complaintId}`, {
+        method: "DELETE",
+      });
+      setComplaints((prev) =>
+        prev.filter((complaint) => complaint.id !== complaintId)
+      );
+      setPagination((prev) => {
+        if (!prev) return prev;
+        const newTotal = Math.max(0, prev.total - 1);
+        return {
+          ...prev,
+          total: newTotal,
+          totalPages: Math.ceil(newTotal / prev.limit),
+        };
+      });
+    } catch (err) {
+      console.error("Delete complaint error:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete complaint. Please try again.");
+    } finally {
+      setDeletingComplaintId(null);
+    }
+  };
 
     // --------------------------------------------------
     // FETCH WHEN FILTER/PAGE CHANGES
