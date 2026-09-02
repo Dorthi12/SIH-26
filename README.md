@@ -1,6 +1,6 @@
 # 🌾 AgriSense — Smart Agriculture Decision-Support System
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisense--ruby.vercel.app-2ea44f?style=for-the-badge&logo=vercel)](https://agrisensefarm.tech)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisensefarm.tech-2ea44f?style=for-the-badge&logo=vercel)](https://agrisensefarm.tech)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Dorthi12%2FSIH--26-181717?style=for-the-badge&logo=github)](https://github.com/Dorthi12/SIH-26)
 [![FastAPI](https://img.shields.io/badge/ML%20Server-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
@@ -13,7 +13,7 @@
 
 ## 🔗 Quick Links
 
-- 🌐 **Live Web Application**: [https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/)
+- 🌐 **Live Web Application**: [https://agrisensefarm.tech](https://agrisensefarm.tech)
 - 🐙 **GitHub Repository**: [https://github.com/Dorthi12/SIH-26](https://github.com/Dorthi12/SIH-26)
 - 🚀 **Unified ML Server Docs**: `http://localhost:8000/docs` (when running locally)
 
@@ -65,7 +65,7 @@
 
 ### 6. 📊 Modern Farmer Dashboard & Web App
 
-- **React 19 + TypeScript + Tailwind CSS**: Responsive, dark/light theme web app hosted on **Vercel** ([https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/)).
+- **React 19 + TypeScript + Tailwind CSS**: Responsive, dark/light theme web app hosted on **Vercel** ([https://agrisensefarm.tech](https://agrisensefarm.tech)).
 - **Interactive Tools**: Scenario simulation, side-by-side crop comparisons, district yield history, weather integration, and disease analysis uploads.
 
 ---
@@ -78,8 +78,8 @@
                                        ▼
                    ┌───────────────────────────────────────┐
                    │    Live Web App (Vercel Deployment)   │
-                   │    React 19 + TypeScript + Tailwind    │
-                   │    https://agrisense-ruby.vercel.app/ │
+                   │    React 19 + TypeScript + Tailwind   │
+                   │    https://agrisensefarm.tech         │
                    └───────────────────┬───────────────────┘
                                        │
                                        ▼
@@ -92,26 +92,26 @@
                     ┌──────────────────┼──────────────────┐
                     │                  │                  │
                     ▼                  ▼                  ▼
-        ┌─────────────────────────┐  ┌────────────────────────────┐
-        │  RAG Advisory Service  │  │  Unified ML Server         │
-        │  Vector Search + LLM   │  │  FastAPI, port 8000       │
-        │  (called via backend   │  │                            │
-        │   proxy / internal API)│  │  ┌──────────────┐    ... │
-        └─────────────────────────┘  │  │ Model 1      │         │
-                                      │  │ Yield Predict│         │
-                                      │  └──────────────┘         │
-                                      │  ┌──────────────┐         │
-                                      │  │ Model 2      │         │
-                                      │  │ Crop Recomm. │         │
-                                      │  └──────────────┘         │
-                                      │  ┌──────────────┐         │
-                                      │  │ Model 3 V3   │         │
-                                      │  │ Zero-Prod Risk│        │
-                                      │  └──────────────┘         │
-                                      │  ┌──────────────┐         │
-                                      │  │ Model 5      │         │
-                                      │  │ Disease Diag.│         │
-                                      │  └──────────────┘         │
+        ┌─────────────────────────┐   ┌────────────────────────────┐
+        │  RAG Advisory Service   │   │  Unified ML Server         │
+        │  Vector Search + LLM    │   │  FastAPI, port 8000        │
+        │  (called via backend    │   │                            │
+        │   proxy / internal API) │   │  ┌──────────────┐          │
+        └─────────────────────────┘   │  │ Model 1      │          │
+                                      │  │ Yield Predict│          │
+                                      │  └──────────────┘          │
+                                      │  ┌──────────────┐          │
+                                      │  │ Model 2      │          │
+                                      │  │ Crop Recomm. │          │
+                                      │  └──────────────┘          │
+                                      │  ┌───────────────┐         │
+                                      │  │ Model 3 V3    │         │
+                                      │  │ Zero-Prod Risk│         │
+                                      │  └───────────────┘         │
+                                      │  ┌──────────────┐          │
+                                      │  │ Model 5      │          │
+                                      │  │ Disease Diag.│          │
+                                      │  └──────────────┘          │
                                       └────────────────────────────┘
 ```
 
@@ -212,7 +212,7 @@ Interactive API documentation will be available at: **`http://localhost:8000/doc
 
 ### 2. Frontend Development & Deployment (`Frontend/`)
 
-The web client is deployed live on Vercel at [https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/). To run locally:
+The web client is deployed live on Vercel at [https://agrisensefarm.tech](https://agrisensefarm.tech). To run locally:
 
 ```bash
 # Navigate to Frontend directory
@@ -318,7 +318,7 @@ The unified server exposes comprehensive endpoints for all ML models under port 
 ## 🛠️ Technology Stack
 
 - **Web Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Recharts
-- **Deployment Platform**: Vercel ([agrisense-ruby.vercel.app](https://agrisense-ruby.vercel.app/))
+- **Deployment Platform**: Vercel ([https://agrisensefarm.tech](https://agrisensefarm.tech))
 - **ML Services**: FastAPI, PyTorch, Torchvision, CatBoost, Scikit-Learn (1.6.1), Pandas, NumPy, Pillow, Joblib
 - **Backend API Gateway**: Node.js, Express, Prisma ORM, PostgreSQL / SQLite
 - **AI & RAG Engine**: Python, SentenceTransformers, Vector Embeddings, LangChain
@@ -327,6 +327,6 @@ The unified server exposes comprehensive endpoints for all ML models under port 
 
 ## 🤝 Project Links & Credits
 
-- **Live Deployment**: [https://agrisense-ruby.vercel.app/](https://agrisense-ruby.vercel.app/)
+- **Live Deployment**: [https://agrisensefarm.tech](https://agrisensefarm.tech)
 - **Repository**: [https://github.com/Dorthi12/SIH-26](https://github.com/Dorthi12/SIH-26)
-- **Hackathon**: Developed for **Smart India Hackathon (SIH 2026)** by Team **Netravaah / AgriSense**.
+- **Hackathon**: Developed for **Smart India Hackathon (SIH 2026)** by Team **Vortex**.
