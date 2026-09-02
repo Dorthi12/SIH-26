@@ -20,6 +20,8 @@ import diseaseRoutes from "./modules/disease-detection/disease.routes.js";
 import zeroProdRoutes from "./modules/zero-production-risk/zeroProduction.routes.js";
 
 
+import { getWeatherService } from "./services/weather.service.js";
+
 const app = express();
 
 app.set('trust proxy',1)
@@ -70,6 +72,25 @@ app.get("/health", (req, res) => {
     success: true,
     message: "Server is running",
   });
+});
+
+// Open Weather API endpoint (unauthenticated)
+app.get("/weather", async (req, res, next) => {
+  try {
+    const { lat, lon } = req.query;
+    const clientIp =
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket.remoteAddress ||
+      req.ip;
+
+    const weatherData = await getWeatherService({ lat, lon, ip: clientIp });
+    res.status(200).json({
+      success: true,
+      data: weatherData,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.use("/auth", authRoutes);
