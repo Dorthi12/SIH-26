@@ -26,6 +26,7 @@ label: "Crop Storage",
 value: "MARKET_MONOPOLY",
 label: "Market Monopoly",
 },
+
 {
 value: "ORGANISED_CRIME",
 label: "Organised Crime",
