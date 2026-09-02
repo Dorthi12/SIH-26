@@ -30,7 +30,7 @@ export const generateUploadUrls = async (req, res, next) => {
         });
       }
       const extension = path.extname(file.fileName);
-      const key = `diseases/posts/${crypto.randomUUID()}${extension}`;
+      const key = `posts/${crypto.randomUUID()}${extension}`;
 
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET,
@@ -83,9 +83,21 @@ export const createPost = async (req, res, next) => {
           mediaKeys && mediaKeys.length > 0
             ? {
                 create: mediaKeys.map((key) => {
-                  const fullUrl = key.startsWith("http://") || key.startsWith("https://")
-                    ? key
-                    : `${process.env.AWS_S3_BASE_URL_DISEASES}${key.startsWith("diseases/") ? key.substring(9) : key}`;
+                  let fullUrl = key;
+                  if (!key.startsWith("http://") && !key.startsWith("https://")) {
+                    if (process.env.AWS_S3_BASE_URL_POSTS) {
+                      const cleanKey = key.startsWith("posts/")
+                        ? key.substring(6)
+                        : key.startsWith("diseases/")
+                        ? key.substring(9)
+                        : key;
+                      const base = process.env.AWS_S3_BASE_URL_POSTS.replace(/\/$/, "");
+                      fullUrl = `${base}/${cleanKey}`;
+                    } else {
+                      const bucketBase = "https://netravaah-bucket.s3.ap-south-1.amazonaws.com";
+                      fullUrl = `${bucketBase.replace(/\/$/, "")}/${key.replace(/^\//, "")}`;
+                    }
+                  }
                   return {
                     imageUrl: fullUrl,
                     publicId: key,

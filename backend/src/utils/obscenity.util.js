@@ -9,22 +9,30 @@ import s3Client from "../config/s3.js";
 const rekognition = new RekognitionClient({ region: process.env.AWS_REGION });
 
 export const checkImageModeration = async (s3Key) => {
-  const { ModerationLabels } = await rekognition.send(
-    new DetectModerationLabelsCommand({
-      Image: {
-        S3Object: {
-          Bucket: process.env.AWS_S3_BUCKET,
-          Name: s3Key,
+  try {
+    const { ModerationLabels } = await rekognition.send(
+      new DetectModerationLabelsCommand({
+        Image: {
+          S3Object: {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Name: s3Key,
+          },
         },
-      },
-      MinConfidence: 75,
-    }),
-  );
+        MinConfidence: 75,
+      }),
+    );
 
-  return {
-    isFlagged: ModerationLabels.length > 0,
-    labels: ModerationLabels.map((l) => l.Name),
-  };
+    return {
+      isFlagged: ModerationLabels ? ModerationLabels.length > 0 : false,
+      labels: ModerationLabels ? ModerationLabels.map((l) => l.Name) : [],
+    };
+  } catch (error) {
+    console.warn(`[ImageModeration] S3 key moderation check skipped for ${s3Key}:`, error.message);
+    return {
+      isFlagged: false,
+      labels: [],
+    };
+  }
 };
 
 export const checkMultipleImages = async (s3Keys) => {
