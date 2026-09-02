@@ -45,7 +45,7 @@
 - **High Predictive Precision**: Achieves a temporal test **R² score of 0.9019**.
 - **Area-Based Production Estimation**: Translates yield forecasts into estimated total crop production based on farm size (acres/hectares).
 
-### 3. ⚠️ Zero-Production Risk Analyzer (Model 3 V3)
+### 3. ⚠️ Zero-Production Risk Analyzer 
 
 - **Failure Risk Assessment**: Predicts whether a specific crop/district/season combination faces a severe risk of complete crop loss.
 - **Calibrated Probabilities**: Employs `CatBoostClassifier` paired with `IsotonicRegression` calibration (**ROC-AUC = 0.9438**).
