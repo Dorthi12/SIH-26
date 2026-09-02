@@ -9,6 +9,7 @@ export interface CurrentWeather {
   feels_like_c: number;
   humidity_percent: number;
   rainfall_mm: number;
+  rain_chance?: number;
   wind_kmh: number;
   condition: string;
   condition_icon: "sun" | "partly" | "cloud" | "rain" | "storm";
@@ -19,6 +20,7 @@ export interface ForecastDay {
   high_c: number;
   low_c: number;
   rainfall_mm: number;
+  rain_chance?: number;
   condition: string;
   condition_icon: "sun" | "partly" | "cloud" | "rain" | "storm";
 }
