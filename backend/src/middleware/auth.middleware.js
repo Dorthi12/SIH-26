@@ -22,6 +22,15 @@ export const authMiddleware = (req, res, next) => {
 
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      error.statusCode = 401;
+      error.message = "jwt expired";
+    } else if (error.name === "JsonWebTokenError") {
+      error.statusCode = 401;
+      error.message = "invalid token";
+    } else if (!error.statusCode) {
+      error.statusCode = 401;
+    }
     next(error);
   }
 };
