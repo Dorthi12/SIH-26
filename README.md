@@ -1,4 +1,4 @@
-# 🌾 AgriSense (Netravaah) — Smart Agriculture Decision-Support System
+# 🌾 AgriSense — Smart Agriculture Decision-Support System
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-agrisense--ruby.vercel.app-2ea44f?style=for-the-badge&logo=vercel)](https://agrisense-ruby.vercel.app/)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Dorthi12%2FSIH--26-181717?style=for-the-badge&logo=github)](https://github.com/Dorthi12/SIH-26)
