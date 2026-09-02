@@ -33,7 +33,7 @@
 
 ## ✨ Core Features & Intelligence Modules
 
-### 1. 🌾 District Crop Recommendation Engine (Model 2)
+### 1. 🌾 District Crop Recommendation Engine
 
 - **District-Aware Multi-Criteria Ranking**: Analyzes over 32,400 dataset records across Indian districts to determine optimal crops.
 - **Weighted Suitability Scoring**: Evaluates historical yield potential (50%), yield stability/variance over time (30%), and regional cultivation experience (20%).
