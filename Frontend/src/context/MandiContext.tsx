@@ -14,6 +14,7 @@ export type MandiTab =
   | "create-listing"
   | "my-offers"
   | "price-intelligence"
+  | "sell-smarter"
   | "verification"
   | "profile"
   | "buyer-profile"

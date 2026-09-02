@@ -29,6 +29,7 @@ import { CreateBuyerProfileWizard } from "../components/mandi/CreateBuyerProfile
 import { PaymentProtectionView } from "../components/mandi/PaymentProtectionView";
 import { LogisticsMatchingView } from "../components/mandi/LogisticsMatchingView";
 import { AggregationDashboardView } from "../components/mandi/AggregationDashboardView";
+import { SellSmarterView } from "../components/mandi/SellSmarterView";
 
 import { mandiService } from "../services/mandiService";
 import { buyerService } from "../services/buyerService";
@@ -239,6 +240,7 @@ function MandiContent() {
             )
           );
         }}
+        showRoleLanding={showRoleLanding}
       />
 
       {/* Notification Toast */}
@@ -550,6 +552,36 @@ function MandiContent() {
             listings={allListingsOnSale}
             initialSelectedListingId={selectedCropForIntelligenceId}
             onSelectListing={(listing) => setSelectedCropForIntelligenceId(listing.id)}
+          />
+        )}
+
+        {/* NEW TAB: SELL SMARTER - MARKET COMPARISON & AI ADVISOR */}
+        {activeTab === "sell-smarter" && (
+          <SellSmarterView
+            onViewCropReport={(cropName) => {
+              const matchedListing = allListingsOnSale.find((l) =>
+                l.cropName.toLowerCase().includes(cropName.toLowerCase())
+              );
+              if (matchedListing) {
+                setActiveListingForReport(matchedListing);
+              } else {
+                showNotification(`Opening crop report for ${cropName}`);
+              }
+            }}
+            onOpenBuyerProfile={(buyerId) => {
+              const buyer = MOCK_BUYER_PROFILES.find((b) => b.id === buyerId) || selectedBuyer;
+              setSelectedBuyer(buyer);
+              setActiveTab("buyer-profile");
+            }}
+            onContactBuyer={() => {
+              setActiveTab("chat-workspace");
+            }}
+            onNavigateTab={(tab) => {
+              setActiveTab(tab as MandiTab);
+            }}
+            onShowNotification={(msg) => {
+              showNotification(msg);
+            }}
           />
         )}
 

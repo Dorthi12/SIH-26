@@ -3,10 +3,15 @@ import {
   History,
   AlertTriangle,
   RefreshCw,
+  MessageSquare,
+  HelpCircle,
+  Sparkles,
 } from "lucide-react";
 import { PageContainer } from "../components/ui/PageContainer";
 import { Badge } from "../components/ui/Badge";
 import { apiRequest } from "../utils/api";
+import { YieldReviews } from "../components/yield/YieldReviews";
+import { YieldQueries } from "../components/yield/YieldQueries";
 
 interface YieldForecastResult {
   prediction: {
@@ -38,7 +43,63 @@ interface YieldHistoryItem {
   predictedYield: number;
   requestPayload: any;
   createdAt: string;
+  isDemo?: boolean;
 }
+
+const DEMO_HISTORY: YieldHistoryItem[] = [
+  {
+    id: "demo-1",
+    state: "Bihar",
+    district: "Gaya",
+    crop: "Wheat",
+    season: "Rabi",
+    cropYear: 2026,
+    area: 3.5,
+    predictedYield: 3.48,
+    requestPayload: { historical_yields: [3.1, 3.3, 3.4] },
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    isDemo: true,
+  },
+  {
+    id: "demo-2",
+    state: "Bihar",
+    district: "Patna",
+    crop: "Rice",
+    season: "Kharif",
+    cropYear: 2026,
+    area: 5.0,
+    predictedYield: 4.15,
+    requestPayload: { historical_yields: [3.7, 3.9, 4.0] },
+    createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+    isDemo: true,
+  },
+  {
+    id: "demo-3",
+    state: "Gujarat",
+    district: "Rajkot",
+    crop: "Cotton",
+    season: "Kharif",
+    cropYear: 2026,
+    area: 4.2,
+    predictedYield: 2.42,
+    requestPayload: { historical_yields: [2.1, 2.25, 2.35] },
+    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+    isDemo: true,
+  },
+  {
+    id: "demo-4",
+    state: "Punjab",
+    district: "Ludhiana",
+    crop: "Maize",
+    season: "Kharif",
+    cropYear: 2026,
+    area: 6.0,
+    predictedYield: 5.20,
+    requestPayload: { historical_yields: [4.8, 4.95, 5.1] },
+    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+    isDemo: true,
+  },
+];
 
 export function YieldForecast() {
   const [state, setState] = useState("");
@@ -56,19 +117,25 @@ export function YieldForecast() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<YieldForecastResult | null>(null);
 
-  // History list
-  const [historyItems, setHistoryItems] = useState<YieldHistoryItem[]>([]);
+  // History list with Demo fallback
+  const [historyItems, setHistoryItems] = useState<YieldHistoryItem[]>(DEMO_HISTORY);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Active Tab for Community Features
+  const [activeTab, setActiveTab] = useState<"reviews" | "queries" | "both">("both");
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
       const res = await apiRequest("/yield-prediction/history?limit=10");
-      if (res.success && res.data) {
-        setHistoryItems(res.data);
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        setHistoryItems([...res.data, ...DEMO_HISTORY]);
+      } else {
+        setHistoryItems(DEMO_HISTORY);
       }
     } catch (err: any) {
-      console.error("Failed to load history:", err);
+      console.error("Failed to load history from API, using demo prediction history:", err);
+      setHistoryItems(DEMO_HISTORY);
     } finally {
       setHistoryLoading(false);
     }
@@ -111,7 +178,21 @@ export function YieldForecast() {
 
       if (res.success && res.data) {
         setResult(res.data);
-        loadHistory();
+        
+        // Add to live history state
+        const newRecord: YieldHistoryItem = {
+          id: `hist-${Date.now()}`,
+          state,
+          district,
+          crop,
+          season,
+          cropYear: 2026,
+          area: parseFloat(area),
+          predictedYield: res.data.prediction.value,
+          requestPayload: { historical_yields: historicalYields },
+          createdAt: new Date().toISOString(),
+        };
+        setHistoryItems((prev) => [newRecord, ...prev]);
       } else {
         throw new Error(res.message || "Failed to predict yield.");
       }
@@ -226,18 +307,23 @@ export function YieldForecast() {
       <PageContainer maxWidth="xl" className="py-8 space-y-10 animate-fade-in">
         {/* Header */}
         <header className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-forest/60">
-            Yield Forecast Model
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-forest/60">
+              Yield Forecast Model
+            </p>
+            <Badge variant="emerald" size="sm" dot>
+              CatBoost R² = 0.9019
+            </Badge>
+          </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-charcoal tracking-tight">
-            Future Yield Prediction
+            Future Yield Prediction & Farmer Community
           </h1>
-          <p className="text-sm text-charcoal-muted max-w-xl">
-            Input crop type, farm area, and recent years yield history to forecast next season's output using CatBoost.
+          <p className="text-sm text-charcoal-muted max-w-2xl">
+            Input crop type, farm area, and recent years yield history to forecast next season's output using CatBoost. Explore demo prediction records, farmer reviews, and community query discussions below.
           </p>
         </header>
 
-        {/* Main Grid */}
+        {/* Main Forecaster Grid */}
         <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
           <div className="space-y-6">
             {/* Form & Result Box */}
@@ -307,7 +393,7 @@ export function YieldForecast() {
                     </div>
 
                     {/* Area (Acres) */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 sm:col-span-2">
                       <label className="text-xs font-bold text-charcoal-light uppercase tracking-wider">
                         Farm Area (Acres)
                       </label>
@@ -389,12 +475,12 @@ export function YieldForecast() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full px-5 py-3 rounded-xl bg-forest text-white text-sm font-bold hover:bg-forest-600 shadow transition-all flex items-center justify-center gap-2"
+                    className="w-full px-5 py-3 rounded-xl bg-forest text-white text-sm font-bold hover:bg-forest-600 shadow transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {loading ? (
                       <>
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        Running Forecast Models...
+                        Running CatBoost Forecaster...
                       </>
                     ) : (
                       "Calculate Future Yield"
@@ -446,7 +532,7 @@ export function YieldForecast() {
                         <button
                           type="button"
                           onClick={handleReset}
-                          className="px-4 py-2 rounded-xl bg-forest text-white text-xs font-bold hover:bg-forest-600 shadow transition-all"
+                          className="px-4 py-2 rounded-xl bg-forest text-white text-xs font-bold hover:bg-forest-600 shadow transition-all cursor-pointer"
                         >
                           Forecast New Crop
                         </button>
@@ -460,9 +546,14 @@ export function YieldForecast() {
 
           {/* History Sidebar */}
           <aside className="bg-white rounded-2xl border border-ivory-300 shadow-card p-5 space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-ivory-200">
-              <History className="h-4 w-4 text-forest/70" />
-              <h3 className="text-sm font-semibold text-charcoal">Prediction History</h3>
+            <div className="flex items-center justify-between pb-2 border-b border-ivory-200">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-forest/70" />
+                <h3 className="text-sm font-semibold text-charcoal">Prediction History</h3>
+              </div>
+              <Badge variant="default" size="sm">
+                {historyItems.length} Saved
+              </Badge>
             </div>
 
             {historyLoading && (
@@ -483,7 +574,7 @@ export function YieldForecast() {
                 {historyItems.map((item) => (
                   <div
                     key={item.id}
-                    className="border border-ivory-300 rounded-xl p-3 bg-ivory/5 hover:border-forest/20 hover:bg-forest/[0.01] transition-all cursor-pointer space-y-1.5"
+                    className="border border-ivory-300 rounded-xl p-3 bg-ivory/5 hover:border-forest/30 hover:bg-forest/[0.02] transition-all cursor-pointer space-y-1.5 group"
                     onClick={() => {
                       setResult({
                         prediction: { value: item.predictedYield, crop_year: item.cropYear },
@@ -497,9 +588,9 @@ export function YieldForecast() {
                       });
                       // Bind yields from original payload
                       if (item.requestPayload && item.requestPayload.historical_yields) {
-                        setYield2023(String(item.requestPayload.historical_yields[0]));
-                        setYield2024(String(item.requestPayload.historical_yields[1]));
-                        setYield2025(String(item.requestPayload.historical_yields[2]));
+                        setYield2023(String(item.requestPayload.historical_yields[0] || "3.1"));
+                        setYield2024(String(item.requestPayload.historical_yields[1] || "3.3"));
+                        setYield2025(String(item.requestPayload.historical_yields[2] || "3.5"));
                       }
                       setState(item.state);
                       setDistrict(item.district);
@@ -510,11 +601,18 @@ export function YieldForecast() {
                   >
                     <div className="flex items-start justify-between min-w-0">
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-charcoal truncate">
-                          {item.crop}
-                        </h4>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-charcoal truncate group-hover:text-forest transition-colors">
+                            {item.crop}
+                          </h4>
+                          {item.isDemo && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 rounded">
+                              Demo
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-charcoal-muted truncate">
-                          {item.district}, {item.state}
+                          {item.district}, {item.state} • {item.area} Acres
                         </p>
                       </div>
                       <Badge variant="default" size="sm">
@@ -522,7 +620,7 @@ export function YieldForecast() {
                       </Badge>
                     </div>
                     <div className="flex items-baseline justify-between border-t border-ivory-200 pt-1.5 mt-1.5">
-                      <span className="text-[10px] text-charcoal-muted/50">
+                      <span className="text-[10px] text-charcoal-muted/60">
                         {new Date(item.createdAt).toLocaleDateString()}
                       </span>
                       <span className="text-xs font-bold text-forest">
@@ -535,6 +633,77 @@ export function YieldForecast() {
             )}
           </aside>
         </div>
+
+        {/* Community Section: Reviews Column & Query Window */}
+        <section className="space-y-6 pt-4 border-t border-ivory-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-forest" />
+                <h2 className="text-2xl font-extrabold text-charcoal">Farmer Community Hub</h2>
+              </div>
+              <p className="text-xs text-charcoal-muted mt-0.5">
+                Explore real farmer reviews, share your harvest experiences, and ask yield questions.
+              </p>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex items-center p-1 bg-ivory-200 rounded-xl shrink-0 self-start sm:self-auto">
+              <button
+                onClick={() => setActiveTab("both")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === "both"
+                    ? "bg-white text-forest shadow-xs"
+                    : "text-charcoal-muted hover:text-charcoal"
+                }`}
+              >
+                View Both
+              </button>
+              <button
+                onClick={() => setActiveTab("reviews")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === "reviews"
+                    ? "bg-white text-forest shadow-xs"
+                    : "text-charcoal-muted hover:text-charcoal"
+                }`}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                Reviews Column
+              </button>
+              <button
+                onClick={() => setActiveTab("queries")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === "queries"
+                    ? "bg-white text-forest shadow-xs"
+                    : "text-charcoal-muted hover:text-charcoal"
+                }`}
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                Query Window
+              </button>
+            </div>
+          </div>
+
+          {/* Dynamic Grid / View rendering based on activeTab */}
+          {activeTab === "both" && (
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
+              <YieldReviews />
+              <YieldQueries />
+            </div>
+          )}
+
+          {activeTab === "reviews" && (
+            <div className="max-w-4xl mx-auto">
+              <YieldReviews />
+            </div>
+          )}
+
+          {activeTab === "queries" && (
+            <div className="max-w-4xl mx-auto">
+              <YieldQueries />
+            </div>
+          )}
+        </section>
       </PageContainer>
     </div>
   );

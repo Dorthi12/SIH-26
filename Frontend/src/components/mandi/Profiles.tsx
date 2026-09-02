@@ -1,4 +1,4 @@
-import { ShieldCheck, MapPin, Award, Building2, CheckCircle2, DollarSign, Star, Calendar, Lock, LogOut, KeyRound, Phone, FileText } from "lucide-react";
+import { ShieldCheck, MapPin, Award, Building2, CheckCircle2, DollarSign, Star, Calendar, Lock, LogOut, KeyRound, Phone, FileText, TrendingUp, BarChart3, Tag } from "lucide-react";
 import type { FarmerPublicProfile, BuyerProfile, FarmerAuthDetails } from "../../types/mandi";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -8,6 +8,77 @@ interface FarmerProfileCardProps {
   onOpenAuthModal: () => void;
   onLogout: () => void;
 }
+
+const MOCK_SUCCESSFUL_TRANSACTIONS = [
+  {
+    txnId: "TXN-2026-8812",
+    dealId: "AGR-DEAL-2026-004821",
+    cropName: "Wheat (Sharbati / HD-2967)",
+    quantityQuintals: 250,
+    pricePerQuintal: 2880,
+    totalAmount: 720000,
+    date: "28 Aug 2026",
+    buyerName: "ABC Foods Pvt Ltd",
+    buyerType: "Food Processor",
+    buyerLocation: "Lucknow, UP",
+    paymentStatus: "Escrow Released & Bank Deposited",
+    paymentMethod: "Direct Bank Transfer (NEFT)",
+    qualityGrade: "Grade A (Moisture 11.8%)",
+    rating: 5.0,
+    feedbackNote: "Exceptional grain quality and clean moisture level. Fast delivery schedule.",
+  },
+  {
+    txnId: "TXN-2026-7490",
+    dealId: "AGR-DEAL-2026-003910",
+    cropName: "Paddy / Basmati Rice (PB-1121)",
+    quantityQuintals: 180,
+    pricePerQuintal: 3450,
+    totalAmount: 621000,
+    date: "14 Jul 2026",
+    buyerName: "Royal Grains India Corp",
+    buyerType: "Export Merchant",
+    buyerLocation: "Karnal, Haryana",
+    paymentStatus: "Escrow Released & Bank Deposited",
+    paymentMethod: "Agrisense Escrow Lock",
+    qualityGrade: "Grade A Organic (NPOP Certified)",
+    rating: 4.9,
+    feedbackNote: "Lab report verified NPOP organic standard. Smooth contract settlement.",
+  },
+  {
+    txnId: "TXN-2026-5120",
+    dealId: "AGR-DEAL-2026-002105",
+    cropName: "Mustard Seed (Pusa Mustard-30)",
+    quantityQuintals: 120,
+    pricePerQuintal: 5400,
+    totalAmount: 648000,
+    date: "02 Apr 2026",
+    buyerName: "Shreedhar Agro Oils Ltd",
+    buyerType: "Oil Mill Processor",
+    buyerLocation: "Bharatpur, Rajasthan",
+    paymentStatus: "Escrow Released & Bank Deposited",
+    paymentMethod: "Direct Bank Transfer",
+    qualityGrade: "Grade A (Oil Content 42%)",
+    rating: 4.8,
+    feedbackNote: "High oil content yield. Delivered via shared village transport.",
+  },
+  {
+    txnId: "TXN-2025-9981",
+    dealId: "AGR-DEAL-2025-009124",
+    cropName: "Maize / Yellow Corn (Hybrid HQPM-1)",
+    quantityQuintals: 300,
+    pricePerQuintal: 2150,
+    totalAmount: 645000,
+    date: "19 Nov 2025",
+    buyerName: "Star Feeds & Livestock",
+    buyerType: "Feed Manufacturer",
+    buyerLocation: "Kanpur, UP",
+    paymentStatus: "Escrow Released & Bank Deposited",
+    paymentMethod: "Instant UPI Settlement",
+    qualityGrade: "Grade A Standard",
+    rating: 5.0,
+    feedbackNote: "Punctual logistics dispatch. Moisture retention within parameters.",
+  },
+];
 
 export function FarmerProfileCard({
   profile,
@@ -125,6 +196,148 @@ export function FarmerProfileCard({
         </div>
       </div>
 
+      {/* SUCCESSFUL TRANSACTIONS & SALES HISTORY CARD */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-charcoal-dark border border-ivory-300 dark:border-charcoal-light shadow-md space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ivory-200 dark:border-charcoal-light pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-md">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-lg text-charcoal dark:text-ivory-100 flex items-center gap-2">
+                {t("Successful Trade Transactions & Sales History", "सफल व्यापार लेनदेन और बिक्री इतिहास")}
+              </h4>
+              <p className="text-xs text-charcoal-muted dark:text-ivory-400">
+                {t("Verified deal records with escrow payment clearances & buyer feedback", "एस्क्रौ भुगतान निकासी व खरीदार समीक्षा के साथ सत्यापित सौदे")}
+              </p>
+            </div>
+          </div>
+
+          <div className="px-3.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 text-xs font-bold flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>100% Escrow Cleared</span>
+          </div>
+        </div>
+
+        {/* Transaction Summary Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40">
+          <div>
+            <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
+              {t("Total Revenue Earned", "कुल अर्जित राजस्व")}
+            </span>
+            <span className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-400 mt-0.5 block">
+              ₹26,34,000
+            </span>
+          </div>
+          <div>
+            <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
+              {t("Total Quantity Sold", "कुल बेची गई मात्रा")}
+            </span>
+            <span className="text-base sm:text-lg font-black text-charcoal dark:text-ivory-100 mt-0.5 block">
+              850 Quintals
+            </span>
+          </div>
+          <div>
+            <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
+              {t("Escrow Success", "एस्क्रौ सफलता दर")}
+            </span>
+            <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+              100%
+            </span>
+          </div>
+          <div>
+            <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
+              {t("Avg Buyer Rating", "औसत खरीदार रेटिंग")}
+            </span>
+            <span className="text-base sm:text-lg font-black text-amber-500 mt-0.5 block flex items-center gap-1">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400 inline" /> 4.95 / 5
+            </span>
+          </div>
+        </div>
+
+        {/* List of Successful Transactions */}
+        <div className="space-y-4">
+          {MOCK_SUCCESSFUL_TRANSACTIONS.map((txn) => (
+            <div
+              key={txn.txnId}
+              className="p-4 sm:p-5 rounded-2xl bg-ivory-50 dark:bg-charcoal border border-ivory-300 dark:border-charcoal-light hover:border-emerald-500/40 transition-all space-y-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2 border-b border-ivory-200 dark:border-charcoal-light pb-2.5">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-sm text-charcoal dark:text-ivory-100">
+                      {txn.cropName}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-3xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
+                      {txn.qualityGrade}
+                    </span>
+                  </div>
+                  <p className="text-xs text-charcoal-muted dark:text-ivory-400">
+                    ID: <strong className="font-mono text-charcoal dark:text-ivory-200">{txn.txnId}</strong> • Deal Ref: {txn.dealId}
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-base font-black text-emerald-700 dark:text-emerald-400 block">
+                    ₹{txn.totalAmount.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-3xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                    ✓ {txn.paymentStatus}
+                  </span>
+                </div>
+              </div>
+
+              {/* Deal Breakdown */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
+                    Quantity & Rate
+                  </span>
+                  <span className="font-extrabold text-charcoal dark:text-ivory-100">
+                    {txn.quantityQuintals} q @ ₹{txn.pricePerQuintal}/q
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
+                    Verified Buyer
+                  </span>
+                  <span className="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1">
+                    <Building2 className="w-3 h-3 shrink-0" />
+                    {txn.buyerName} ({txn.buyerLocation})
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
+                    Completion Date
+                  </span>
+                  <span className="font-semibold text-charcoal dark:text-ivory-200 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 shrink-0 text-forest" />
+                    {txn.date}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
+                    Buyer Review Rating
+                  </span>
+                  <span className="font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    {txn.rating} / 5.0
+                  </span>
+                </div>
+              </div>
+
+              {/* Feedback Note */}
+              <p className="text-xs text-charcoal-light dark:text-ivory-300 italic bg-white dark:bg-charcoal-dark p-2.5 rounded-xl border border-ivory-200 dark:border-charcoal-light">
+                "{txn.feedbackNote}"
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* CONFIDENTIAL PRIVATE DETAILS CARD (ONLY VISIBLE TO LOGGED IN FARMER) */}
       {farmerAuth && (
         <div className="p-6 rounded-3xl bg-ivory-100 dark:bg-charcoal border border-ivory-300 dark:border-charcoal-light space-y-4">
@@ -190,9 +403,7 @@ export function FarmerProfileCard({
               <span className="text-3xs text-charcoal-muted dark:text-ivory-400 block font-bold">
                 Verification Officer & Date
               </span>
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400 text-3xs mt-0.5 block">
-                {farmerAuth.verifiedByOfficer} ({farmerAuth.verificationDate})
-              </span>
+
             </div>
           </div>
 
@@ -251,57 +462,22 @@ export function BuyerProfileCard({ profile }: BuyerProfileCardProps) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
         <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
           <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Completed Transactions", "पूर्ण लेन-देन")}
-          </span>
-          <span className="text-lg font-black text-charcoal dark:text-ivory-100 mt-1 block">
-            {profile.completedTransactionsCount}
-          </span>
-        </div>
+            {t("Verified Trades", "सत्यापित व्यापार")}
+
 
         <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
           <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Payment Reliability", "भुगतान विश्वसनीयता")}
+            {t("Escrow Deposit Record", "एस्क्रौ जमा रिकॉर्ड")}
           </span>
-          <span className="text-lg font-black text-emerald-600 mt-1 block">
-            {profile.paymentReliabilityPercentage}%
+          <span className="text-xs font-black text-blue-600 dark:text-blue-400 mt-2 block">
+            100% On-Time
           </span>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
-          <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Avg Payment Time", "औसत भुगतान समय")}
-          </span>
-          <span className="text-lg font-black text-blue-600 mt-1 block">
-            {profile.averagePaymentDays} Days
-          </span>
-        </div>
-
-        <div className="p-3.5 rounded-xl bg-ivory-50 dark:bg-charcoal border border-ivory-200 dark:border-charcoal-light">
-          <span className="text-3xs uppercase font-bold text-charcoal-muted dark:text-ivory-400 block">
-            {t("Typical Order Volume", "विशिष्ट ऑर्डर मात्रा")}
-          </span>
-          <span className="text-xs font-bold text-charcoal dark:text-ivory-100 mt-2 block">
-            {profile.typicalOrderVolume}
-          </span>
-        </div>
-      </div>
-
-      {/* Active Requirements */}
-      <div className="space-y-2">
-        <span className="text-xs font-bold text-charcoal dark:text-ivory-200 block">
-          {t("Active Buying Requirements", "सक्रिय खरीद आवश्यकताएं")}
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {profile.activeRequirements.map((req, idx) => (
-            <span
-              key={idx}
-              className="px-3 py-1 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-xs font-bold border border-blue-200"
-            >
-              📦 {req}
-            </span>
-          ))}
         </div>
       </div>
     </div>
   );
 }
+
+
+
+

@@ -14,6 +14,7 @@ import {
   Package,
   Lock,
   FileCheck,
+  TrendingUp,
 } from "lucide-react";
 import type { UserRole, FarmerAuthDetails, BuyerAuthDetails } from "../../types/mandi";
 import type { MandiTab } from "../../context/MandiContext";
@@ -21,7 +22,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 interface MandiSubNavProps {
   userRole: UserRole;
-  onRoleChange: (role: UserRole) => void;
+  onRoleChange?: (role: UserRole) => void;
   activeTab: MandiTab;
   onTabChange: (tab: MandiTab) => void;
   farmerAuth: FarmerAuthDetails | null;
@@ -31,11 +32,11 @@ interface MandiSubNavProps {
   onOpenBuyerAuth: () => void;
   onLogoutBuyer: () => void;
   onOpenLanding?: () => void;
+  showRoleLanding?: boolean;
 }
 
 export function MandiSubNav({
   userRole,
-  onRoleChange,
   activeTab,
   onTabChange,
   farmerAuth,
@@ -45,12 +46,14 @@ export function MandiSubNav({
   onOpenBuyerAuth,
   onLogoutBuyer,
   onOpenLanding,
+  showRoleLanding,
 }: MandiSubNavProps) {
   const { t } = useLanguage();
 
   const allSellerTabs: { tab: MandiTab; label: string; icon: React.ElementType; isProtected?: boolean }[] = [
     { tab: "marketplace", label: t("Marketplace", "मंडी बाज़ार"), icon: ShoppingBag },
     { tab: "price-intelligence", label: t("Price Intelligence", "मूल्य बुद्धिमत्ता"), icon: Scale },
+    { tab: "sell-smarter", label: t("Sell Smarter", "स्मार्ट बिक्री सलाह"), icon: TrendingUp },
     { tab: "buyer-profile", label: t("Buyer Profiles", "खरीदार प्रोफ़ाइल"), icon: Building2 },
     { tab: "chat-workspace", label: t("Negotiation Chat", "व्यापारिक चैट"), icon: MessageSquare, isProtected: true },
     { tab: "aggregation", label: t("Produce Aggregation", "समूह बिक्री"), icon: Package, isProtected: true },
@@ -65,6 +68,7 @@ export function MandiSubNav({
   const allBuyerTabs: { tab: MandiTab; label: string; icon: React.ElementType; isProtected?: boolean }[] = [
     { tab: "marketplace", label: t("Marketplace", "मंडी बाज़ार"), icon: ShoppingBag },
     { tab: "price-intelligence", label: t("Price Intelligence", "मूल्य बुद्धिमत्ता"), icon: Scale },
+    { tab: "sell-smarter", label: t("Sell Smarter", "स्मार्ट बिक्री सलाह"), icon: TrendingUp },
     { tab: "buyer-profile", label: t("My Buyer Profile", "मेरी खरीदार प्रोफ़ाइल"), icon: Building2, isProtected: true },
     { tab: "buyer-verification", label: t("Buyer Verification", "खरीदार सत्यापन"), icon: ShieldCheck, isProtected: true },
     { tab: "chat-workspace", label: t("Negotiation Chat", "व्यापारिक चैट"), icon: MessageSquare, isProtected: true },
@@ -85,9 +89,9 @@ export function MandiSubNav({
   return (
     <div className="bg-white dark:bg-charcoal-dark border-b border-ivory-300 dark:border-charcoal-light sticky top-16 z-30 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 space-y-2">
-        {/* Top Header Row: Brand, Role Switcher & Auth Action */}
+        {/* Top Header Row: Brand & Auth Action */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Brand & Role Toggle */}
+          {/* Brand */}
           <div className="flex items-center gap-4">
             <button
               onClick={onOpenLanding}
@@ -99,31 +103,6 @@ export function MandiSubNav({
                 Agrisense <span className="text-forest dark:text-emerald-400">Mandi</span>
               </span>
             </button>
-
-            {/* Role Switcher Pill */}
-            <div className="flex items-center p-1 rounded-xl bg-ivory-100 dark:bg-charcoal border border-ivory-300 dark:border-charcoal-light">
-              <button
-                onClick={() => onRoleChange("SELLER")}
-                className={`px-3 py-1 rounded-lg text-2xs font-extrabold transition-all ${
-                  userRole === "SELLER"
-                    ? "bg-forest text-white shadow-sm"
-                    : "text-charcoal-muted dark:text-ivory-400 hover:text-charcoal"
-                }`}
-              >
-                👩‍🌾 {t("Seller / Farmer", "किसान / विक्रेता")}
-              </button>
-
-              <button
-                onClick={() => onRoleChange("BUYER")}
-                className={`px-3 py-1 rounded-lg text-2xs font-extrabold transition-all ${
-                  userRole === "BUYER"
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-charcoal-muted dark:text-ivory-400 hover:text-charcoal"
-                }`}
-              >
-                🏢 {t("Buyer", "खरीदार")}
-              </button>
-            </div>
           </div>
 
           {/* Auth Button or User Account Badge */}
@@ -182,32 +161,34 @@ export function MandiSubNav({
           </div>
         </div>
 
-        {/* Bottom Row: Full-width Navigation Tabs Strip */}
-        <div className="pt-1 border-t border-ivory-200 dark:border-charcoal-light/60">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-            {currentTabs.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.tab;
+        {/* Bottom Row: Full-width Navigation Tabs Strip (Hidden on Landing Page) */}
+        {!showRoleLanding && (
+          <div className="pt-1 border-t border-ivory-200 dark:border-charcoal-light/60">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+              {currentTabs.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.tab;
 
-              return (
-                <button
-                  key={item.tab}
-                  onClick={() => onTabChange(item.tab)}
-                  className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
-                    isActive
-                      ? userRole === "SELLER"
-                        ? "bg-forest text-white shadow-sm"
-                        : "bg-blue-600 text-white shadow-sm"
-                      : "text-charcoal-muted dark:text-ivory-400 hover:text-charcoal hover:bg-ivory-100 dark:hover:bg-charcoal"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={item.tab}
+                    onClick={() => onTabChange(item.tab)}
+                    className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+                      isActive
+                        ? userRole === "SELLER"
+                          ? "bg-forest text-white shadow-sm"
+                          : "bg-blue-600 text-white shadow-sm"
+                        : "text-charcoal-muted dark:text-ivory-400 hover:text-charcoal hover:bg-ivory-100 dark:hover:bg-charcoal"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { cn } from "../../utils/cn";
 
-type BadgeVariant = "default" | "success" | "warning" | "danger" | "neutral" | "amber";
+type BadgeVariant = "default" | "success" | "warning" | "danger" | "neutral" | "amber" | "emerald";
 type BadgeSize = "sm" | "md";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -16,6 +16,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   danger:  "bg-red-50 text-red-700 border-red-200",
   neutral: "bg-charcoal/6 text-charcoal-light border-charcoal/10",
   amber:   "bg-amber/10 text-amber-700 border-amber/25",
+  emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
@@ -30,6 +31,7 @@ const dotColors: Record<BadgeVariant, string> = {
   danger:  "bg-red-500",
   neutral: "bg-charcoal-muted",
   amber:   "bg-amber-500",
+  emerald: "bg-emerald-500",
 };
 
 export function Badge({
