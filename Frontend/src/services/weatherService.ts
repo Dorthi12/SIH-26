@@ -11,6 +11,7 @@
  * and all component signatures remain unchanged.
  */
 
+import { apiRequest } from "../utils/api";
 import {
   MOCK_WEATHER_DATA,
   TEMP_SERIES,
@@ -26,7 +27,10 @@ export interface ChartPoint {
 }
 
 export interface WeatherServiceResult {
-  data:           WeatherDataset;
+  data:           WeatherDataset & {
+                    isPrecise?: boolean;
+                    alert?: { title: string; description: string };
+                  };
   tempSeries:     ChartPoint[];
   rainfallSeries: ChartPoint[];
   fetchedAt:      string;   // ISO timestamp — show "as of" to user
@@ -37,21 +41,47 @@ export type WeatherLoadState = "idle" | "loading" | "ready" | "error";
 // ── Service implementation ─────────────────────────────────────────────────
 
 /**
- * Retrieve weather data for the current farm context.
+ * Retrieve weather data from the open backend endpoint.
  *
- * @param _location  Farm location — currently unused (mock data is fixed).
- *                   When backend is connected, this will become a query param.
- *
- * TODO: Replace the mock return with:
- *   const res = await fetch(`/api/v1/weather?location=${encodeURIComponent(_location)}`);
- *   const json = await res.json();
- *   return mapApiResponseToWeatherServiceResult(json);
+ * @param lat Optional precise latitude
+ * @param lon Optional precise longitude
  */
 export async function getWeatherData(
-  _location?: string
+  lat?: number,
+  lon?: number
 ): Promise<WeatherServiceResult> {
-  // Simulated minimal async boundary — preserves async contract for future API.
-  // Do NOT add artificial delays; the async boundary itself is the contract.
+  try {
+    const query = (lat !== undefined && lon !== undefined)
+      ? `?lat=${lat}&lon=${lon}`
+      : "";
+    const res = await apiRequest<{ success: boolean; data: any }>(`/weather${query}`);
+
+    if (res && res.success && res.data) {
+      const apiData = res.data;
+      const forecast = apiData.forecast || MOCK_WEATHER_DATA.forecast;
+
+      const tempSeries: ChartPoint[] = forecast.map((d: any) => ({
+        label: d.day,
+        value: d.high_c,
+      }));
+
+      const rainfallSeries: ChartPoint[] = forecast.map((d: any) => ({
+        label: d.day,
+        value: d.rainfall_mm,
+      }));
+
+      return {
+        data: apiData,
+        tempSeries,
+        rainfallSeries,
+        fetchedAt: new Date().toISOString(),
+      };
+    }
+  } catch (error) {
+    console.warn("Failed to fetch live weather from backend endpoint, using fallback data:", error);
+  }
+
+  // Fallback to mock data if backend request fails
   return {
     data:           MOCK_WEATHER_DATA,
     tempSeries:     TEMP_SERIES,

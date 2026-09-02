@@ -3,20 +3,25 @@
  * Replaced @tanstack/react-router with react-router-dom.
  * Asset imports use relative paths.
  */
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
   Cloud,
+  CloudLightning,
   CloudRain,
   CloudSun,
   Droplets,
   Landmark,
+  MapPin,
+  Navigation,
+  RefreshCw,
   Sprout,
   Sun,
   Wind,
 } from "lucide-react";
+import { getWeatherData, type WeatherServiceResult } from "../../services/weatherService";
 import { Reveal, Section, SectionHead } from "./primitives";
 import { CropDetailModal, type CropGuideItem } from "./CropDetailModal";
 import paddyImg    from "../../assets/crop-paddy.jpg";
@@ -637,15 +642,72 @@ export function Schemes() {
 /* ---------------- 4. Weather ---------------- */
 
 export function Weather() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
-  const weatherForecastData = [
-    { day: t("Today", "आज"), icon: <CloudRain className="size-6" />, temp: "28°", rain: "20%" },
-    { day: t("Tomorrow", "कल"), icon: <CloudRain className="size-6" />, temp: "27°", rain: "65%" },
-    { day: t("Wed", "बुध"), icon: <Cloud className="size-6" />, temp: "29°", rain: "30%" },
-    { day: t("Thu", "गुरु"), icon: <CloudSun className="size-6" />, temp: "30°", rain: "10%" },
-    { day: t("Fri", "शुक्र"), icon: <Sun className="size-6" />, temp: "31°", rain: "5%" },
-  ];
+  const [weatherResult, setWeatherResult] = useState<WeatherServiceResult | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isRequestingPrecise, setIsRequestingPrecise] = useState<boolean>(false);
+  const [locationStatus, setLocationStatus] = useState<"ip" | "precise" | "denied">("ip");
+
+  const loadWeather = async (lat?: number, lon?: number) => {
+    setLoading(true);
+    try {
+      const res = await getWeatherData(lat, lon);
+      setWeatherResult(res);
+      if (lat !== undefined && lon !== undefined) {
+        setLocationStatus("precise");
+      }
+    } catch (e) {
+      console.error("Failed to load weather data", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadWeather();
+  }, []);
+
+  const handleEnablePreciseLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsRequestingPrecise(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        loadWeather(latitude, longitude);
+        setIsRequestingPrecise(false);
+      },
+      (error) => {
+        console.warn("Geolocation permission error:", error.message);
+        setLocationStatus("denied");
+        setIsRequestingPrecise(false);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const data = weatherResult?.data;
+
+  const renderIcon = (iconType?: string, className: string = "size-6") => {
+    switch (iconType) {
+      case "sun":
+        return <Sun className={className} />;
+      case "partly":
+        return <CloudSun className={className} />;
+      case "cloud":
+        return <Cloud className={className} />;
+      case "rain":
+        return <CloudRain className={className} />;
+      case "storm":
+        return <CloudLightning className={className} />;
+      default:
+        return <CloudSun className={className} />;
+    }
+  };
 
   return (
     <Section id="weather">
@@ -672,22 +734,77 @@ export function Weather() {
                 height={800}
                 className="size-full object-cover"
               />
+              <div className="absolute top-3 right-3 flex items-center gap-2">
+                <button
+                  onClick={handleEnablePreciseLocation}
+                  disabled={isRequestingPrecise}
+                  className="flex items-center gap-1.5 rounded-full bg-amber-950/80 hover:bg-amber-900 px-3 py-1.5 text-xs font-bold text-amber-200 border border-amber-500/30 backdrop-blur-md transition-all shadow-md active:scale-95 disabled:opacity-50"
+                  title="Prompt browser to use precise GPS location"
+                >
+                  <Navigation className={`size-3.5 ${isRequestingPrecise ? "animate-spin" : ""}`} />
+                  {isRequestingPrecise
+                    ? t("Requesting...", "अनुमति मांगी जा रही है...")
+                    : locationStatus === "precise"
+                    ? t("GPS Location Active", "सटीक स्थान चालू")
+                    : t("Enable Precise Location", "सटीक स्थान सक्षम करें")}
+                </button>
+              </div>
             </div>
             <div className="p-6">
-              <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-                {t("Prayagraj, Uttar Pradesh", "प्रयागराज, उत्तर प्रदेश")}
-              </p>
-              <div className="mt-2 flex items-end justify-between">
-                <p className="text-5xl font-extrabold tracking-tight text-landing-fg">28°C</p>
-                <p className="pb-2 text-base font-bold text-landing-fg-muted">
-                  {t("Partly Cloudy", "आंशिक रूप से बादल")}
-                </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                  <MapPin className="size-4 shrink-0" />
+                  <p className="text-sm font-bold truncate">
+                    {data?.location || t("Prayagraj, Uttar Pradesh", "प्रयागराज, उत्तर प्रदेश")}
+                  </p>
+                </div>
+                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[0.65rem] font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300 border border-amber-500/20">
+                  {locationStatus === "precise" || data?.isPrecise
+                    ? t("GPS Location", "सटीक स्थान")
+                    : t("IP Location", "आईपी स्थान")}
+                </span>
               </div>
+
+              {locationStatus === "denied" && (
+                <p className="mt-1 text-2xs text-amber-700 dark:text-amber-400 font-medium">
+                  {t(
+                    "Location permission denied. Showing approximate location.",
+                    "स्थान अनुमति अस्वीकृत। केवल अनुमानित स्थान दिखाया जा रहा है।"
+                  )}
+                </p>
+              )}
+
+              <div className="mt-4 flex items-end justify-between">
+                <p className="text-5xl font-extrabold tracking-tight text-landing-fg">
+                  {loading ? "--°C" : `${data?.current.temperature_c ?? 28}°C`}
+                </p>
+                <div className="flex flex-col items-end">
+                  <span className="text-amber-600 mb-1">
+                    {renderIcon(data?.current.condition_icon, "size-7")}
+                  </span>
+                  <p className="text-base font-bold text-landing-fg-muted">
+                    {data?.current.condition || t("Partly Cloudy", "आंशिक रूप से बादल")}
+                  </p>
+                </div>
+              </div>
+
               <dl className="mt-6 grid grid-cols-3 gap-3">
                 {[
-                  { icon: <Droplets className="size-4" />, k: t("Humidity", "आर्द्रता"), v: "72%" },
-                  { icon: <CloudRain className="size-4" />, k: t("Rain", "बारिश"), v: "20%" },
-                  { icon: <Wind className="size-4" />, k: t("Wind", "हवा"), v: "12 km/h" },
+                  {
+                    icon: <Droplets className="size-4" />,
+                    k: t("Humidity", "आर्द्रता"),
+                    v: `${data?.current.humidity_percent ?? 72}%`,
+                  },
+                  {
+                    icon: <CloudRain className="size-4" />,
+                    k: t("Rain Chance", "बारिश की संभावना"),
+                    v: `${data?.current.rain_chance ?? 20}%`,
+                  },
+                  {
+                    icon: <Wind className="size-4" />,
+                    k: t("Wind", "हवा"),
+                    v: `${data?.current.wind_kmh ?? 12} km/h`,
+                  },
                 ].map((r) => (
                   <div key={r.k} className="rounded-xl bg-amber-500/10 p-3 border border-amber-500/15">
                     <dt className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
@@ -705,14 +822,36 @@ export function Weather() {
         <Reveal delay={120} className="h-full">
           <div className="flex h-full flex-col gap-6">
             <div className="rounded-2xl border border-landing-border bg-landing-card p-6 shadow-landing-soft">
-              <p className="text-sm font-bold text-landing-fg">{t("Next 5 days", "अगले 5 दिन")}</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-landing-fg">{t("Next 5 days", "अगले 5 दिन")}</p>
+                <button
+                  onClick={() => loadWeather()}
+                  disabled={loading}
+                  className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1"
+                >
+                  <RefreshCw className={`size-3 ${loading ? "animate-spin" : ""}`} />
+                  {t("Refresh", "ताज़ा करें")}
+                </button>
+              </div>
               <div className="mt-5 grid grid-cols-5 gap-2 text-center">
-                {weatherForecastData.map((f) => (
+                {(data?.forecast || [
+                  { day: "Today", temp: "28°", rain: "20%", icon: "rain" },
+                  { day: "Tomorrow", temp: "27°", rain: "65%", icon: "rain" },
+                  { day: "Wed", temp: "29°", rain: "30%", icon: "cloud" },
+                  { day: "Thu", temp: "30°", rain: "10%", icon: "partly" },
+                  { day: "Fri", temp: "31°", rain: "5%", icon: "sun" },
+                ]).map((f: any) => (
                   <div key={f.day} className="rounded-xl bg-amber-500/10 px-1 py-4 border border-amber-500/10">
                     <p className="text-xs font-bold text-amber-800 dark:text-amber-300">{f.day}</p>
-                    <span className="mt-2 inline-flex justify-center text-amber-600">{f.icon}</span>
-                    <p className="mt-2 text-base font-bold text-landing-fg">{f.temp}</p>
-                    <p className="text-xs font-semibold text-landing-fg-muted">{f.rain}</p>
+                    <span className="mt-2 inline-flex justify-center text-amber-600">
+                      {renderIcon(f.condition_icon || f.icon, "size-5")}
+                    </span>
+                    <p className="mt-2 text-base font-bold text-landing-fg">
+                      {f.high_c !== undefined ? `${f.high_c}°` : f.temp}
+                    </p>
+                    <p className="text-xs font-semibold text-landing-fg-muted">
+                      {f.rain_chance !== undefined ? `${f.rain_chance}%` : f.rain}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -724,13 +863,14 @@ export function Weather() {
               </span>
               <div>
                 <p className="text-base font-bold text-landing-fg">
-                  {t("Rain expected tomorrow", "कल बारिश की संभावना")}
+                  {data?.alert?.title || t("Rain expected tomorrow", "कल बारिश की संभावना")}
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-landing-fg-muted font-medium">
-                  {t(
-                    "Consider planning irrigation accordingly and delay spraying until the field dries.",
-                    "तदनुसार सिंचाई की योजना बनाएं और खेत सूखने तक छिड़काव टालें।"
-                  )}
+                  {data?.alert?.description ||
+                    t(
+                      "Consider planning irrigation accordingly and delay spraying until the field dries.",
+                      "तदनुसार सिंचाई की योजना बनाएं और खेत सूखने तक छिड़काव टालें।"
+                    )}
                 </p>
               </div>
             </div>
