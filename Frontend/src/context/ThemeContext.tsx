@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { apiRequest } from "../utils/api";
 
 export type ThemeMode = "light" | "dark";
 
@@ -32,8 +33,24 @@ function applyTheme(theme: ThemeMode) {
   root.style.colorScheme = theme;
 }
 
+async function syncThemeToBackend(theme: ThemeMode) {
+  const token = localStorage.getItem("agrisense_token");
+  if (!token) return;
+
+  try {
+    await apiRequest("/users", {
+      method: "PUT",
+      body: JSON.stringify({
+        themePreference: theme.toUpperCase(),
+      }),
+    });
+  } catch (error) {
+    console.warn("Failed to persist theme preference to backend:", error);
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [theme, setThemeState] = useState<ThemeMode>(getInitialTheme);
 
   useEffect(() => {
     if (typeof document === "undefined") {
@@ -49,8 +66,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  const setTheme = useCallback((newTheme: ThemeMode) => {
+    setThemeState(newTheme);
+    syncThemeToBackend(newTheme);
+  }, []);
+
   const toggleTheme = useCallback(() => {
-    setTheme((current) => (current === "dark" ? "light" : "dark"));
+    setThemeState((current) => {
+      const nextTheme = current === "dark" ? "light" : "dark";
+      syncThemeToBackend(nextTheme);
+      return nextTheme;
+    });
   }, []);
 
   return (
