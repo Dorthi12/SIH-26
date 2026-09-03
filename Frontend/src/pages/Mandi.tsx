@@ -75,7 +75,7 @@ export function Mandi() {
   const [cropHistory] = useState(INITIAL_CROP_HISTORY);
   const [contracts] = useState(INITIAL_COMPANY_CONTRACTS);
   const [listings, setListings] = useState<CropListing[]>(INITIAL_CROP_LISTINGS);
-  const [buyers] = useState(INITIAL_BUYERS);
+  const [buyers, setBuyers] = useState<BuyerProfile[]>(INITIAL_BUYERS);
   const [requirements] = useState(INITIAL_BUYER_REQUIREMENTS);
   const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS);
   const [deals, setDeals] = useState<SmartDeal[]>(INITIAL_SMART_DEALS);
