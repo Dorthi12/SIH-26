@@ -27,7 +27,7 @@ passport.use(
               name: name || email.split("@")[0],
               googleId,
               authProvider: "GOOGLE",
-              ...(avatar && { preSignedUrl: avatar }),
+              preSignedUrl: avatar || "https://netravaah-bucket.s3.ap-south-1.amazonaws.com/profile/default.png",
             },
           });
         } else if (!user.googleId) {
@@ -36,6 +36,7 @@ passport.use(
             data: {
               googleId,
               authProvider: "GOOGLE",
+              preSignedUrl: avatar || "https://netravaah-bucket.s3.ap-south-1.amazonaws.com/profile/default.png",
             },
           });
         }
