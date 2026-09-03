@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type {
   RoleMode,
   FarmerTab,
@@ -19,6 +19,13 @@ import {
   INITIAL_SMART_DEALS,
   INITIAL_SUPPLY_POOLS,
   INITIAL_DOCUMENTS,
+  fetchListings,
+  fetchBuyerProfiles,
+  fetchOffers,
+  fetchDeals,
+  createListingApi,
+  counterOfferApi,
+  acceptOfferApi,
 } from '../services/mandiService';
 
 import { MandiHome } from '../components/mandi/MandiHome';
@@ -75,7 +82,38 @@ export function Mandi() {
   const [pools] = useState(INITIAL_SUPPLY_POOLS);
   const [documents] = useState(INITIAL_DOCUMENTS);
 
-  const handlePublishNewListing = (newListingData: Partial<CropListing>) => {
+  // Load data from Backend API on mount
+  useEffect(() => {
+    async function loadBackendData() {
+      try {
+        const [listingsRes, buyersRes, offersRes, dealsRes] = await Promise.allSettled([
+          fetchListings(),
+          fetchBuyerProfiles(),
+          fetchOffers(),
+          fetchDeals(),
+        ]);
+
+        if (listingsRes.status === 'fulfilled' && listingsRes.value?.listings?.length > 0) {
+          setListings(listingsRes.value.listings);
+        }
+        if (buyersRes.status === 'fulfilled' && buyersRes.value?.length > 0) {
+          setBuyers(buyersRes.value);
+        }
+        if (offersRes.status === 'fulfilled' && offersRes.value?.length > 0) {
+          setOffers(offersRes.value);
+        }
+        if (dealsRes.status === 'fulfilled' && dealsRes.value?.length > 0) {
+          setDeals(dealsRes.value);
+        }
+      } catch (err) {
+        console.warn('Fallback to local mock data:', err);
+      }
+    }
+
+    loadBackendData();
+  }, []);
+
+  const handlePublishNewListing = async (newListingData: Partial<CropListing>) => {
     const fullListing: CropListing = {
       id: newListingData.id || `lst-${Date.now()}`,
       farmerId: newListingData.farmerId || 'AGR-F-882190',
@@ -120,6 +158,27 @@ export function Mandi() {
 
     setListings((prev) => [fullListing, ...prev]);
     setFarmerTab('listings');
+
+    // Persist to backend if possible
+    try {
+      await createListingApi({
+        commodityId: 'placeholder', // server resolves commodity
+        crop: fullListing.crop,
+        variety: fullListing.variety,
+        quantityQuintals: fullListing.quantityQuintals,
+        askingPricePerQuintal: fullListing.askingPricePerQuintal,
+        grade: fullListing.grade === 'Grade A' ? 'GRADE_A' : fullListing.grade === 'Grade B' ? 'GRADE_B' : 'STANDARD',
+        moisturePercentage: fullListing.moisturePercentage,
+        location: fullListing.location,
+        harvestDate: fullListing.harvestDate,
+        productionMethod: fullListing.productionMethod,
+        productionCostPerQuintal: fullListing.productionCostPerQuintal,
+        evidenceStatus: fullListing.evidenceStatus,
+        fairPriceRange: fullListing.fairPriceRange,
+      });
+    } catch (e) {
+      console.warn('Backend sync for new listing:', e);
+    }
   };
 
   // Modals state
@@ -182,6 +241,10 @@ export function Mandi() {
       prev.map((o) => (o.id === offer.id ? { ...o, status: 'Accepted' } : o))
     );
 
+    acceptOfferApi(offer.id).catch((e) =>
+      console.warn('Backend sync for offer accept:', e)
+    );
+
     if (role === 'farmer') {
       setFarmerTab('deals');
     } else {
@@ -212,6 +275,10 @@ export function Mandi() {
             }
           : o
       )
+    );
+
+    counterOfferApi(offerId, { offeredPricePerQuintal: price, quantityQuintals: qty }).catch((e) =>
+      console.warn('Backend sync for counter offer:', e)
     );
   };
 
@@ -286,15 +353,49 @@ export function Mandi() {
           </div>
         )}
 
-        {/* Central Decision Center Launcher Button */}
-        <button
-          type="button"
-          onClick={() => setShowDecisionCenterModal(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-forest/10 dark:bg-forest/20 text-forest dark:text-emerald-400 text-xs font-bold border border-forest/30 hover:bg-forest hover:text-white transition-all shrink-0 self-end md:self-auto"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Mandi Decision Hub
-        </button>
+        <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+          {/* Quick Role Switcher */}
+          <div className="flex items-center bg-ivory-100 dark:bg-charcoal/40 p-1 rounded-xl border border-ivory-300 dark:border-[#26362f]">
+            <button
+              type="button"
+              onClick={() => {
+                setRole('farmer');
+                setFarmerTab('home');
+              }}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                role === 'farmer'
+                  ? 'bg-forest text-white shadow-sm'
+                  : 'text-charcoal-muted hover:text-charcoal dark:hover:text-ivory-100'
+              }`}
+            >
+              🌾 Farmer Mode
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRole('buyer');
+                setBuyerTab('marketplace');
+              }}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                role === 'buyer'
+                  ? 'bg-amber text-charcoal shadow-sm'
+                  : 'text-charcoal-muted hover:text-charcoal dark:hover:text-ivory-100'
+              }`}
+            >
+              🏢 Buyer Mode
+            </button>
+          </div>
+
+          {/* Central Decision Center Launcher Button */}
+          <button
+            type="button"
+            onClick={() => setShowDecisionCenterModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-forest/10 dark:bg-forest/20 text-forest dark:text-emerald-400 text-xs font-bold border border-forest/30 hover:bg-forest hover:text-white transition-all shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Mandi Decision Hub
+          </button>
+        </div>
       </div>
 
       {/* ── Active View Rendering ────────────────────────────────────────── */}

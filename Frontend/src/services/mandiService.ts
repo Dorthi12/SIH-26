@@ -1,3 +1,4 @@
+import { apiRequest } from '../utils/api';
 import type {
   LandParcel,
   CropRotationEntry,
@@ -673,3 +674,273 @@ export const sellingAdvisorService = {
     };
   },
 };
+
+// ── Backend API Client Functions ─────────────────────────────────────────────
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  pagination?: { page: number; limit: number; total: number };
+}
+
+// ── Commodity API ────────────────────────────────────────────────────────────
+
+export interface CommodityRecord {
+  id: string;
+  name: string;
+  variety: string | null;
+  category: string;
+  season: string;
+  mspPerQuintal: number | null;
+  imageUrl: string | null;
+}
+
+export async function fetchCommodities(params?: {
+  season?: string;
+  category?: string;
+  search?: string;
+}): Promise<CommodityRecord[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.season) query.set('season', params.season);
+    if (params?.category) query.set('category', params.category);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<CommodityRecord[]>>(
+      `/mandi/commodities${qs ? `?${qs}` : ''}`
+    );
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+// ── Mandi Market API ─────────────────────────────────────────────────────────
+
+export interface MandiMarketRecord {
+  id: string;
+  name: string;
+  state: string;
+  district: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export async function fetchMandiMarkets(params?: {
+  state?: string;
+  search?: string;
+}): Promise<MandiMarketRecord[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.state) query.set('state', params.state);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<MandiMarketRecord[]>>(
+      `/mandi/markets${qs ? `?${qs}` : ''}`
+    );
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+// ── Mandi Price API ──────────────────────────────────────────────────────────
+
+export interface MandiPriceRecord {
+  id: string;
+  commodityId: string;
+  mandiId: string;
+  modalPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  arrivalTonnes: number | null;
+  arrivalDate: string;
+  commodity: { name: string; variety: string | null; category: string; mspPerQuintal: number | null };
+  mandi: { name: string; state: string; district: string };
+}
+
+export async function fetchMandiPrices(params?: {
+  commodityId?: string;
+  mandiId?: string;
+  days?: number;
+}): Promise<MandiPriceRecord[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.commodityId) query.set('commodityId', params.commodityId);
+    if (params?.mandiId) query.set('mandiId', params.mandiId);
+    if (params?.days) query.set('days', String(params.days));
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<MandiPriceRecord[]>>(
+      `/mandi/prices${qs ? `?${qs}` : ''}`
+    );
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+// ── Crop Listing API ─────────────────────────────────────────────────────────
+
+export async function fetchListings(params?: {
+  commodityId?: string;
+  grade?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ listings: CropListing[]; total: number }> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.commodityId) query.set('commodityId', params.commodityId);
+    if (params?.grade) query.set('grade', params.grade);
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<CropListing[]>>(
+      `/mandi/listings${qs ? `?${qs}` : ''}`
+    );
+    return { listings: res.data, total: res.pagination?.total ?? res.data.length };
+  } catch {
+    return { listings: INITIAL_CROP_LISTINGS, total: INITIAL_CROP_LISTINGS.length };
+  }
+}
+
+export async function fetchListingById(id: string): Promise<CropListing | null> {
+  try {
+    const res = await apiRequest<ApiResponse<CropListing>>(`/mandi/listings/${id}`);
+    return res.data;
+  } catch {
+    return INITIAL_CROP_LISTINGS.find((l) => l.id === id) ?? null;
+  }
+}
+
+export async function createListingApi(data: Record<string, unknown>): Promise<unknown> {
+  const res = await apiRequest<ApiResponse<unknown>>('/mandi/listings', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+// ── Buyer Profile API ────────────────────────────────────────────────────────
+
+export async function fetchBuyerProfiles(params?: {
+  type?: string;
+  search?: string;
+}): Promise<BuyerProfile[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.type) query.set('type', params.type);
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<BuyerProfile[]>>(
+      `/mandi/buyers${qs ? `?${qs}` : ''}`
+    );
+    return res.data;
+  } catch {
+    return INITIAL_BUYERS;
+  }
+}
+
+// ── Offer API ────────────────────────────────────────────────────────────────
+
+export async function fetchOffers(params?: {
+  status?: string;
+}): Promise<Offer[]> {
+  try {
+    const query = new URLSearchParams();
+    if (params?.status) query.set('status', params.status);
+    const qs = query.toString();
+    const res = await apiRequest<ApiResponse<Offer[]>>(
+      `/mandi/offers${qs ? `?${qs}` : ''}`
+    );
+    return res.data;
+  } catch {
+    return INITIAL_OFFERS;
+  }
+}
+
+export async function createOfferApi(data: Record<string, unknown>): Promise<unknown> {
+  const res = await apiRequest<ApiResponse<unknown>>('/mandi/offers', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function counterOfferApi(
+  offerId: string,
+  data: { offeredPricePerQuintal: number; quantityQuintals: number; notes?: string }
+): Promise<unknown> {
+  const res = await apiRequest<ApiResponse<unknown>>(`/mandi/offers/${offerId}/counter`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+export async function acceptOfferApi(offerId: string): Promise<unknown> {
+  const res = await apiRequest<ApiResponse<unknown>>(`/mandi/offers/${offerId}/accept`, {
+    method: 'PATCH',
+  });
+  return res.data;
+}
+
+// ── Deal API ─────────────────────────────────────────────────────────────────
+
+export async function fetchDeals(): Promise<SmartDeal[]> {
+  try {
+    const res = await apiRequest<ApiResponse<SmartDeal[]>>('/mandi/deals');
+    return res.data;
+  } catch {
+    return INITIAL_SMART_DEALS;
+  }
+}
+
+// ── ML Advisory API (backend placeholders) ──────────────────────────────────
+
+export async function fetchFairPriceEstimate(params: {
+  crop: string;
+  location?: string;
+  grade?: string;
+  moisturePercentage?: number;
+  productionCostPerQuintal?: number;
+  organicStatus?: string;
+}): Promise<unknown> {
+  try {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => { if (v != null) query.set(k, String(v)); });
+    const res = await apiRequest<ApiResponse<unknown>>(`/mandi/advisory/fair-price?${query}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchSellingAdvisory(params: {
+  crop: string;
+  askingPrice: number;
+  productionCost: number;
+}): Promise<SellingAdvisory | null> {
+  try {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => query.set(k, String(v)));
+    const res = await apiRequest<ApiResponse<SellingAdvisory>>(`/mandi/advisory/selling?${query}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchLogisticsQuote(params: {
+  origin: string;
+  destination: string;
+  quantityQuintals: number;
+}): Promise<unknown> {
+  try {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => query.set(k, String(v)));
+    const res = await apiRequest<ApiResponse<unknown>>(`/mandi/advisory/logistics?${query}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+}
