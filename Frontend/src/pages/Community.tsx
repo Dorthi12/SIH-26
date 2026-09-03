@@ -19,6 +19,7 @@ import { useAuth } from "../context/AuthContext";
 import { PageContainer } from "../components/ui/PageContainer";
 import { Badge } from "../components/ui/Badge";
 import { cn } from "../utils/cn";
+import { CreatePostModal } from "../components/community/CreatePostModal";
 
 interface Author {
   id: string;
@@ -231,20 +232,13 @@ export function Community() {
     setPreviewUrl(null);
   };
 
-  // ── Create Post ──────────────────────────────────────────────────────────
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!caption.trim()) {
-      setSubmitError("Please enter a caption.");
-      return;
-    }
-
-    const resolvedLocation =
-      selectedLocation ??
-      (locationName.trim()
-        ? { name: locationName.trim(), latitude: null, longitude: null }
-        : null);
-
+  // ── Create Post Submission ──────────────────────────────────────────────────
+  const handleCreatePostSubmission = async (postData: {
+    caption: string;
+    location?: { name: string; latitude: number; longitude: number } | null;
+    selectedFile?: File | null;
+    collaborators?: string[];
+  }) => {
     setSubmitting(true);
     setSubmitError(null);
 
@@ -252,14 +246,14 @@ export function Community() {
       let mediaKeys: string[] = [];
 
       // 1. Generate S3 presigned URL and upload image if present
-      if (selectedFile) {
+      if (postData.selectedFile) {
         const uploadSig = await apiRequest("/community/uploads", {
           method: "POST",
           body: JSON.stringify({
             files: [
               {
-                fileName: selectedFile.name,
-                fileType: selectedFile.type,
+                fileName: postData.selectedFile.name,
+                fileType: postData.selectedFile.type,
               },
             ],
           }),
@@ -273,9 +267,9 @@ export function Community() {
 
         const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
-          body: selectedFile,
+          body: postData.selectedFile,
           headers: {
-            "Content-Type": selectedFile.type,
+            "Content-Type": postData.selectedFile.type,
           },
         });
 
@@ -289,10 +283,10 @@ export function Community() {
       const postRes = await apiRequest("/community/posts", {
         method: "POST",
         body: JSON.stringify({
-          caption: caption.trim(),
-          locationName: resolvedLocation?.name || undefined,
-          latitude: resolvedLocation?.latitude ?? null,
-          longitude: resolvedLocation?.longitude ?? null,
+          caption: postData.caption.trim(),
+          locationName: postData.location?.name || undefined,
+          latitude: postData.location?.latitude ?? null,
+          longitude: postData.location?.longitude ?? null,
           mediaKeys,
         }),
       });
@@ -451,196 +445,15 @@ export function Community() {
           </button>
         </div>
 
-        {/* ── Create Post Overlay ── */}
-        {createOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="w-full max-w-lg bg-white rounded-2xl border border-ivory-300 shadow-xl overflow-hidden animate-slide-up">
-              <div className="flex items-center justify-between bg-ivory-100 border-b border-ivory-200 px-6 py-4">
-                <h3 className="font-bold text-charcoal">Share Farm Update</h3>
-                <button
-                  onClick={() => setCreateOpen(false)}
-                  className="rounded-lg p-1 text-charcoal-muted hover:bg-ivory-200 transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <form
-                onSubmit={handleCreatePost}
-                className="p-5 sm:p-6 space-y-4"
-              >
-                <div className="flex items-center gap-3 rounded-2xl border border-ivory-200 bg-ivory-50 px-3 py-2.5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-forest to-forest-700 text-sm font-bold text-white shadow-sm">
-                    {currentUser?.name?.charAt(0)?.toUpperCase() || "F"}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-charcoal">
-                      {currentUser?.name || "Farmer"}
-                    </p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-charcoal-muted">
-                      Community update
-                    </p>
-                  </div>
-                  <div className="rounded-full border border-forest/20 bg-forest/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-forest">
-                    Public
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="caption"
-                    className="text-[11px] font-bold uppercase tracking-[0.18em] text-charcoal-muted"
-                  >
-                    Caption
-                  </label>
-                  <textarea
-                    id="caption"
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                    placeholder="Share a field update, a crop concern, or ask the community for advice..."
-                    rows={4}
-                    className="w-full rounded-2xl border border-ivory-300 bg-ivory-50 px-3.5 py-3 text-sm leading-6 text-charcoal placeholder-charcoal-muted/60 focus:border-forest focus:ring-2 focus:ring-forest/15 outline-none transition-all resize-none"
-                  />
-                </div>
-
-                <div className="rounded-2xl border border-ivory-200 bg-ivory-50 p-3 space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-charcoal">
-                      <MapPin className="h-4 w-4 text-forest" />
-                      Location
-                    </div>
-                    {selectedLocation && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedLocation(null);
-                          setLocationName("");
-                        }}
-                        className="text-[11px] font-bold uppercase tracking-[0.18em] text-charcoal-muted hover:text-forest"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-
-                  <input
-                    type="text"
-                    value={locationName}
-                    onChange={(e) => {
-                      setLocationName(e.target.value);
-                      if (
-                        selectedLocation &&
-                        e.target.value !== selectedLocation.name
-                      ) {
-                        setSelectedLocation(null);
-                      }
-                    }}
-                    placeholder="Search village, district, or city"
-                    className="w-full rounded-xl border border-ivory-300 bg-white px-3 py-2.5 text-sm text-charcoal placeholder-charcoal-muted/60 focus:border-forest focus:ring-2 focus:ring-forest/15 outline-none transition-all"
-                  />
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {locationPresets.map((location) => {
-                      const active = selectedLocation?.name === location.name;
-                      return (
-                        <button
-                          key={location.name}
-                          type="button"
-                          onClick={() => {
-                            setSelectedLocation({
-                              name: location.name,
-                              latitude: location.latitude,
-                              longitude: location.longitude,
-                            });
-                            setLocationName(location.name);
-                          }}
-                          className={cn(
-                            "flex flex-col items-start rounded-xl border px-3 py-2 text-left transition-all",
-                            active
-                              ? "border-forest bg-forest/5 text-forest shadow-sm"
-                              : "border-ivory-300 bg-white text-charcoal hover:border-forest/40 hover:bg-forest/5",
-                          )}
-                        >
-                          <span className="text-sm font-semibold">
-                            {location.name}
-                          </span>
-                          <span className="text-[11px] uppercase tracking-[0.14em] text-charcoal-muted">
-                            {location.region}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
-                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-ivory-300 bg-ivory-50 px-4 py-3 text-sm font-semibold text-charcoal-muted transition-all hover:border-forest/40 hover:text-forest">
-                    <Camera className="h-4 w-4" />
-                    <span>{selectedFile ? "Change image" : "Add photo"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-
-                  <div className="flex items-center justify-center rounded-2xl border border-ivory-200 bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal-muted">
-                    {selectedFile ? "1 file ready" : "No file"}
-                  </div>
-                </div>
-
-                {previewUrl && (
-                  <div className="relative overflow-hidden rounded-2xl border border-ivory-200 bg-black">
-                    <img
-                      src={previewUrl}
-                      alt="Upload preview"
-                      className="h-56 w-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="absolute right-3 top-3 rounded-full bg-charcoal/70 p-2 text-white hover:bg-charcoal transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-
-                {submitError && (
-                  <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span>{submitError}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCreateOpen(false)}
-                    className="rounded-xl border border-ivory-300 bg-white px-4 py-2.5 text-sm font-semibold text-charcoal-muted hover:bg-ivory-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-forest px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-forest-600 transition-colors disabled:opacity-50"
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Posting...
-                      </>
-                    ) : (
-                      "Share Update"
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        {/* ── Create Post Modal Component ── */}
+        <CreatePostModal
+          isOpen={createOpen}
+          onClose={() => setCreateOpen(false)}
+          currentUser={currentUser}
+          onSubmit={handleCreatePostSubmission}
+          submitting={submitting}
+          submitError={submitError}
+        />
 
         {/* ── Feed List ── */}
         {loading ? (
