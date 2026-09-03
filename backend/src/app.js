@@ -18,6 +18,7 @@ import cropRoutes from "./modules/crop-recommendation/crop.routes.js";
 import yieldRoutes from "./modules/yield-prediction/yield.routes.js";
 import diseaseRoutes from "./modules/disease-detection/disease.routes.js";
 import zeroProdRoutes from "./modules/zero-production-risk/zeroProduction.routes.js";
+import mandiRoutes from "./modules/mandi/mandi.routes.js";
 
 
 import { getWeatherService } from "./services/weather.service.js";
@@ -105,6 +106,7 @@ app.use("/crop-recommendation", authMiddleware, cropRoutes);
 app.use("/yield-prediction", authMiddleware, yieldRoutes);
 app.use("/disease-detection", authMiddleware, diseaseRoutes);
 app.use("/zero-production-risk", authMiddleware, zeroProdRoutes);
+app.use("/mandi", authMiddleware, mandiRoutes);
 
 app.use(errorMiddleware);
 

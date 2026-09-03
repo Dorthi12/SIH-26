@@ -31,6 +31,15 @@ enum AuthProvider {
   GOOGLE
 }
 
+enum Occupation {
+  FARMER
+  BUYER
+  TRADER
+  WHOLESALER
+  EXPORTER
+  OTHER
+}
+
 model User {
   id              String          @id @default(uuid())
   name            String
@@ -43,6 +52,7 @@ model User {
   preSignedUrl  String          @default("https://netravaah-bucket.s3.ap-south-1.amazonaws.com/profile/default.png")
   refreshToken    String?
   department      String?
+  occupation      Occupation? @default(FARMER)
   city            String?
   state           String?
   Position        String?
@@ -66,6 +76,12 @@ model User {
   yieldPredictions    YieldPrediction[]
   diseasePredictions  DiseasePrediction[]
   zeroProductionRisks ZeroProductionRisk[]
+
+  // Mandi module relations
+  mandiCropListings  MandiCropListing[]
+  mandiOffers        MandiOffer[]
+  mandiDeals         MandiDeal[]
+  buyerProfile       MandiBuyerProfile?
 }
 
 model Complaint{
@@ -420,4 +436,248 @@ enum MessageRole {
   USER
   ASSISTANT
   SYSTEM
+}
+
+// ---------------------------------------------------------------------------
+// Mandi Module Models
+// ---------------------------------------------------------------------------
+
+enum ListingGrade {
+  GRADE_A
+  GRADE_B
+  STANDARD
+}
+
+enum OrganicStatus {
+  VERIFIED_ORGANIC
+  CLAIMED_ORGANIC
+  CONVENTIONAL
+}
+
+enum OfferStatus {
+  PENDING
+  COUNTERED
+  ACCEPTED
+  DECLINED
+}
+
+enum DealPaymentState {
+  PENDING
+  PROTECTION_REQUESTED
+  PAYMENT_PROTECTED
+  AWAITING_DELIVERY
+  DELIVERY_SUBMITTED
+  DELIVERY_CONFIRMED
+  PAYMENT_RELEASED
+  DISPUTED
+  CANCELLED
+}
+
+enum BuyerType {
+  FOOD_PROCESSOR
+  WHOLESALER
+  EXPORTER
+  RETAIL_CHAIN
+  INSTITUTIONAL_BUYER
+  PRIVATE_AGRO_CO
+}
+
+enum CropSeason {
+  KHARIF
+  RABI
+  ZAID
+  ALL_SEASON
+}
+
+// Master list of commodities with official MSP data
+model Commodity {
+  id              String   @id @default(uuid())
+  name            String   // e.g. "Wheat", "Paddy", "Gram"
+  variety         String?  // e.g. "HD-2967", "Pusa 1121"
+  category        String   // e.g. "Cereal", "Pulse", "Oilseed", "Cash Crop"
+  season          CropSeason @default(ALL_SEASON)
+  mspPerQuintal   Float?   // Official MSP in ₹/quintal
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  mandiPrices     MandiPrice[]
+  cropListings    MandiCropListing[]
+
+  @@unique([name, variety])
+  @@index([name])
+  @@index([season])
+}
+
+// Reference APMC mandi markets across India
+model MandiMarket {
+  id        String   @id @default(uuid())
+  name      String   // e.g. "Azadpur Mandi"
+  state     String   // e.g. "Delhi"
+  district  String   // e.g. "New Delhi"
+  latitude  Float?
+  longitude Float?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  prices MandiPrice[]
+
+  @@unique([name, district, state])
+  @@index([state])
+  @@index([district])
+}
+
+// Daily commodity prices per mandi (seedable + future API integration)
+model MandiPrice {
+  id            String      @id @default(uuid())
+  commodityId   String
+  commodity     Commodity   @relation(fields: [commodityId], references: [id], onDelete: Cascade)
+  mandiId       String
+  mandi         MandiMarket @relation(fields: [mandiId], references: [id], onDelete: Cascade)
+  modalPrice    Float       // Most common trading price
+  minPrice      Float
+  maxPrice      Float
+  arrivalTonnes Float?      // Quantity arrived at mandi
+  arrivalDate   DateTime    // The date this price record is for
+  createdAt     DateTime    @default(now())
+
+  @@unique([commodityId, mandiId, arrivalDate])
+  @@index([commodityId])
+  @@index([mandiId])
+  @@index([arrivalDate])
+}
+
+// Farmer crop listings for sale on the marketplace
+model MandiCropListing {
+  id                      String        @id @default(uuid())
+  userId                  String
+  user                    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commodityId             String
+  commodity               Commodity     @relation(fields: [commodityId], references: [id])
+  variety                 String?
+  quantityQuintals        Float
+  askingPricePerQuintal   Float
+  grade                   ListingGrade  @default(STANDARD)
+  moisturePercentage      Float?
+  organicStatus           OrganicStatus @default(CONVENTIONAL)
+  organicCertificateNo    String?
+  harvestDate             DateTime?
+  productionMethod        String?       // e.g. "Conventional", "Natural Farming"
+  productionCostPerQuintal Float?
+  location                String        // e.g. "Barabanki, UP"
+  locationState           String?
+  locationDistrict        String?
+  latitude                Float?
+  longitude               Float?
+  isActive                Boolean       @default(true)
+  verifiedCrop            Boolean       @default(false)
+  verifiedFarmer          Boolean       @default(false)
+  evidenceStatus          Json?         // { organic, qualityReport, productionCost, harvestDate }
+  fairPriceRange          Json?         // { min, max, breakdown }
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  // Relations
+  offers MandiOffer[]
+
+  @@index([userId])
+  @@index([commodityId])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+// Buyer/company profiles (linked to User for role-based access)
+model MandiBuyerProfile {
+  id                      String    @id @default(uuid())
+  userId                  String?   @unique
+  user                    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name                    String
+  type                    BuyerType @default(WHOLESALER)
+  location                String
+  verified                Boolean   @default(false)
+  completedTransactions   Int       @default(0)
+  paymentReliabilityPct   Float     @default(0)
+  avgPaymentDays          Float     @default(0)
+  rating                  Float     @default(0)
+  transparencyScore       Float     @default(0)
+  activeDisputes          Int       @default(0)
+  resolvedDisputes        Int       @default(0)
+  reputationBreakdown     Json?     // { paymentReliability, priceFairness, behaviour, ... }
+  purchaseCategories      String[]  // e.g. ["Wheat", "Rice", "Maize"]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Relations
+  offers MandiOffer[]
+  deals  MandiDeal[]
+
+  @@index([type])
+  @@index([verified])
+}
+
+// Price negotiation offers between buyers and farmers
+model MandiOffer {
+  id                      String       @id @default(uuid())
+  listingId               String
+  listing                 MandiCropListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerProfileId          String
+  buyerProfile            MandiBuyerProfile @relation(fields: [buyerProfileId], references: [id])
+  userId                  String       // The farmer (listing owner)
+  user                    User         @relation(fields: [userId], references: [id])
+  crop                    String
+  quantityQuintals        Float
+  offeredPricePerQuintal  Float
+  qualityCondition        String?
+  moistureCondition       String?
+  pickupType              String?      // "Buyer Pickup" | "Seller Delivery"
+  deliveryDate            DateTime?
+  paymentTermsDays        Int          @default(3)
+  transportResponsibility String?      // "Buyer Pays" | "Seller Pays" | "Shared"
+  status                  OfferStatus  @default(PENDING)
+  negotiationHistory      Json?        // Array of { version, by, price, quantity, notes, timestamp }
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  // Relations
+  deal MandiDeal?
+
+  @@index([listingId])
+  @@index([buyerProfileId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Finalized smart deals
+model MandiDeal {
+  id                      String           @id @default(uuid())
+  offerId                 String           @unique
+  offer                   MandiOffer       @relation(fields: [offerId], references: [id])
+  buyerProfileId          String
+  buyerProfile            MandiBuyerProfile @relation(fields: [buyerProfileId], references: [id])
+  userId                  String           // The farmer
+  user                    User             @relation(fields: [userId], references: [id])
+  crop                    String
+  variety                 String?
+  quantityQuintals        Float
+  pricePerQuintal         Float
+  totalValue              Float
+  qualityGrade            String?
+  moisturePercentage      Float?
+  pickupLocation          String?
+  deliveryDate            DateTime?
+  paymentTerms            String?
+  transportResponsibility String?
+  buyerConfirmed          Boolean          @default(false)
+  farmerConfirmed         Boolean          @default(false)
+  termsLocked             Boolean          @default(false)
+  paymentState            DealPaymentState @default(PENDING)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  @@index([buyerProfileId])
+  @@index([userId])
+  @@index([paymentState])
 }
