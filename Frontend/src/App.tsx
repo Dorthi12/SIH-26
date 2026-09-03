@@ -34,6 +34,7 @@ import CreateComplaint from "./pages/CreateComplaints";
 import ViewComplaints from "./pages/ViewComplaints";
 import MyComplaints from "./pages/myComplaints";
 import Complaints from "./pages/Complaints";
+import { PublicRoute } from "./components/auth/PublicRoute";
 
 export default function App() {
   return (
@@ -47,10 +48,11 @@ export default function App() {
               <RecommendationProvider>
                 <Routes>
                   {/* Public standalone pages */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-
+                
+                    <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+                    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                    <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+                 
                   {/* Protected app routes */}
                   <Route element={<ProtectedRoute />}>
                     <Route element={<AppLayout />}>
