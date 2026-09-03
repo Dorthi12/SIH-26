@@ -351,36 +351,31 @@ export default function Complaints() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#F7F5ED] dark:bg-[#0f1714] text-slate-900 dark:text-slate-100 px-4 py-8 sm:px-6 lg:px-8 transition-colors">
             <div className="mx-auto max-w-7xl">
-
-                {/* -------------------------------------------------- */}
                 {/* HEADER */}
-                {/* -------------------------------------------------- */}
-
                 <div className="mb-8">
                     <button
                         type="button"
                         onClick={() => navigate(-1)}
-                        className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-[#315C3A] transition hover:text-[#23452B]"
+                        className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-[#315C3A] dark:text-emerald-400 transition hover:text-[#23452B] dark:hover:text-emerald-300"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back
                     </button>
 
                     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-
                         <div className="flex items-start gap-4">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#315C3A] text-white shadow-sm">
-                                <FileText className="h-6 w-6" />
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#315C3A] dark:bg-emerald-600 text-white shadow-sm">
+                                <FileText className="h-6 w-6 text-white" />
                             </div>
 
                             <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-[#26352A] sm:text-3xl">
+                                <h1 className="text-2xl font-semibold tracking-tight text-[#26352A] dark:text-white sm:text-3xl">
                                     Complaints
                                 </h1>
 
-                                <p className="mt-1 text-sm leading-6 text-[#6B746D]">
+                                <p className="mt-1 text-sm leading-6 text-[#6B746D] dark:text-slate-300">
                                     View and track submitted complaints.
                                 </p>
                             </div>

@@ -48,106 +48,94 @@ export default function ComplaintsDashboard() {
         },
     ];
 
-    return (<div className="min-h-screen bg-[#F7F5ED] px-4 py-8 sm:px-6 lg:px-8"> <div className="mx-auto max-w-6xl">
-
-        {/* HEADER */}
-
-        <div className="mb-10">
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#315C3A] transition hover:text-[#23452B]"
-            >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-            </button>
-
-            <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#315C3A] text-white shadow-sm">
-                    <FileText className="h-7 w-7" />
-                </div>
-
-                <div>
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#26352A] sm:text-3xl">
-                        Complaints
-                    </h1>
-
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B746D]">
-                        Report issues, view submitted complaints, and
-                        keep track of their progress.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {/* OPTIONS */}
-
-        <div className="grid gap-6 md:grid-cols-3">
-            {complaintOptions.map((option) => {
-                const Icon = option.icon;
-
-                return (
-                    <div
-                        key={option.title}
-                        className="group flex flex-col rounded-2xl border border-[#E2E0D7] bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+    return (
+        <div className="min-h-screen bg-[#F7F5ED] dark:bg-[#0f1714] text-slate-900 dark:text-slate-100 px-4 py-8 sm:px-6 lg:px-8 transition-colors">
+            <div className="mx-auto max-w-6xl">
+                {/* HEADER */}
+                <div className="mb-10">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#315C3A] dark:text-emerald-400 transition hover:text-[#23452B] dark:hover:text-emerald-300"
                     >
-                        {/* ICON */}
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Dashboard
+                    </button>
 
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8EFE6] text-[#315C3A] transition group-hover:bg-[#315C3A] group-hover:text-white">
-                            <Icon className="h-6 w-6" />
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#315C3A] dark:bg-emerald-600 text-white shadow-sm">
+                            <FileText className="h-7 w-7 text-white" />
                         </div>
 
-                        {/* CONTENT */}
+                        <div>
+                            <h1 className="text-2xl font-semibold tracking-tight text-[#26352A] dark:text-white sm:text-3xl">
+                                Complaints
+                            </h1>
 
-                        <h2 className="mt-6 text-lg font-semibold text-[#26352A]">
-                            {option.title}
-                        </h2>
-
-                        <p className="mt-2 flex-1 text-sm leading-6 text-[#6B746D]">
-                            {option.description}
-                        </p>
-
-                        {/* BUTTON */}
-
-                        <button
-                            type="button"
-                            onClick={() => navigate(option.path)}
-                            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#315C3A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#274B2F]"
-                        >
-                            {option.buttonText}
-
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </button>
+                            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B746D] dark:text-slate-300">
+                                Report issues, view submitted complaints, and keep track of their progress.
+                            </p>
+                        </div>
                     </div>
-                );
-            })}
-        </div>
-
-        {/* INFO SECTION */}
-
-        <div className="mt-8 rounded-2xl border border-[#DCE5D9] bg-[#EEF4EB] p-5 sm:p-6">
-            <div className="flex gap-4">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#DCE8D8] text-[#315C3A]">
-                    <FileText className="h-4 w-4" />
                 </div>
 
-                <div>
-                    <h3 className="text-sm font-semibold text-[#315C3A]">
-                        Complaint Management
-                    </h3>
+                {/* OPTIONS */}
+                <div className="grid gap-6 md:grid-cols-3">
+                    {complaintOptions.map((option) => {
+                        const Icon = option.icon;
 
-                    <p className="mt-1 text-sm leading-6 text-[#5F6B61]">
-                        Use the options above to report a new issue,
-                        browse complaints, or check the current status
-                        of complaints you have submitted.
-                    </p>
+                        return (
+                            <div
+                                key={option.title}
+                                className="group flex flex-col rounded-2xl border border-[#E2E0D7] dark:border-emerald-900/40 bg-white dark:bg-[#16251e] p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+                            >
+                                {/* ICON */}
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8EFE6] dark:bg-emerald-950/80 text-[#315C3A] dark:text-emerald-300 transition group-hover:bg-[#315C3A] dark:group-hover:bg-emerald-600 group-hover:text-white dark:group-hover:text-white">
+                                    <Icon className="h-6 w-6 text-[#315C3A] dark:text-emerald-300 group-hover:text-white transition-colors" />
+                                </div>
+
+                                {/* CONTENT */}
+                                <h2 className="mt-6 text-lg font-semibold text-[#26352A] dark:text-white">
+                                    {option.title}
+                                </h2>
+
+                                <p className="mt-2 flex-1 text-sm leading-6 text-[#6B746D] dark:text-slate-300">
+                                    {option.description}
+                                </p>
+
+                                {/* BUTTON */}
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(option.path)}
+                                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#315C3A] dark:bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#274B2F] dark:hover:bg-emerald-500"
+                                >
+                                    {option.buttonText}
+                                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                </button>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* INFO SECTION */}
+                <div className="mt-8 rounded-2xl border border-[#DCE5D9] dark:border-emerald-900/40 bg-[#EEF4EB] dark:bg-[#14261d] p-5 sm:p-6">
+                    <div className="flex gap-4">
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#DCE8D8] dark:bg-emerald-900/60 text-[#315C3A] dark:text-emerald-300">
+                            <FileText className="h-4 w-4 text-[#315C3A] dark:text-emerald-300" />
+                        </div>
+
+                        <div>
+                            <h3 className="text-sm font-semibold text-[#315C3A] dark:text-emerald-300">
+                                Complaint Management
+                            </h3>
+
+                            <p className="mt-1 text-sm leading-6 text-[#5F6B61] dark:text-slate-300">
+                                Use the options above to report a new issue, browse complaints, or check the current status of complaints you have submitted.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-    </div>
-    </div>
-
-
     );
 }
